@@ -1,0 +1,59 @@
+package generator
+
+import (
+	"go/types"
+	"reflect"
+	"strings"
+
+	"github.com/go-courier/courier"
+	"github.com/go-courier/httptransport/httpx"
+	"github.com/go-courier/loaderx"
+
+	"github.com/go-courier/httptransport"
+)
+
+const (
+	XID           = "x-id"
+	XGoVendorType = `x-go-vendor-type`
+	XGoStarLevel  = `x-go-star-level`
+	XGoFieldName  = `x-go-field-name`
+
+	XTagValidate = `x-tag-validate`
+	XTagMime     = `x-tag-mime`
+	XTagJSON     = `x-tag-json`
+	XTagXML      = `x-tag-xml`
+	XTagName     = `x-tag-name`
+
+	XEnumOptions = `x-enum-options`
+	XStatusErrs  = `x-status-errors`
+)
+
+var (
+	pkgImportPathHttpTransport = loaderx.ImportGoPath(reflect.TypeOf(httptransport.GroupOperator{}).PkgPath())
+	pkgImportPathHttpx         = loaderx.ImportGoPath(reflect.TypeOf(httpx.Response{}).PkgPath())
+	pkgImportPathCourier       = loaderx.ImportGoPath(reflect.TypeOf(courier.Router{}).PkgPath())
+)
+
+func isHttpxResponse(typ types.Type) bool {
+	return strings.HasSuffix(typ.String(), pkgImportPathHttpx+".Response")
+}
+
+func isGroupFunc(typ types.Type) bool {
+	return typ.String() == "func(path string) *"+pkgImportPathHttpTransport+".GroupOperator"
+}
+
+func isRouterType(typ types.Type) bool {
+	return strings.HasSuffix(typ.String(), pkgImportPathCourier+".Router")
+}
+
+func tagValueAndFlagsByTagString(tagString string) (string, map[string]bool) {
+	valueAndFlags := strings.Split(tagString, ",")
+	v := valueAndFlags[0]
+	tagFlags := map[string]bool{}
+	if len(valueAndFlags) > 1 {
+		for _, flag := range valueAndFlags[1:] {
+			tagFlags[flag] = true
+		}
+	}
+	return v, tagFlags
+}

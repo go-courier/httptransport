@@ -1,0 +1,182 @@
+package transformers
+
+import (
+	"bytes"
+	"fmt"
+	"io"
+	"io/ioutil"
+	"mime"
+	"net/textproto"
+	"net/url"
+	"reflect"
+
+	"github.com/go-courier/reflectx/typesutil"
+	"github.com/go-courier/validator/errors"
+)
+
+func init() {
+	TransformerMgrDefault.Register(&FormTransformer{})
+}
+
+type FormTransformer struct {
+	fieldTransformers map[string]Transformer
+	fieldOpts         map[string]TransformerOption
+}
+
+/*
+transformer for application/x-www-form-urlencoded
+
+	var s = struct {
+		Username string `name:"username"`
+		Nickname string `name:"username,omitempty"`
+		Tags []string `name:"tag"`
+	}{
+		Username: "name",
+		Tags: []string{"1","2"},
+	}
+
+will be transform to
+
+	username=name&tag=1&tag=2
+*/
+func (FormTransformer) Names() []string {
+	return []string{"application/x-www-form-urlencoded", "form", "urlencoded", "url-encoded"}
+}
+
+func (transformer *FormTransformer) String() string {
+	return transformer.Names()[0]
+}
+
+func (FormTransformer) New(typ typesutil.Type, mgr TransformerMgr) (Transformer, error) {
+	transformer := &FormTransformer{}
+	transformer.fieldTransformers = map[string]Transformer{}
+	transformer.fieldOpts = map[string]TransformerOption{}
+
+	typ = typesutil.Deref(typ)
+	if typ.Kind() != reflect.Struct {
+		return nil, fmt.Errorf("content transformer `%s` should be used for struct type", transformer)
+	}
+
+	errSet := errors.NewErrorSet("")
+
+	typesutil.EachField(typ, "name", func(field typesutil.StructField, fieldDisplayName string, omitempty bool) bool {
+		opt := TransformerOptionFromStructField(field)
+		targetType := field.Type()
+		fieldName := field.Name()
+
+		if !IsBytes(targetType) {
+			switch targetType.Kind() {
+			case reflect.Array, reflect.Slice:
+				opt.Explode = true
+				targetType = field.Type().Elem()
+			}
+		}
+
+		fieldTransformer, err := mgr.NewTransformer(targetType, opt)
+		if err != nil {
+			errSet.AddErr(err, field.Name)
+		}
+
+		transformer.fieldTransformers[fieldName] = fieldTransformer
+		transformer.fieldOpts[fieldName] = opt
+
+		return true
+	})
+
+	return transformer, errSet.Err()
+}
+
+func (transformer *FormTransformer) EncodeToWriter(w io.Writer, v interface{}) (string, error) {
+	rv, ok := v.(reflect.Value)
+	if !ok {
+		rv = reflect.ValueOf(v)
+	}
+
+	valueAdder := url.Values{}
+
+	errSet := errors.NewErrorSet("")
+
+	NamedStructFieldValueRange(reflect.Indirect(rv), func(fieldValue reflect.Value, field *reflect.StructField) {
+		fieldOpt := transformer.fieldOpts[field.Name]
+		fieldTransformer := transformer.fieldTransformers[field.Name]
+
+		maybe := NewMaybeTransformer(fieldTransformer, &fieldOpt.CommonTransformOption)
+
+		if fieldOpt.Explode {
+			for i := 0; i < fieldValue.Len(); i++ {
+				if err := maybe.Add(fieldOpt.FieldName, fieldValue.Index(i), valueAdder); err != nil {
+					errSet.AddErr(err, fieldOpt.FieldName, i)
+				}
+			}
+		} else {
+			if err := maybe.Add(fieldOpt.FieldName, fieldValue, valueAdder); err != nil {
+				errSet.AddErr(err, fieldOpt.FieldName)
+			}
+		}
+	})
+
+	if err := errSet.Err(); err != nil {
+		return "", err
+	}
+
+	if _, err := w.Write([]byte(valueAdder.Encode())); err != nil {
+		return "", err
+	}
+
+	return mime.FormatMediaType(transformer.String(), map[string]string{
+		"param": "value",
+	}), nil
+}
+
+func (transformer *FormTransformer) DecodeFromReader(r io.Reader, v interface{}, headers ...textproto.MIMEHeader) error {
+	rv, ok := v.(reflect.Value)
+	if !ok {
+		rv = reflect.ValueOf(v)
+	}
+
+	data, err := ioutil.ReadAll(r)
+	if err != nil {
+		return err
+	}
+	values, err := url.ParseQuery(string(data))
+	if err != nil {
+		return err
+	}
+
+	errSet := errors.NewErrorSet("")
+
+	NamedStructFieldValueRange(reflect.Indirect(rv), func(fieldValue reflect.Value, field *reflect.StructField) {
+		fieldOpt := transformer.fieldOpts[field.Name]
+		fieldTransformer := transformer.fieldTransformers[field.Name]
+		maybe := NewMaybeTransformer(fieldTransformer, &fieldOpt.CommonTransformOption)
+
+		if fieldOpt.Explode {
+			valueList := values[fieldOpt.FieldName]
+			lenOfValues := len(valueList)
+
+			if fieldOpt.Omitempty && lenOfValues == 0 {
+				return
+			}
+
+			if field.Type.Kind() == reflect.Slice {
+				fieldValue.Set(reflect.MakeSlice(field.Type, lenOfValues, lenOfValues))
+			}
+
+			for idx := 0; idx < fieldValue.Len(); idx++ {
+				if lenOfValues > idx {
+					if maybe.DecodeFromReader(bytes.NewBufferString(valueList[idx]), fieldValue.Index(idx)); err != nil {
+						errSet.AddErr(err, fieldOpt.FieldName, idx)
+					}
+				}
+			}
+		} else {
+			if err := maybe.DecodeFromReader(bytes.NewBufferString(values.Get(fieldOpt.FieldName)), fieldValue); err != nil {
+				errSet.AddErr(err, fieldOpt.FieldName)
+				return
+			}
+		}
+
+	})
+
+	return errSet.Err()
+}

@@ -1,0 +1,649 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "",
+    "version": ""
+  },
+  "paths": {
+    "/demo": {
+      "get": {
+        "tags": [
+          "github.com/go-courier/httptransport/openapi"
+        ],
+        "operationId": "OpenAPI",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BytesBuffer"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/demo/binary/files": {
+      "get": {
+        "tags": [
+          "routes"
+        ],
+        "summary": "download file",
+        "operationId": "DownloadFile",
+        "responses": {
+          "200": {
+            "content": {
+              "": {
+                "schema": {
+                  "$ref": "#/components/schemas/GithubComGoCourierHttptransportHttpxAttachment"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/demo/binary/images": {
+      "get": {
+        "tags": [
+          "routes"
+        ],
+        "summary": "show image",
+        "operationId": "ShowImage",
+        "responses": {
+          "200": {
+            "content": {
+              "image/png": {
+                "schema": {
+                  "$ref": "#/components/schemas/GithubComGoCourierHttptransportHttpxImagePNG"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/demo/cookie": {
+      "post": {
+        "tags": [
+          "routes"
+        ],
+        "operationId": "Cookie",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "cookie",
+            "schema": {
+              "type": "string",
+              "x-go-field-name": "Token",
+              "x-tag-name": "token,omitempty"
+            }
+          }
+        ],
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/demo/forms/multipart": {
+      "post": {
+        "tags": [
+          "routes"
+        ],
+        "summary": "Form Multipart",
+        "operationId": "FormMultipartWithFile",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "data": {
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/Data"
+                      },
+                      {
+                        "x-go-field-name": "Data",
+                        "x-tag-name": "data,omitempty"
+                      }
+                    ]
+                  },
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "x-go-field-name": "File",
+                    "x-go-star-level": 1,
+                    "x-tag-name": "file"
+                  },
+                  "slice": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "x-go-field-name": "Slice",
+                    "x-tag-name": "slice,omitempty"
+                  },
+                  "string": {
+                    "type": "string",
+                    "x-go-field-name": "String",
+                    "x-tag-name": "string,omitempty"
+                  }
+                },
+                "required": [
+                  "file"
+                ],
+                "x-go-field-name": "FormData",
+                "x-tag-mime": "multipart"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/demo/forms/multipart-with-files": {
+      "post": {
+        "tags": [
+          "routes"
+        ],
+        "summary": "Form Multipart With Files",
+        "operationId": "FormMultipartWithFiles",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "files": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary",
+                      "x-go-star-level": 1
+                    },
+                    "x-go-field-name": "Files",
+                    "x-tag-name": "files"
+                  }
+                },
+                "required": [
+                  "files"
+                ],
+                "x-go-field-name": "FormData",
+                "x-tag-mime": "multipart"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/demo/forms/urlencoded": {
+      "post": {
+        "tags": [
+          "routes"
+        ],
+        "summary": "Form URL Encoded",
+        "operationId": "FormURLEncoded",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "data": {
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/Data"
+                      },
+                      {
+                        "x-go-field-name": "Data",
+                        "x-tag-name": "data"
+                      }
+                    ]
+                  },
+                  "slice": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "x-go-field-name": "Slice",
+                    "x-tag-name": "slice"
+                  },
+                  "string": {
+                    "type": "string",
+                    "x-go-field-name": "String",
+                    "x-tag-name": "string"
+                  }
+                },
+                "required": [
+                  "string",
+                  "slice",
+                  "data"
+                ],
+                "x-go-field-name": "FormData",
+                "x-tag-mime": "urlencoded"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/demo/redirect": {
+      "get": {
+        "tags": [
+          "routes"
+        ],
+        "operationId": "Redirect",
+        "responses": {
+          "302": {}
+        }
+      },
+      "post": {
+        "tags": [
+          "routes"
+        ],
+        "operationId": "RedirectWhenError",
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/demo/restful": {
+      "head": {
+        "tags": [
+          "routes"
+        ],
+        "operationId": "HealthCheck",
+        "responses": {
+          "204": {}
+        }
+      },
+      "post": {
+        "tags": [
+          "routes"
+        ],
+        "summary": "Create",
+        "operationId": "Create",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Data"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "": {
+                "schema": {
+                  "$ref": "#/components/schemas/Data"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/demo/restful/{id}": {
+      "delete": {
+        "tags": [
+          "routes"
+        ],
+        "summary": "remove by id",
+        "operationId": "RemoveByID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 6,
+              "x-go-field-name": "ID",
+              "x-tag-name": "id",
+              "x-tag-validate": "@string[6,]"
+            }
+          }
+        ],
+        "responses": {
+          "204": {},
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GithubComGoCourierStatuserrorStatusErr"
+                }
+              }
+            },
+            "x-status-errors": [
+              "@StatusErr[Unauthorized][401999001][Unauthorized]!"
+            ]
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GithubComGoCourierStatuserrorStatusErr"
+                }
+              }
+            },
+            "x-status-errors": [
+              "@StatusErr[InternalServerError][500100001][InternalServerError]",
+              "@StatusErr[InternalServerError][500999001][InternalServerError]"
+            ]
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "routes"
+        ],
+        "summary": "get by id",
+        "operationId": "GetByID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 6,
+              "x-go-field-name": "ID",
+              "x-tag-name": "id",
+              "x-tag-validate": "@string[6,]"
+            }
+          },
+          {
+            "name": "label",
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "x-go-field-name": "Label",
+              "x-tag-name": "label,omitempty"
+            }
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "x-go-field-name": "Name",
+              "x-tag-name": "name,omitempty"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "": {
+                "schema": {
+                  "$ref": "#/components/schemas/Data"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "routes"
+        ],
+        "summary": "update by id",
+        "operationId": "UpdateByID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 6,
+              "x-go-field-name": "ID",
+              "x-tag-name": "id",
+              "x-tag-validate": "@string[6,]"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Data"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "BytesBuffer": {
+        "type": "string",
+        "format": "binary",
+        "x-go-vendor-type": "bytes.Buffer",
+        "x-id": "BytesBuffer"
+      },
+      "Data": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "x-go-field-name": "ID",
+            "x-tag-json": "id"
+          },
+          "label": {
+            "type": "string",
+            "x-go-field-name": "Label",
+            "x-tag-json": "label"
+          },
+          "protocol": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Protocol"
+              },
+              {
+                "x-go-field-name": "Protocol",
+                "x-tag-json": "protocol,omitempty"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "label"
+        ],
+        "x-id": "Data"
+      },
+      "GithubComGoCourierHttptransportHttpxAttachment": {
+        "type": "string",
+        "format": "binary",
+        "x-go-vendor-type": "github.com/go-courier/httptransport/httpx.Attachment",
+        "x-id": "GithubComGoCourierHttptransportHttpxAttachment"
+      },
+      "GithubComGoCourierHttptransportHttpxImagePNG": {
+        "type": "string",
+        "format": "binary",
+        "x-go-vendor-type": "github.com/go-courier/httptransport/httpx.ImagePNG",
+        "x-id": "GithubComGoCourierHttptransportHttpxImagePNG"
+      },
+      "GithubComGoCourierHttptransportHttpxStatusFound": {
+        "type": "object",
+        "x-go-vendor-type": "github.com/go-courier/httptransport/httpx.StatusFound",
+        "x-id": "GithubComGoCourierHttptransportHttpxStatusFound"
+      },
+      "GithubComGoCourierStatuserrorErrorField": {
+        "type": "object",
+        "properties": {
+          "field": {
+            "type": "string",
+            "description": "field path\nprop.slice[2].a",
+            "x-go-field-name": "Field",
+            "x-tag-json": "field",
+            "x-tag-xml": "field"
+          },
+          "in": {
+            "type": "string",
+            "description": "location\neq. body, query, header, path, formData",
+            "x-go-field-name": "In",
+            "x-tag-json": "in",
+            "x-tag-xml": "in"
+          },
+          "msg": {
+            "type": "string",
+            "description": "msg",
+            "x-go-field-name": "Msg",
+            "x-tag-json": "msg",
+            "x-tag-xml": "msg"
+          }
+        },
+        "required": [
+          "field",
+          "msg",
+          "in"
+        ],
+        "x-go-vendor-type": "github.com/go-courier/statuserror.ErrorField",
+        "x-id": "GithubComGoCourierStatuserrorErrorField"
+      },
+      "GithubComGoCourierStatuserrorErrorFields": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/GithubComGoCourierStatuserrorErrorField"
+        },
+        "x-go-vendor-type": "github.com/go-courier/statuserror.ErrorFields",
+        "x-id": "GithubComGoCourierStatuserrorErrorFields"
+      },
+      "GithubComGoCourierStatuserrorStatusErr": {
+        "type": "object",
+        "properties": {
+          "canBeTalkError": {
+            "type": "boolean",
+            "description": "can be task error\nfor client to should error msg to end user",
+            "x-go-field-name": "CanBeTalkError",
+            "x-tag-json": "canBeTalkError",
+            "x-tag-xml": "canBeTalkError"
+          },
+          "code": {
+            "type": "integer",
+            "format": "int32",
+            "description": "unique err code",
+            "x-go-field-name": "Code",
+            "x-tag-json": "code",
+            "x-tag-xml": "code"
+          },
+          "desc": {
+            "type": "string",
+            "description": "desc of err",
+            "x-go-field-name": "Desc",
+            "x-tag-json": "desc",
+            "x-tag-xml": "desc"
+          },
+          "errorFields": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/GithubComGoCourierStatuserrorErrorFields"
+              },
+              {
+                "description": "error in where fields",
+                "x-go-field-name": "ErrorFields",
+                "x-tag-json": "errorFields",
+                "x-tag-xml": "errorFields"
+              }
+            ]
+          },
+          "id": {
+            "type": "string",
+            "description": "request ID or other request context",
+            "x-go-field-name": "ID",
+            "x-tag-json": "id",
+            "x-tag-xml": "id"
+          },
+          "key": {
+            "type": "string",
+            "description": "key of err",
+            "x-go-field-name": "Key",
+            "x-tag-json": "key",
+            "x-tag-xml": "key"
+          },
+          "msg": {
+            "type": "string",
+            "description": "msg of err",
+            "x-go-field-name": "Msg",
+            "x-tag-json": "msg",
+            "x-tag-xml": "msg"
+          },
+          "sources": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "error tracing",
+            "x-go-field-name": "Sources",
+            "x-tag-json": "sources",
+            "x-tag-xml": "sources"
+          }
+        },
+        "required": [
+          "key",
+          "code",
+          "msg",
+          "desc",
+          "canBeTalkError",
+          "id",
+          "sources",
+          "errorFields"
+        ],
+        "x-go-vendor-type": "github.com/go-courier/statuserror.StatusErr",
+        "x-id": "GithubComGoCourierStatuserrorStatusErr"
+      },
+      "Protocol": {
+        "type": "string",
+        "enum": [
+          "TCP",
+          "HTTPS",
+          "HTTP"
+        ],
+        "x-enum-options": [
+          {
+            "constValue": 6,
+            "value": "TCP",
+            "label": "TCP"
+          },
+          {
+            "constValue": 2,
+            "value": "HTTPS",
+            "label": "https"
+          },
+          {
+            "constValue": 1,
+            "value": "HTTP",
+            "label": "http"
+          }
+        ],
+        "x-id": "Protocol"
+      }
+    }
+  }
+}
