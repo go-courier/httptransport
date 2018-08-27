@@ -72,7 +72,7 @@ func (JSONTransformer) DecodeFromReader(r io.Reader, v interface{}, headers ...t
 			offset := reflect.ValueOf(dec).Elem().Field(2 /*d*/).Field(1 /*off*/).Int()
 			if offset > 0 {
 				errSet := errors.NewErrorSet("")
-				errSet.AddErr(e, location(data, int(offset)))
+				errSet.AddErr(e, location(data, int(offset-1)))
 				return errSet.Err()
 			}
 			return e

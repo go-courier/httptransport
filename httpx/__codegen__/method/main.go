@@ -2,20 +2,20 @@ package main
 
 import (
 	"go/ast"
-	"go/build"
-	"go/parser"
+		"go/parser"
 	"go/token"
 	"path"
 	"strings"
 
 	"github.com/go-courier/codegen"
+	"golang.org/x/tools/go/packages"
+	"fmt"
+	"path/filepath"
 )
 
 func main() {
-	pkg, _ := build.Default.Import("net/http", "", build.FindOnly)
-
 	fset := token.NewFileSet()
-	file, _ := parser.ParseFile(fset, path.Join(pkg.Dir, "method.go"), nil, parser.ParseComments)
+	file, _ := parser.ParseFile(fset, path.Join(getPkgDir("net/http"), "method.go"), nil, parser.ParseComments)
 
 	methods := make([]string, 0)
 
@@ -74,4 +74,19 @@ func (`+method+`) Method() string {
 	}
 
 	testFile.WriteFile()
+}
+
+
+
+func getPkgDir(importPath string) string {
+	pkgs, err := packages.Load(&packages.Config{
+		Mode: packages.LoadFiles,
+	}, importPath)
+	if err != nil {
+		panic(err)
+	}
+	if len(pkgs) == 0 {
+		panic(fmt.Errorf("package `%s` not found", importPath))
+	}
+	return filepath.Dir(pkgs[0].GoFiles[0])
 }

@@ -34,47 +34,22 @@ func TestJSONTransformer(t *testing.T) {
 
 	ct, _ := TransformerMgrDefault.NewTransformer(typesutil.FromRType(reflect.TypeOf(data)), TransformerOption{})
 
-	{
-		b := bytes.NewBuffer(nil)
-		_, err := ct.EncodeToWriter(b, data)
-		require.NoError(t, err)
-	}
-
-	{
-		b := bytes.NewBuffer(nil)
-		_, err := ct.EncodeToWriter(b, reflect.ValueOf(data))
-		require.NoError(t, err)
-	}
-
-	{
-		b := bytes.NewBufferString(`{`)
-		err := ct.DecodeFromReader(b, &data)
-		require.Error(t, err)
-	}
-
-	{
-		b := bytes.NewBufferString(`{}`)
-		err := ct.DecodeFromReader(b, reflect.ValueOf(&data))
-		require.NoError(t, err)
-	}
-
 	cases := []struct {
 		json     string
 		location string
 	}{{
-		`
-{
- 	"data": {
-		"s":   "111"
+		`{
+	"data": {
+		"s": "111",
+		"bool": true
 	}
-}
-`, "data.s",
+}`, "data.s",
 	},
 		{
 			`
 {
  	"data": {
-		"bool":   ""
+		"bool": ""
 	}
 }
 `, "data.bool",
@@ -132,5 +107,29 @@ func TestJSONTransformer(t *testing.T) {
 		err.(*errors.ErrorSet).Each(func(fieldErr *errors.FieldError) {
 			require.Equal(t, c.location, fieldErr.Field.String())
 		})
+	}
+
+	{
+		b := bytes.NewBuffer(nil)
+		_, err := ct.EncodeToWriter(b, data)
+		require.NoError(t, err)
+	}
+
+	{
+		b := bytes.NewBuffer(nil)
+		_, err := ct.EncodeToWriter(b, reflect.ValueOf(data))
+		require.NoError(t, err)
+	}
+
+	{
+		b := bytes.NewBufferString(`{`)
+		err := ct.DecodeFromReader(b, &data)
+		require.Error(t, err)
+	}
+
+	{
+		b := bytes.NewBufferString(`{}`)
+		err := ct.DecodeFromReader(b, reflect.ValueOf(&data))
+		require.NoError(t, err)
 	}
 }
