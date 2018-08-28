@@ -7,7 +7,7 @@ import (
 
 	"github.com/go-courier/courier"
 	"github.com/go-courier/httptransport/httpx"
-	"github.com/go-courier/loaderx"
+	"github.com/go-courier/packagesx"
 
 	"github.com/go-courier/httptransport"
 )
@@ -29,9 +29,9 @@ const (
 )
 
 var (
-	pkgImportPathHttpTransport = loaderx.ImportGoPath(reflect.TypeOf(httptransport.GroupOperator{}).PkgPath())
-	pkgImportPathHttpx         = loaderx.ImportGoPath(reflect.TypeOf(httpx.Response{}).PkgPath())
-	pkgImportPathCourier       = loaderx.ImportGoPath(reflect.TypeOf(courier.Router{}).PkgPath())
+	pkgImportPathHttpTransport = packagesx.ImportGoPath(reflect.TypeOf(httptransport.GroupOperator{}).PkgPath())
+	pkgImportPathHttpx         = packagesx.ImportGoPath(reflect.TypeOf(httpx.Response{}).PkgPath())
+	pkgImportPathCourier       = packagesx.ImportGoPath(reflect.TypeOf(courier.Router{}).PkgPath())
 )
 
 func isHttpxResponse(typ types.Type) bool {

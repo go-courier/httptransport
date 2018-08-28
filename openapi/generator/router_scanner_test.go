@@ -5,19 +5,17 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/go-courier/loaderx"
+	"github.com/go-courier/packagesx"
 )
 
 func ExampleNewRouterScanner() {
 	cwd, _ := os.Getwd()
-	program, pkgInfo, _ := loaderx.LoadWithTests(filepath.Join(cwd, "./__examples__/router_scanner"))
+	pkg, _ := packagesx.Load(filepath.Join(cwd, "./__examples__/router_scanner"))
 
-	info := loaderx.NewPackageInfo(pkgInfo)
+	router := pkg.Var("Router")
 
-	router := info.Var("Router")
-
-	scanner := NewRouterScanner(program)
-	routes := scanner.Router(router).Routes(program)
+	scanner := NewRouterScanner(pkg)
+	routes := scanner.Router(router).Routes(pkg)
 
 	for _, r := range routes {
 		fmt.Println(r.String())

@@ -13,33 +13,30 @@ import (
 
 	"github.com/go-courier/httptransport/httpx"
 	"github.com/go-courier/httptransport/transformers"
-	"github.com/go-courier/loaderx"
+	"github.com/go-courier/packagesx"
 	"github.com/go-courier/oas"
 	"github.com/go-courier/reflectx/typesutil"
 	"github.com/go-courier/statuserror"
 	"github.com/sirupsen/logrus"
-	"golang.org/x/tools/go/loader"
 )
 
-func NewOperatorScanner(program *loader.Program, pkgInfo *loader.PackageInfo) *OperatorScanner {
+func NewOperatorScanner(pkg *packagesx.Package) *OperatorScanner {
 	return &OperatorScanner{
-		DefinitionScanner: NewDefinitionScanner(program, pkgInfo),
-		program:           loaderx.NewProgram(program),
-		pkgInfo:           pkgInfo,
-		StatusErrScanner:  NewStatusErrScanner(program),
+		DefinitionScanner: NewDefinitionScanner(pkg),
+		pkg:               pkg,
+		StatusErrScanner:  NewStatusErrScanner(pkg),
 	}
 }
 
 type OperatorScanner struct {
 	*DefinitionScanner
 	*StatusErrScanner
-	program   *loaderx.Program
-	pkgInfo   *loader.PackageInfo
+	pkg       *packagesx.Package
 	operators map[*types.TypeName]*Operator
 }
 
 func (scanner *OperatorScanner) tagFrom(pkgPath string) string {
-	tag := strings.TrimPrefix(pkgPath, scanner.pkgInfo.Pkg.Path())
+	tag := strings.TrimPrefix(pkgPath, scanner.pkg.PkgPath)
 	return strings.TrimPrefix(tag, "/")
 }
 
@@ -81,7 +78,7 @@ func (scanner *OperatorScanner) Operator(typeName *types.TypeName) *Operator {
 }
 
 func (scanner *OperatorScanner) scanSummaryAndDescription(op *Operator, typeName *types.TypeName) {
-	comments := strings.Split(scanner.program.CommentsOf(scanner.program.IdentOf(typeName)), "\n")
+	comments := strings.Split(scanner.pkg.CommentsOf(scanner.pkg.IdentOf(typeName)), "\n")
 
 	if comments[0] != "" {
 		op.Summary = comments[0]
@@ -94,7 +91,7 @@ func (scanner *OperatorScanner) scanSummaryAndDescription(op *Operator, typeName
 func (scanner *OperatorScanner) scanReturns(op *Operator, typeName *types.TypeName) {
 	method, ok := typesutil.FromTType(typeName.Type()).MethodByName("Output")
 	if ok {
-		results, n := scanner.program.FuncResultsOf(method.(*typesutil.TMethod).Func)
+		results, n := scanner.pkg.FuncResultsOf(method.(*typesutil.TMethod).Func)
 		if n == 2 {
 			for _, v := range results[0] {
 				if v.Type != nil {
@@ -119,7 +116,7 @@ func (scanner *OperatorScanner) scanReturns(op *Operator, typeName *types.TypeNa
 func (scanner *OperatorScanner) firstValueOfFunc(named *types.Named, name string) (interface{}, bool) {
 	method, ok := typesutil.FromTType(named).MethodByName(name)
 	if ok {
-		results, n := scanner.program.FuncResultsOf(method.(*typesutil.TMethod).Func)
+		results, n := scanner.pkg.FuncResultsOf(method.(*typesutil.TMethod).Func)
 		if n == 1 {
 			for _, r := range results[0] {
 				if r.IsValue() {
@@ -152,20 +149,20 @@ func (scanner *OperatorScanner) getResponse(tpe types.Type, expr ast.Expr) (stat
 				case *ast.CallExpr:
 					if firstCallExpr {
 						firstCallExpr = false
-						v, _ := scanner.program.Eval(callExpr.Args[0])
+						v, _ := scanner.pkg.Eval(callExpr.Args[0])
 						tpe = v.Type
 					}
 					switch e := callExpr.Fun.(type) {
 					case *ast.SelectorExpr:
 						switch e.Sel.Name {
 						case "WithStatusCode":
-							v, _ := scanner.program.Eval(callExpr.Args[0])
+							v, _ := scanner.pkg.Eval(callExpr.Args[0])
 							if code, ok := valueOf(v.Value).(int); ok {
 								statusCode = code
 							}
 							return false
 						case "WithContentType":
-							v, _ := scanner.program.Eval(callExpr.Args[0])
+							v, _ := scanner.pkg.Eval(callExpr.Args[0])
 							if code, ok := valueOf(v.Value).(string); ok {
 								contentType = code
 							}
@@ -234,7 +231,7 @@ func (scanner *OperatorScanner) scanParameterOrRequestBody(op *Operator, typeStr
 				panic(err)
 			}
 		}
-		schema.Description = scanner.program.CommentsOf(scanner.program.IdentOf(field.(*typesutil.TStructField).Var))
+		schema.Description = scanner.pkg.CommentsOf(scanner.pkg.IdentOf(field.(*typesutil.TStructField).Var))
 
 		schema.AddExtension(XGoFieldName, field.Name())
 

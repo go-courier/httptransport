@@ -10,28 +10,22 @@ import (
 
 	"github.com/go-courier/codegen"
 	"github.com/go-courier/enumeration/generator"
-	"github.com/go-courier/loaderx"
+	"github.com/go-courier/packagesx"
 	"github.com/go-courier/oas"
 	"github.com/go-courier/reflectx/typesutil"
-	"golang.org/x/tools/go/loader"
 )
 
-func NewDefinitionScanner(program *loader.Program, pkgInfo *loader.PackageInfo) *DefinitionScanner {
-	p := loaderx.NewProgram(program)
-
+func NewDefinitionScanner(pkg *packagesx.Package) *DefinitionScanner {
 	return &DefinitionScanner{
-		enumScanner:       generator.NewEnumScanner(program),
-		rootPkgInfo:       pkgInfo,
-		program:           loaderx.NewProgram(program),
-		ioWriterInterface: loaderx.NewPackageInfo(p.Package("io")).TypeName("Writer").Type().Underlying().(*types.Interface),
+		enumScanner:       generator.NewEnumScanner(pkg),
+		pkg:               pkg,
+		ioWriterInterface: packagesx.NewPackage(pkg.Pkg("io")).TypeName("Writer").Type().Underlying().(*types.Interface),
 	}
 }
 
 type DefinitionScanner struct {
 	enumInterfaceType *types.Interface
-
-	rootPkgInfo       *loader.PackageInfo
-	program           *loaderx.Program
+	pkg               *packagesx.Package
 	enumScanner       *generator.EnumScanner
 	definitions       map[*types.TypeName]*oas.Schema
 	schemas           map[string]*oas.Schema
@@ -74,9 +68,9 @@ func (scanner *DefinitionScanner) Bind(openapi *oas.OpenAPI) {
 
 func (scanner *DefinitionScanner) isEnum(typeName *types.TypeName) bool {
 	if scanner.enumInterfaceType == nil {
-		pkgInfo := scanner.program.Package("github.com/go-courier/enumeration")
+		pkgInfo := scanner.pkg.Pkg("github.com/go-courier/enumeration")
 		if pkgInfo != nil {
-			p := loaderx.NewPackageInfo(pkgInfo)
+			p := packagesx.NewPackage(pkgInfo)
 			scanner.enumInterfaceType = p.TypeName("Enum").Type().Underlying().(*types.Interface)
 		}
 	}
@@ -95,7 +89,7 @@ func (scanner *DefinitionScanner) Def(typeName *types.TypeName) *oas.Schema {
 		typeName = typeName.Type().(*types.Named).Obj()
 	}
 
-	doc := scanner.program.CommentsOf(scanner.program.IdentOf(typeName.Type().(*types.Named).Obj()))
+	doc := scanner.pkg.CommentsOf(scanner.pkg.IdentOf(typeName.Type().(*types.Named).Obj()))
 
 	if doc, fmtName := parseStrfmt(doc); fmtName != "" {
 		s := oas.NewSchema(oas.TypeString, fmtName)
@@ -138,7 +132,7 @@ func (scanner *DefinitionScanner) Def(typeName *types.TypeName) *oas.Schema {
 }
 
 func (scanner *DefinitionScanner) isInternal(typeName *types.TypeName) bool {
-	return strings.HasPrefix(typeName.Pkg().Path(), scanner.rootPkgInfo.Pkg.Path())
+	return strings.HasPrefix(typeName.Pkg().Path(), scanner.pkg.PkgPath)
 }
 
 func (scanner *DefinitionScanner) typeUniqueName(typeName *types.TypeName, isExist func(name string) bool) (string, bool) {
@@ -330,7 +324,7 @@ func (scanner *DefinitionScanner) getSchemaByType(typ types.Type) *oas.Schema {
 				}
 			}
 
-			propSchema.Description = scanner.program.CommentsOf(scanner.program.IdentOf(field))
+			propSchema.Description = scanner.pkg.CommentsOf(scanner.pkg.IdentOf(field))
 			propSchema.AddExtension(XGoFieldName, field.Name())
 
 			tagKeys := map[string]string{

@@ -7,15 +7,14 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/go-courier/loaderx"
+	"github.com/go-courier/packagesx"
 	"github.com/go-courier/statuserror"
 	"github.com/go-courier/statuserror/generator"
-	"golang.org/x/tools/go/loader"
 )
 
-func NewStatusErrScanner(program *loader.Program) *StatusErrScanner {
+func NewStatusErrScanner(pkg *packagesx.Package) *StatusErrScanner {
 	statusErrorScanner := &StatusErrScanner{
-		program:          program,
+		pkg:              pkg,
 		statusErrorTypes: map[*types.Named][]*statuserror.StatusErr{},
 		errorsUsed:       map[*types.Func][]*statuserror.StatusErr{},
 	}
@@ -27,7 +26,7 @@ func NewStatusErrScanner(program *loader.Program) *StatusErrScanner {
 
 type StatusErrScanner struct {
 	StatusErrType    *types.Named
-	program          *loader.Program
+	pkg              *packagesx.Package
 	statusErrorTypes map[*types.Named][]*statuserror.StatusErr
 	errorsUsed       map[*types.Func][]*statuserror.StatusErr
 }
@@ -43,31 +42,30 @@ func (scanner *StatusErrScanner) StatusErrorsInFunc(typeFunc *types.Func) []*sta
 
 	scanner.errorsUsed[typeFunc] = []*statuserror.StatusErr{}
 
-	pkgInfo := scanner.program.Package(typeFunc.Pkg().Path())
-	p := loaderx.NewProgram(scanner.program)
+	pkg := packagesx.NewPackage(scanner.pkg.Pkg(typeFunc.Pkg().Path()))
 
-	funcDecl := p.FuncDeclOf(typeFunc)
+	funcDecl := pkg.FuncDeclOf(typeFunc)
 
 	if funcDecl != nil {
 		ast.Inspect(funcDecl, func(node ast.Node) bool {
 			switch node.(type) {
 			case *ast.CallExpr:
-				identList := loaderx.GetIdentChainOfCallFunc(node.(*ast.CallExpr).Fun)
+				identList := packagesx.GetIdentChainOfCallFunc(node.(*ast.CallExpr).Fun)
 				if len(identList) > 0 {
 					callIdent := identList[len(identList)-1]
-					obj := pkgInfo.ObjectOf(callIdent)
+					obj := pkg.TypesInfo.ObjectOf(callIdent)
 
 					if nextTypeFunc, ok := obj.(*types.Func); ok && nextTypeFunc != typeFunc && nextTypeFunc.Pkg() != nil {
 						scanner.appendStateErrs(typeFunc, scanner.StatusErrorsInFunc(nextTypeFunc)...)
 					}
 				}
 			case *ast.Ident:
-				scanner.mayAddStateErrorByObject(typeFunc, pkgInfo.ObjectOf(node.(*ast.Ident)))
+				scanner.mayAddStateErrorByObject(typeFunc, pkg.TypesInfo.ObjectOf(node.(*ast.Ident)))
 			}
 			return true
 		})
 
-		doc := loaderx.StringifyCommentGroup(funcDecl.Doc)
+		doc := packagesx.StringifyCommentGroup(funcDecl.Doc)
 		scanner.appendStateErrs(typeFunc, pickStatusErrorsFromDoc(doc)...)
 	}
 
@@ -113,22 +111,22 @@ func (scanner *StatusErrScanner) appendStateErrs(typeFunc *types.Func, statusErr
 }
 
 func (scanner *StatusErrScanner) init() {
-	pkg := loaderx.NewProgram(scanner.program).Package("github.com/go-courier/statuserror")
+	pkg := scanner.pkg.Pkg("github.com/go-courier/statuserror")
 	if pkg == nil {
 		return
 	}
 
-	scanner.StatusErrType = loaderx.NewPackageInfo(pkg).TypeName("StatusErr").Type().(*types.Named)
-	ttypeStatusError := loaderx.NewPackageInfo(pkg).TypeName("StatusError").Type().Underlying().(*types.Interface)
+	scanner.StatusErrType = packagesx.NewPackage(pkg).TypeName("StatusErr").Type().(*types.Named)
+	ttypeStatusError := packagesx.NewPackage(pkg).TypeName("StatusError").Type().Underlying().(*types.Interface)
 
 	isStatusError := func(typ *types.TypeName) bool {
 		return types.Implements(typ.Type(), ttypeStatusError)
 	}
 
-	s := generator.NewStatusErrorScanner(scanner.program)
+	s := generator.NewStatusErrorScanner(scanner.pkg)
 
-	for _, pkgInfo := range scanner.program.AllPackages {
-		for _, obj := range pkgInfo.Defs {
+	for _, pkgInfo := range scanner.pkg.AllPackages {
+		for _, obj := range pkgInfo.TypesInfo.Defs {
 			if typName, ok := obj.(*types.TypeName); ok {
 				if isStatusError(typName) {
 					scanner.statusErrorTypes[typName.Type().(*types.Named)] = s.StatusError(typName)

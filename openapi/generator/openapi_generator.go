@@ -14,39 +14,37 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/go-courier/oas"
-	"golang.org/x/tools/go/loader"
+	"github.com/go-courier/packagesx"
 )
 
-func NewOpenAPIGenerator(program *loader.Program, rootPkgInfo *loader.PackageInfo) *OpenAPIGenerator {
+func NewOpenAPIGenerator(pkg *packagesx.Package) *OpenAPIGenerator {
 	return &OpenAPIGenerator{
-		program:         program,
-		pkgInfo:         rootPkgInfo,
+		pkg:             pkg,
 		openapi:         oas.NewOpenAPI(),
-		routerScanner:   NewRouterScanner(program),
-		operatorScanner: NewOperatorScanner(program, rootPkgInfo),
+		routerScanner:   NewRouterScanner(pkg),
+		operatorScanner: NewOperatorScanner(pkg),
 	}
 }
 
 type OpenAPIGenerator struct {
-	pkgInfo         *loader.PackageInfo
-	program         *loader.Program
+	pkg             *packagesx.Package
 	openapi         *oas.OpenAPI
 	routerScanner   *RouterScanner
 	operatorScanner *OperatorScanner
 }
 
-func rootRouter(pkgInfo *loader.PackageInfo, callExpr *ast.CallExpr) *types.Var {
+func rootRouter(pkgInfo *packagesx.Package, callExpr *ast.CallExpr) *types.Var {
 	if len(callExpr.Args) > 0 {
 		if selectorExpr, ok := callExpr.Fun.(*ast.SelectorExpr); ok {
-			if typesFunc, ok := pkgInfo.ObjectOf(selectorExpr.Sel).(*types.Func); ok {
+			if typesFunc, ok := pkgInfo.TypesInfo.ObjectOf(selectorExpr.Sel).(*types.Func); ok {
 				if signature, ok := typesFunc.Type().(*types.Signature); ok {
 					if isRouterType(signature.Params().At(0).Type()) {
 						if selectorExpr.Sel.Name == "Run" || selectorExpr.Sel.Name == "Serve" {
 							switch node := callExpr.Args[0].(type) {
 							case *ast.SelectorExpr:
-								return pkgInfo.ObjectOf(node.Sel).(*types.Var)
+								return pkgInfo.TypesInfo.ObjectOf(node.Sel).(*types.Var)
 							case *ast.Ident:
-								return pkgInfo.ObjectOf(node).(*types.Var)
+								return pkgInfo.TypesInfo.ObjectOf(node).(*types.Var)
 							}
 						}
 					}
@@ -58,7 +56,7 @@ func rootRouter(pkgInfo *loader.PackageInfo, callExpr *ast.CallExpr) *types.Var 
 }
 
 func (g *OpenAPIGenerator) Scan() {
-	for ident, def := range g.pkgInfo.Defs {
+	for ident, def := range g.pkg.TypesInfo.Defs {
 		if typFunc, ok := def.(*types.Func); ok {
 			if typFunc.Name() != "main" {
 				continue
@@ -67,10 +65,10 @@ func (g *OpenAPIGenerator) Scan() {
 			ast.Inspect(ident.Obj.Decl.(*ast.FuncDecl), func(node ast.Node) bool {
 				switch n := node.(type) {
 				case *ast.CallExpr:
-					if rootRouterVar := rootRouter(g.pkgInfo, n); rootRouterVar != nil {
+					if rootRouterVar := rootRouter(g.pkg, n); rootRouterVar != nil {
 
 						router := g.routerScanner.Router(rootRouterVar)
-						routes := router.Routes(g.program)
+						routes := router.Routes(g.pkg)
 
 						operationIDs := map[string]*Route{}
 

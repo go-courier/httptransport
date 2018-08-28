@@ -8,15 +8,14 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/go-courier/loaderx"
+	"github.com/go-courier/packagesx"
 	"github.com/go-courier/reflectx/typesutil"
 	"github.com/julienschmidt/httprouter"
-	"golang.org/x/tools/go/loader"
 )
 
-func NewRouterScanner(program *loader.Program) *RouterScanner {
+func NewRouterScanner(pkg *packagesx.Package) *RouterScanner {
 	routerScanner := &RouterScanner{
-		program: program,
+		pkg:     pkg,
 		routers: map[*types.Var]*Router{},
 	}
 
@@ -26,8 +25,8 @@ func NewRouterScanner(program *loader.Program) *RouterScanner {
 }
 
 func (scanner *RouterScanner) init() {
-	for _, pkgInfo := range scanner.program.AllPackages {
-		for ident, obj := range pkgInfo.Defs {
+	for _, pkg := range scanner.pkg.AllPackages {
+		for ident, obj := range pkg.TypesInfo.Defs {
 			if typeVar, ok := obj.(*types.Var); ok {
 				if typeVar != nil && !strings.HasSuffix(typeVar.Pkg().Path(), pkgImportPathCourier) {
 					if isRouterType(typeVar.Type()) {
@@ -37,7 +36,7 @@ func (scanner *RouterScanner) init() {
 							switch node.(type) {
 							case *ast.CallExpr:
 								callExpr := node.(*ast.CallExpr)
-								router.AppendOperators(operatorTypeNamesFromArgs(pkgInfo, callExpr.Args...)...)
+								router.AppendOperators(operatorTypeNamesFromArgs(packagesx.NewPackage(pkg), callExpr.Args...)...)
 								return false
 							}
 							return true
@@ -50,8 +49,8 @@ func (scanner *RouterScanner) init() {
 		}
 	}
 
-	for _, pkgInfo := range scanner.program.AllPackages {
-		for selectExpr, selection := range pkgInfo.Selections {
+	for _, pkg := range scanner.pkg.AllPackages {
+		for selectExpr, selection := range pkg.TypesInfo.Selections {
 			if selection.Obj() != nil {
 				if typeFunc, ok := selection.Obj().(*types.Func); ok {
 					recv := typeFunc.Type().(*types.Signature).Recv()
@@ -59,8 +58,8 @@ func (scanner *RouterScanner) init() {
 						for typeVar, router := range scanner.routers {
 							switch selectExpr.Sel.Name {
 							case "Register":
-								if typeVar == pkgInfo.ObjectOf(loaderx.GetIdentChainOfCallFunc(selectExpr)[0]) {
-									file := loaderx.NewProgram(scanner.program).FileOf(selectExpr)
+								if typeVar == pkg.TypesInfo.ObjectOf(packagesx.GetIdentChainOfCallFunc(selectExpr)[0]) {
+									file := scanner.pkg.FileOf(selectExpr)
 									ast.Inspect(file, func(node ast.Node) bool {
 										switch node.(type) {
 										case *ast.CallExpr:
@@ -69,18 +68,18 @@ func (scanner *RouterScanner) init() {
 												routerIdent := callExpr.Args[0]
 												switch routerIdent.(type) {
 												case *ast.Ident:
-													argTypeVar := pkgInfo.ObjectOf(routerIdent.(*ast.Ident)).(*types.Var)
+													argTypeVar := pkg.TypesInfo.ObjectOf(routerIdent.(*ast.Ident)).(*types.Var)
 													if r, ok := scanner.routers[argTypeVar]; ok {
 														router.Register(r)
 													}
 												case *ast.SelectorExpr:
-													argTypeVar := pkgInfo.ObjectOf(routerIdent.(*ast.SelectorExpr).Sel).(*types.Var)
+													argTypeVar := pkg.TypesInfo.ObjectOf(routerIdent.(*ast.SelectorExpr).Sel).(*types.Var)
 													if r, ok := scanner.routers[argTypeVar]; ok {
 														router.Register(r)
 													}
 												case *ast.CallExpr:
 													callExprForRegister := routerIdent.(*ast.CallExpr)
-													router.With(operatorTypeNamesFromArgs(pkgInfo, callExprForRegister.Args...)...)
+													router.With(operatorTypeNamesFromArgs(packagesx.NewPackage(pkg), callExprForRegister.Args...)...)
 												}
 												return false
 											}
@@ -98,7 +97,7 @@ func (scanner *RouterScanner) init() {
 }
 
 type RouterScanner struct {
-	program *loader.Program
+	pkg     *packagesx.Package
 	routers map[*types.Var]*Router
 }
 
@@ -111,10 +110,10 @@ type OperatorTypeName struct {
 	*types.TypeName
 }
 
-func (operator *OperatorTypeName) SingleStringResultOf(program *loader.Program, name string) (string, bool) {
+func (operator *OperatorTypeName) SingleStringResultOf(pkg *packagesx.Package, name string) (string, bool) {
 	method, ok := typesutil.FromTType(operator.Type()).MethodByName(name)
 	if ok {
-		results, n := loaderx.NewProgram(program).FuncResultsOf(method.(*typesutil.TMethod).Func)
+		results, n := pkg.FuncResultsOf(method.(*typesutil.TMethod).Func)
 		if n == 1 {
 			for _, v := range results[0] {
 				if v.Value != nil {
@@ -127,17 +126,17 @@ func (operator *OperatorTypeName) SingleStringResultOf(program *loader.Program, 
 	return "", false
 }
 
-func operatorTypeNamesFromArgs(pkgInfo *loader.PackageInfo, args ...ast.Expr) operatorTypeNames {
+func operatorTypeNamesFromArgs(pkg *packagesx.Package, args ...ast.Expr) operatorTypeNames {
 	opTypeNames := operatorTypeNames{}
 	for _, arg := range args {
-		opTypeName := operatorTypeNameFromType(pkgInfo.TypeOf(arg))
+		opTypeName := operatorTypeNameFromType(pkg.TypesInfo.TypeOf(arg))
 		if opTypeName == nil {
 			continue
 		}
 		if callExpr, ok := arg.(*ast.CallExpr); ok {
 			if selectorExpr, ok := callExpr.Fun.(*ast.SelectorExpr); ok {
 				if selectorExpr.Sel.Name == "Group" {
-					if isGroupFunc(pkgInfo.ObjectOf(selectorExpr.Sel).Type()) {
+					if isGroupFunc(pkg.TypesInfo.ObjectOf(selectorExpr.Sel).Type()) {
 						switch v := callExpr.Args[0].(type) {
 						case *ast.BasicLit:
 							opTypeName.Path, _ = strconv.Unquote(v.Value)
@@ -206,7 +205,7 @@ func (router *Router) Register(r *Router) {
 	router.children[r] = true
 }
 
-func (router *Router) Route(program *loader.Program) *Route {
+func (router *Router) Route(pkg *packagesx.Package) *Route {
 	parent := router.parent
 	operators := router.operators
 
@@ -220,20 +219,20 @@ func (router *Router) Route(program *loader.Program) *Route {
 		Operators: operators,
 	}
 
-	route.SetMethod(program)
-	route.SetPath(program)
+	route.SetMethod(pkg)
+	route.SetPath(pkg)
 
 	return &route
 }
 
-func (router *Router) Routes(program *loader.Program) (routes []*Route) {
+func (router *Router) Routes(pkg *packagesx.Package) (routes []*Route) {
 	for child := range router.children {
-		route := child.Route(program)
+		route := child.Route(pkg)
 		if route.last {
 			routes = append(routes, route)
 		}
 		if child.children != nil {
-			routes = append(routes, child.Routes(program)...)
+			routes = append(routes, child.Routes(pkg)...)
 		}
 	}
 
@@ -255,7 +254,7 @@ func (route *Route) String() string {
 	return route.Method + " " + route.Path + " " + route.Operators.String()
 }
 
-func (route *Route) SetPath(program *loader.Program) {
+func (route *Route) SetPath(pkg *packagesx.Package) {
 	fullPath := "/"
 	for _, operator := range route.Operators {
 		if operator.Path != "" {
@@ -263,16 +262,16 @@ func (route *Route) SetPath(program *loader.Program) {
 			continue
 		}
 
-		if pathPart, ok := operator.SingleStringResultOf(program, "Path"); ok {
+		if pathPart, ok := operator.SingleStringResultOf(pkg, "Path"); ok {
 			fullPath += pathPart
 		}
 	}
 	route.Path = httprouter.CleanPath(fullPath)
 }
 
-func (route *Route) SetMethod(program *loader.Program) {
+func (route *Route) SetMethod(pkg *packagesx.Package) {
 	if len(route.Operators) > 0 {
 		operator := route.Operators[len(route.Operators)-1]
-		route.Method, _ = operator.SingleStringResultOf(program, "Method")
+		route.Method, _ = operator.SingleStringResultOf(pkg, "Method")
 	}
 }

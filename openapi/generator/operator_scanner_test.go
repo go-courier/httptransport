@@ -7,18 +7,16 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/go-courier/loaderx"
+	"github.com/go-courier/packagesx"
 	"github.com/go-courier/oas"
 	"github.com/stretchr/testify/require"
 )
 
 func TestOperatorScanner(t *testing.T) {
 	cwd, _ := os.Getwd()
-	program, pkgInfo, _ := loaderx.LoadWithTests(filepath.Join(cwd, "./__examples__/router_scanner/auth"))
+	pkg, _ := packagesx.Load(filepath.Join(cwd, "./__examples__/router_scanner/auth"))
 
-	info := loaderx.NewPackageInfo(pkgInfo)
-
-	scanner := NewOperatorScanner(program, pkgInfo)
+	scanner := NewOperatorScanner(pkg)
 
 	cases := map[string]string{
 		"RespWithDescribers": /* language=json*/ `{
@@ -186,7 +184,7 @@ func TestOperatorScanner(t *testing.T) {
 	for n, result := range cases {
 		t.Run(n, func(t *testing.T) {
 			operation := &oas.Operation{}
-			op := scanner.Operator(info.TypeName(n))
+			op := scanner.Operator(pkg.TypeName(n))
 			op.BindOperation("", operation, true)
 			data, _ := json.MarshalIndent(operation, "", "  ")
 			fmt.Println(string(data))

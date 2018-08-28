@@ -11,8 +11,8 @@ import (
 	"github.com/go-courier/enumeration"
 	eg "github.com/go-courier/enumeration/generator"
 	"github.com/go-courier/httptransport/openapi/generator"
-	"github.com/go-courier/loaderx"
 	"github.com/go-courier/oas"
+	"github.com/go-courier/packagesx"
 )
 
 func NewTypeGenerator(serviceName string, file *codegen.File) *TypeGenerator {
@@ -96,7 +96,7 @@ func (g *TypeGenerator) TypeIndirect(schema *oas.Schema) (codegen.SnippetType, b
 	}
 
 	if schema.Extensions[generator.XGoVendorType] != nil {
-		pkgImportPath, expose := loaderx.GetPkgImportPathAndExpose(schema.Extensions[generator.XGoVendorType].(string))
+		pkgImportPath, expose := packagesx.GetPkgImportPathAndExpose(schema.Extensions[generator.XGoVendorType].(string))
 		return codegen.Type(g.File.Use(pkgImportPath, expose)), true
 	}
 

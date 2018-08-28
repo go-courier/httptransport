@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/go-courier/loaderx"
+	"github.com/go-courier/packagesx"
 	"github.com/go-courier/oas"
 	"github.com/stretchr/testify/require"
 )
@@ -16,12 +16,10 @@ import (
 func TestDefinitionScanner(t *testing.T) {
 	cwd, _ := os.Getwd()
 
-	program, pkgInfo, err := loaderx.LoadWithTests(filepath.Join(cwd, "./__examples__/definition_scanner"))
+	pkg, err := packagesx.Load(filepath.Join(cwd, "./__examples__/definition_scanner"))
 	require.NoError(t, err)
 
-	info := loaderx.NewPackageInfo(pkgInfo)
-
-	scanner := NewDefinitionScanner(program, pkgInfo)
+	scanner := NewDefinitionScanner(pkg)
 
 	cases := [][2]string{
 		{
@@ -290,7 +288,7 @@ func TestDefinitionScanner(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c[0], func(t *testing.T) {
-			s := scanner.Def(info.TypeName(c[0]))
+			s := scanner.Def(pkg.TypeName(c[0]))
 			data, _ := json.MarshalIndent(s, "", "  ")
 			require.Equal(t, strings.TrimSpace(c[1]), string(data))
 		})
@@ -307,7 +305,7 @@ func TestDefinitionScanner(t *testing.T) {
 
 	t.Run("invalid", func(t *testing.T) {
 		err := tryCatch(func() {
-			scanner.Def(info.TypeName("InvalidComposed"))
+			scanner.Def(pkg.TypeName("InvalidComposed"))
 		})
 		require.Error(t, err)
 	})
