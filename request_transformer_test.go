@@ -10,11 +10,10 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/go-courier/httptransport/transformers"
 	"github.com/go-courier/reflectx"
 	"github.com/go-courier/statuserror"
 	"github.com/stretchr/testify/require"
-
-	"github.com/go-courier/httptransport/transformers"
 )
 
 var reContentTypeWithBoundary = regexp.MustCompile(`Content-Type: multipart/form-data; boundary=([A-Za-z0-9]+)`)
@@ -45,7 +44,6 @@ func TestRequestTransformer(t *testing.T) {
 		QSlice          []string `name:"slice" in:"query"`
 		QBytes          []byte   `name:"bytes,omitempty" in:"query"`
 		QBytesOmitEmpty []byte   `name:"bytesOmit,omitempty" in:"query"`
-		QBytesKeepEmpty []byte   `name:"bytesKeep" in:"query"`
 	}
 
 	type Cookies struct {
@@ -54,9 +52,9 @@ func TestRequestTransformer(t *testing.T) {
 	}
 
 	type Data struct {
-		A string
-		B string
-		C string
+		A string `json:",omitempty" xml:",omitempty"`
+		B string `json:",omitempty" xml:",omitempty"`
+		C string `json:",omitempty" xml:",omitempty"`
 	}
 
 	type FormDataMultipart struct {
@@ -78,14 +76,14 @@ func TestRequestTransformer(t *testing.T) {
 		{
 			"full parameters",
 			"/:id",
-			`GET /-?bytes=bytes&bytesKeep=&int=1&slice=1&slice=2&string=string HTTP/1.1
+			`GET /1?bytes=bytes&int=1&slice=1&slice=2&string=string HTTP/1.1
 Content-Type: application/json; charset=utf-8
 Cookie: a=xxx; slice=1; slice=2
 Hbool: true
 Hint: 1
 Hstring: string
 
-{"A":"","B":"","C":""}
+{}
 `,
 			&struct {
 				Headers
@@ -94,17 +92,17 @@ Hstring: string
 				Data `in:"body"`
 				ID   string `name:"id" in:"path"`
 			}{
+				ID: "1",
 				Headers: Headers{
 					HInt:    1,
 					HString: "string",
 					HBool:   true,
 				},
 				Queries: Queries{
-					QInt:            1,
-					QString:         "string",
-					QSlice:          []string{"1", "2"},
-					QBytes:          []byte("bytes"),
-					QBytesKeepEmpty: []byte{},
+					QInt:    1,
+					QString: "string",
+					QSlice:  []string{"1", "2"},
+					QBytes:  []byte("bytes"),
 				},
 				Cookies: Cookies{
 					CString: "xxx",
@@ -118,15 +116,14 @@ Hstring: string
 			`GET / HTTP/1.1
 Content-Type: application/x-www-form-urlencoded; param=value
 
-bytesKeep=&int=1&slice=1&slice=2&string=string`,
+int=1&slice=1&slice=2&string=string`,
 			&struct {
 				Queries `in:"body" mime:"urlencoded"`
 			}{
 				Queries: Queries{
-					QInt:            1,
-					QString:         "string",
-					QSlice:          []string{"1", "2"},
-					QBytesKeepEmpty: []byte{},
+					QInt:    1,
+					QString: "string",
+					QSlice:  []string{"1", "2"},
 				},
 			},
 		},
@@ -136,7 +133,7 @@ bytesKeep=&int=1&slice=1&slice=2&string=string`,
 			`GET / HTTP/1.1
 Content-Type: application/xml; charset=utf-8
 
-<Data><A>1</A><B></B><C></C></Data>`,
+<Data><A>1</A></Data>`,
 			&struct {
 				Data `in:"body" mime:"xml"`
 			}{
@@ -175,7 +172,7 @@ Content-Type: text/plain; charset=utf-8
 Content-Disposition: form-data; name="data"
 Content-Type: application/json; charset=utf-8
 
-{"A":"1","B":"","C":""}
+{"A":"1"}
 
 --5eaf397248958ac38281d1c034e1ad0d4a5f7d986d4c53ac32e8399cbcda
 Content-Disposition: form-data; name="file"; filename="file.text"

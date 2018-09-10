@@ -3,6 +3,7 @@ package transformers
 import (
 	"bytes"
 	"fmt"
+	"go/ast"
 	"io"
 	"mime"
 	"mime/multipart"
@@ -13,6 +14,7 @@ import (
 	"github.com/go-courier/httptransport/httpx"
 	"github.com/go-courier/reflectx"
 	"github.com/go-courier/reflectx/typesutil"
+	"github.com/go-courier/validator"
 	"github.com/go-courier/validator/errors"
 )
 
@@ -23,6 +25,7 @@ func init() {
 type MultipartTransformer struct {
 	fieldTransformers map[string]Transformer
 	fieldOpts         map[string]TransformerOption
+	validators        map[string]validator.Validator
 }
 
 /*
@@ -30,6 +33,74 @@ transformer for multipart/form-data
 */
 func (MultipartTransformer) Names() []string {
 	return []string{"multipart/form-data", "multipart", "form-data"}
+}
+
+func (MultipartTransformer) NamedByTag() string {
+	return "name"
+}
+
+func (transformer *MultipartTransformer) NewValidator(typ typesutil.Type, mgr validator.ValidatorMgr) (validator.Validator, error) {
+	transformer.validators = map[string]validator.Validator{}
+
+	typ = typesutil.Deref(typ)
+
+	errSet := errors.NewErrorSet("")
+
+	typesutil.EachField(typ, "name", func(field typesutil.StructField, fieldDisplayName string, omitempty bool) bool {
+		fieldName := field.Name()
+		fieldValidator, err := NewValidator(field, field.Tag().Get("validate"), omitempty, transformer.fieldTransformers[fieldName], mgr)
+		if err != nil {
+			errSet.AddErr(err, fieldName)
+			return true
+		}
+		transformer.validators[fieldName] = fieldValidator
+		return true
+	})
+
+	return transformer, errSet.Err()
+}
+
+func (transformer *MultipartTransformer) Validate(v interface{}) error {
+	rv, ok := v.(reflect.Value)
+	if !ok {
+		rv = reflect.ValueOf(v)
+	}
+	errSet := errors.NewErrorSet("")
+	transformer.validate(rv, errSet)
+	return errSet.Err()
+}
+
+func (transformer *MultipartTransformer) validate(rv reflect.Value, errSet *errors.ErrorSet) {
+	typ := rv.Type()
+
+	for i := 0; i < rv.NumField(); i++ {
+		field := typ.Field(i)
+		fieldValue := rv.Field(i)
+		fieldName, _, exists := typesutil.FieldDisplayName(field.Tag, "name", field.Name)
+
+		if !ast.IsExported(field.Name) || fieldName == "-" {
+			continue
+		}
+
+		fieldType := reflectx.Deref(field.Type)
+		isStructType := fieldType.Kind() == reflect.Struct
+
+		if field.Anonymous && isStructType && !exists {
+			if fieldValue.Kind() == reflect.Ptr && fieldValue.IsNil() {
+				fieldValue = reflectx.New(fieldType)
+			}
+			transformer.validate(fieldValue, errSet)
+			continue
+		}
+
+		if fieldValidator, ok := transformer.validators[field.Name]; ok {
+			if fieldValue.Kind() == reflect.Ptr && fieldValue.IsNil() {
+				fieldValue = reflectx.New(field.Type)
+			}
+			err := fieldValidator.Validate(fieldValue)
+			errSet.AddErr(err, fieldName)
+		}
+	}
 }
 
 func (transformer *MultipartTransformer) String() string {
@@ -64,15 +135,35 @@ func (MultipartTransformer) New(typ typesutil.Type, mgr TransformerMgr) (Transfo
 		fieldTransformer, err := mgr.NewTransformer(targetType, opt)
 		if err != nil {
 			errSet.AddErr(err, fieldName)
+			return true
 		}
 
 		transformer.fieldTransformers[fieldName] = fieldTransformer
 		transformer.fieldOpts[fieldName] = opt
-
 		return true
 	})
 
 	return transformer, errSet.Err()
+}
+
+func NewValidator(field typesutil.StructField, validateStr string, omitempty bool, transformer Transformer, mgr validator.ValidatorMgr) (validator.Validator, error) {
+	if validateStr == "" && typesutil.Deref(field.Type()).Kind() == reflect.Struct {
+		validateStr = "@struct" + "<" + transformer.NamedByTag() + ">"
+	}
+
+	if t, ok := transformer.(interface {
+		NewValidator(typ typesutil.Type, mgr validator.ValidatorMgr) (validator.Validator, error)
+	}); ok {
+		return t.NewValidator(field.Type(), mgr)
+	}
+	return mgr.Compile([]byte(validateStr), field.Type(), func(rule *validator.Rule) {
+		if omitempty {
+			rule.Optional = true
+		}
+		if defaultValue, ok := field.Tag().Lookup("default"); ok {
+			rule.DefaultValue = []byte(defaultValue)
+		}
+	})
 }
 
 func (transformer *MultipartTransformer) EncodeToWriter(w io.Writer, v interface{}) (string, error) {
@@ -188,25 +279,6 @@ func (transformer *MultipartTransformer) DecodeFromReader(r io.Reader, v interfa
 	form, err := reader.ReadForm(defaultMaxMemory)
 	if err != nil {
 		return err
-	}
-
-	// TODO removed this when go@1.11
-	// https://go-review.googlesource.com/c/go/+/96975
-	for key, files := range form.File {
-		for _, f := range files {
-			if f.Filename == "" {
-				file, err := f.Open()
-				if err != nil {
-					return err
-				}
-				buf := bytes.NewBuffer(nil)
-				if _, err := io.Copy(buf, file); err != nil {
-					return err
-				}
-				form.Value[key] = append(form.Value[key], buf.String())
-				delete(form.File, key)
-			}
-		}
 	}
 
 	errSet := errors.NewErrorSet("")

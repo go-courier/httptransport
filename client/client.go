@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/go-courier/courier"
+	"github.com/go-courier/httptransport/client/roundtrippers"
 	"github.com/go-courier/httptransport/httpx"
 	"github.com/go-courier/httptransport/transformers"
 	"github.com/go-courier/reflectx/typesutil"
@@ -18,7 +19,6 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/go-courier/httptransport"
-	"github.com/go-courier/httptransport/client/roundtrippers"
 )
 
 type HttpTransport func(rt http.RoundTripper) http.RoundTripper

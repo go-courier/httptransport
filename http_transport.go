@@ -11,12 +11,11 @@ import (
 	"time"
 
 	"github.com/go-courier/courier"
+	"github.com/go-courier/httptransport/handlers"
+	"github.com/go-courier/httptransport/transformers"
 	"github.com/go-courier/validator"
 	"github.com/julienschmidt/httprouter"
 	"github.com/sirupsen/logrus"
-
-	"github.com/go-courier/httptransport/handlers"
-	"github.com/go-courier/httptransport/transformers"
 )
 
 func MiddlewareChain(mw ...HttpMiddleware) HttpMiddleware {

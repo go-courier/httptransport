@@ -8,10 +8,10 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/go-courier/courier"
+	"github.com/go-courier/httptransport/__examples__/routes"
 	"github.com/stretchr/testify/require"
 
 	"github.com/go-courier/httptransport"
-	"github.com/go-courier/httptransport/__examples__/routes"
 )
 
 func ExampleGroup() {

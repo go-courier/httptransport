@@ -6,11 +6,11 @@ import (
 	"time"
 
 	"github.com/go-courier/courier"
+	"github.com/go-courier/httptransport/__examples__/routes"
+	"github.com/go-courier/httptransport/testify"
 	"github.com/stretchr/testify/require"
 
 	"github.com/go-courier/httptransport"
-	"github.com/go-courier/httptransport/__examples__/routes"
-	"github.com/go-courier/httptransport/testify"
 )
 
 var rtMgr = httptransport.NewRequestTransformerMgr(nil, nil)
@@ -203,7 +203,18 @@ X-Service: service-test@1.0.0
 			ID: "123456",
 		}
 
-		req, err := rtMgr.NewRequest((routes.GetByID{}).Method(), reqData.Path(), reqData)
+		req, err := rtMgr.NewRequest((routes.GetByID{}).Method(), reqData.Path(), struct {
+			routes.DataProvider
+			routes.UpdateByID
+		}{
+			DataProvider: reqData,
+			UpdateByID: routes.UpdateByID{
+				Data: routes.Data{
+					ID:    "11",
+					Label: "11",
+				},
+			},
+		})
 		require.NoError(t, err)
 
 		rw := testify.NewMockResponseWriter()

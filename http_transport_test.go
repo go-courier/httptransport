@@ -8,10 +8,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/go-courier/httptransport/__examples__/routes"
 	"github.com/stretchr/testify/require"
 
 	"github.com/go-courier/httptransport"
-	"github.com/go-courier/httptransport/__examples__/routes"
 )
 
 func TestHttpTransport(t *testing.T) {

@@ -13,15 +13,14 @@ import (
 	"sync"
 	"time"
 
+	"github.com/go-courier/httptransport/httpx"
+	"github.com/go-courier/httptransport/transformers"
 	"github.com/go-courier/reflectx"
 	"github.com/go-courier/reflectx/typesutil"
 	"github.com/go-courier/statuserror"
 	"github.com/go-courier/validator"
 	"github.com/go-courier/validator/errors"
 	"github.com/julienschmidt/httprouter"
-
-	"github.com/go-courier/httptransport/httpx"
-	"github.com/go-courier/httptransport/transformers"
 )
 
 func NewRequestTransformerMgr(
@@ -115,25 +114,12 @@ func (mgr *RequestTransformerMgr) newRequestTransformer(typ reflect.Type) (*Requ
 		}
 		parameter.Transformer = transformer
 
-		validateStr := tag.Get(validator.TagValidate)
-		if validateStr == "" && typesutil.Deref(field.Type()).Kind() == reflect.Struct {
-			validateStr = "@struct"
-		}
-
-		parameterValidator, err := mgr.Compile([]byte(validateStr), field.Type(), func(rule *validator.Rule) {
-			if omitempty {
-				rule.Optional = true
-			}
-			if defaultValue, ok := tag.Lookup("default"); ok {
-				rule.DefaultValue = []byte(defaultValue)
-			}
-		})
+		parameterValidator, err := transformers.NewValidator(field, tag.Get(validator.TagValidate), omitempty, transformer, mgr.ValidatorMgr)
 		if err != nil {
 			errSet.AddErr(err, field.Name())
 			return true
 		}
 		parameter.Validator = parameterValidator
-
 		rt.parameters[fieldName] = parameter
 
 		return true

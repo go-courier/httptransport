@@ -1,16 +1,16 @@
 package main
 
 import (
+	"fmt"
 	"go/ast"
-		"go/parser"
+	"go/parser"
 	"go/token"
 	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/go-courier/codegen"
 	"golang.org/x/tools/go/packages"
-	"fmt"
-	"path/filepath"
 )
 
 func main() {
@@ -75,8 +75,6 @@ func (`+method+`) Method() string {
 
 	testFile.WriteFile()
 }
-
-
 
 func getPkgDir(importPath string) string {
 	pkgs, err := packages.Load(&packages.Config{

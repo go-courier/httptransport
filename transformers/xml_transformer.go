@@ -25,6 +25,10 @@ func (t *XMLTransformer) String() string {
 	return t.Names()[0]
 }
 
+func (XMLTransformer) NamedByTag() string {
+	return "xml"
+}
+
 func (XMLTransformer) New(typesutil.Type, TransformerMgr) (Transformer, error) {
 	return &XMLTransformer{}, nil
 }

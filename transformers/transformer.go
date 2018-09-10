@@ -26,6 +26,9 @@ type Transformer interface {
 	// in this step will to check transformer is valid for type
 	New(typesutil.Type, TransformerMgr) (Transformer, error)
 
+	// named by tag
+	NamedByTag() string
+
 	// encode to writer
 	EncodeToWriter(w io.Writer, v interface{}) (mediaType string, err error)
 	// decode from reader

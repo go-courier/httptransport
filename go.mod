@@ -10,7 +10,7 @@ require (
 	github.com/go-courier/ptr v1.0.0
 	github.com/go-courier/reflectx v1.3.1
 	github.com/go-courier/statuserror v1.0.0
-	github.com/go-courier/validator v1.0.0
+	github.com/go-courier/validator v1.2.0
 	github.com/julienschmidt/httprouter v0.0.0-20180715161854-348b672cd90d
 	github.com/mattn/go-colorable v0.0.9 // indirect
 	github.com/mattn/go-isatty v0.0.3 // indirect

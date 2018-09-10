@@ -26,6 +26,10 @@ func (PlainTextTransformer) Names() []string {
 	return []string{"text/plain", "plain", "text", "txt"}
 }
 
+func (PlainTextTransformer) NamedByTag() string {
+	return ""
+}
+
 func (PlainTextTransformer) New(typesutil.Type, TransformerMgr) (Transformer, error) {
 	return &PlainTextTransformer{}, nil
 }

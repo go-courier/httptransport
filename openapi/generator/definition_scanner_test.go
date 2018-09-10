@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/go-courier/packagesx"
 	"github.com/go-courier/oas"
+	"github.com/go-courier/packagesx"
 	"github.com/stretchr/testify/require"
 )
 

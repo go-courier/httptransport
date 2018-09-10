@@ -43,6 +43,10 @@ func (FormTransformer) Names() []string {
 	return []string{"application/x-www-form-urlencoded", "form", "urlencoded", "url-encoded"}
 }
 
+func (FormTransformer) NamedByTag() string {
+	return "name"
+}
+
 func (transformer *FormTransformer) String() string {
 	return transformer.Names()[0]
 }

@@ -5,10 +5,10 @@ import (
 
 	"github.com/go-courier/courier"
 	"github.com/go-courier/httptransport/httpx"
-
-	"github.com/go-courier/httptransport"
 	"github.com/go-courier/httptransport/openapi/generator/__examples__/router_scanner/auth"
 	"github.com/go-courier/httptransport/openapi/generator/__examples__/router_scanner/group"
+
+	"github.com/go-courier/httptransport"
 )
 
 type Get struct {

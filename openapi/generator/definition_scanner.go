@@ -10,8 +10,8 @@ import (
 
 	"github.com/go-courier/codegen"
 	"github.com/go-courier/enumeration/generator"
-	"github.com/go-courier/packagesx"
 	"github.com/go-courier/oas"
+	"github.com/go-courier/packagesx"
 	"github.com/go-courier/reflectx/typesutil"
 )
 

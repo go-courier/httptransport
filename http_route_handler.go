@@ -8,11 +8,10 @@ import (
 	"reflect"
 
 	"github.com/go-courier/courier"
-	"github.com/go-courier/reflectx/typesutil"
-	"github.com/go-courier/statuserror"
-
 	"github.com/go-courier/httptransport/httpx"
 	"github.com/go-courier/httptransport/transformers"
+	"github.com/go-courier/reflectx/typesutil"
+	"github.com/go-courier/statuserror"
 )
 
 func NewHttpRouteHandler(serviceMeta *ServiceMeta, httpRoute *HttpRouteMeta, requestTransformerMgr *RequestTransformerMgr) *HttpRouteHandler {

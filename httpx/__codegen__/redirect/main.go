@@ -7,11 +7,11 @@ import (
 	"go/token"
 	"net/url"
 	"path"
+	"path/filepath"
 	"strconv"
 
 	"github.com/go-courier/codegen"
 	"golang.org/x/tools/go/packages"
-	"path/filepath"
 )
 
 func main() {

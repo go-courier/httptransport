@@ -25,6 +25,10 @@ func (JSONTransformer) Names() []string {
 	return []string{"application/json", "json"}
 }
 
+func (JSONTransformer) NamedByTag() string {
+	return "json"
+}
+
 func (transformer *JSONTransformer) String() string {
 	return transformer.Names()[0]
 }

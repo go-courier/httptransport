@@ -13,8 +13,8 @@ import (
 
 	"github.com/go-courier/httptransport/httpx"
 	"github.com/go-courier/httptransport/transformers"
-	"github.com/go-courier/packagesx"
 	"github.com/go-courier/oas"
+	"github.com/go-courier/packagesx"
 	"github.com/go-courier/reflectx/typesutil"
 	"github.com/go-courier/statuserror"
 	"github.com/sirupsen/logrus"

@@ -2,12 +2,12 @@ package generator
 
 import (
 	"net/http"
+	"sort"
 	"strings"
 
 	"github.com/go-courier/codegen"
 	"github.com/go-courier/httptransport/openapi/generator"
 	"github.com/go-courier/oas"
-	"sort"
 )
 
 func NewOperationGenerator(serviceName string, file *codegen.File) *OperationGenerator {
