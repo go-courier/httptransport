@@ -19,8 +19,7 @@ func init() {
 }
 
 type FormTransformer struct {
-	fieldTransformers map[string]Transformer
-	fieldOpts         map[string]TransformerOption
+	*FlattenParams
 }
 
 /*
@@ -53,41 +52,19 @@ func (transformer *FormTransformer) String() string {
 
 func (FormTransformer) New(typ typesutil.Type, mgr TransformerMgr) (Transformer, error) {
 	transformer := &FormTransformer{}
-	transformer.fieldTransformers = map[string]Transformer{}
-	transformer.fieldOpts = map[string]TransformerOption{}
 
 	typ = typesutil.Deref(typ)
 	if typ.Kind() != reflect.Struct {
 		return nil, fmt.Errorf("content transformer `%s` should be used for struct type", transformer)
 	}
 
-	errSet := errors.NewErrorSet("")
+	transformer.FlattenParams = &FlattenParams{}
 
-	typesutil.EachField(typ, "name", func(field typesutil.StructField, fieldDisplayName string, omitempty bool) bool {
-		opt := TransformerOptionFromStructField(field)
-		targetType := field.Type()
-		fieldName := field.Name()
+	if err := transformer.FlattenParams.CollectParams(typ, mgr); err != nil {
+		return nil, err
+	}
 
-		if !IsBytes(targetType) {
-			switch targetType.Kind() {
-			case reflect.Array, reflect.Slice:
-				opt.Explode = true
-				targetType = field.Type().Elem()
-			}
-		}
-
-		fieldTransformer, err := mgr.NewTransformer(targetType, opt)
-		if err != nil {
-			errSet.AddErr(err, field.Name)
-		}
-
-		transformer.fieldTransformers[fieldName] = fieldTransformer
-		transformer.fieldOpts[fieldName] = opt
-
-		return true
-	})
-
-	return transformer, errSet.Err()
+	return transformer, nil
 }
 
 func (transformer *FormTransformer) EncodeToWriter(w io.Writer, v interface{}) (string, error) {

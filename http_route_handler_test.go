@@ -146,6 +146,33 @@ X-Service: service-test@1.0.0
 `, string(rw.MustDumpResponse()))
 	})
 
+	t.Run("POST return bad request", func(t *testing.T) {
+		rootRouter := courier.NewRouter(httptransport.Group("/root"))
+		rootRouter.Register(courier.NewRouter(routes.Create{}))
+
+		httpRoute := httptransport.NewHttpRouteMeta(rootRouter.Routes()[0])
+		httpRouterHandler := httptransport.NewHttpRouteHandler(serivceMeta, httpRoute, rtMgr)
+
+		reqData := routes.Create{
+			Data: routes.Data{
+				ID:    "123456",
+			},
+		}
+
+		req, err := rtMgr.NewRequest((routes.Create{}).Method(), "/", reqData)
+		require.NoError(t, err)
+
+		rw := testify.NewMockResponseWriter()
+		httpRouterHandler.ServeHTTP(rw, req)
+
+		require.Equal(t, `HTTP/0.0 400 Bad Request
+Content-Type: application/json; charset=utf-8
+X-Service: service-test@1.0.0
+
+{"key":"BadRequest","code":400000000,"msg":"invalid parameters","desc":"","canBeTalkError":false,"id":"","sources":["service-test@1.0.0"],"errorFields":[{"field":"label","msg":"missing required field","in":"body"}]}
+`, string(rw.MustDumpResponse()))
+	})
+
 	t.Run("return nil", func(t *testing.T) {
 		rootRouter := courier.NewRouter(httptransport.Group("/root"))
 		rootRouter.Register(courier.NewRouter(routes.DataProvider{}, routes.RemoveByID{}))
