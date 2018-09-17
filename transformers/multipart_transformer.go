@@ -11,7 +11,6 @@ import (
 	"strconv"
 
 	"github.com/go-courier/httptransport/httpx"
-	"github.com/go-courier/reflectx"
 	"github.com/go-courier/reflectx/typesutil"
 	"github.com/go-courier/validator/errors"
 )
@@ -65,12 +64,17 @@ func (transformer *MultipartTransformer) EncodeToWriter(w io.Writer, v interface
 	multipartWriter := multipart.NewWriter(w)
 	errSet := errors.NewErrorSet("")
 
-	addPart := func(rv reflect.Value, fieldName string, fieldTransformer Transformer) error {
+	addPart := func(rv reflect.Value, fieldName string, fieldTransformer Transformer, omitempty bool) error {
 		buf := bytes.NewBuffer(nil)
 		contentType, err := fieldTransformer.EncodeToWriter(buf, rv)
 		if err != nil {
 			return err
 		}
+
+		if buf.Len() == 0 && omitempty {
+			return nil
+		}
+
 		h := make(textproto.MIMEHeader)
 		h.Set(httpx.HeaderContentType, contentType)
 		h.Set(httpx.HeaderContentDisposition, fmt.Sprintf(`form-data; name=%s`, strconv.Quote(fieldName)))
@@ -126,12 +130,12 @@ func (transformer *MultipartTransformer) EncodeToWriter(w io.Writer, v interface
 
 		if fieldOpt.Explode {
 			for i := 0; i < fieldValue.Len(); i++ {
-				if err := addPart(fieldValue.Index(i), fieldOpt.FieldName, fieldTransformer); err != nil {
+				if err := addPart(fieldValue.Index(i), fieldOpt.FieldName, fieldTransformer, fieldOpt.Omitempty); err != nil {
 					errSet.AddErr(err, fieldOpt.FieldName, i)
 				}
 			}
 		} else {
-			if err := addPart(fieldValue, fieldOpt.FieldName, fieldTransformer); err != nil {
+			if err := addPart(fieldValue, fieldOpt.FieldName, fieldTransformer, fieldOpt.Omitempty); err != nil {
 				errSet.AddErr(err, fieldOpt.FieldName)
 			}
 		}
@@ -180,9 +184,6 @@ func (transformer *MultipartTransformer) DecodeFromReader(r io.Reader, v interfa
 			}
 			return nil
 		}
-		if omitempty && reflectx.IsEmptyValue(rv) {
-			return nil
-		}
 		if len(form.Value[fieldName]) > idx {
 			fieldTransformer.DecodeFromReader(bytes.NewBufferString(form.Value[fieldName][idx]), rv)
 		}
@@ -191,6 +192,7 @@ func (transformer *MultipartTransformer) DecodeFromReader(r io.Reader, v interfa
 
 	NamedStructFieldValueRange(reflect.Indirect(rv), func(fieldValue reflect.Value, field *reflect.StructField) {
 		fieldOpt := transformer.fieldOpts[field.Name]
+
 		fieldTransformer := transformer.fieldTransformers[field.Name]
 
 		if fieldOpt.Explode {

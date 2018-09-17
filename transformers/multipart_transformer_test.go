@@ -21,7 +21,7 @@ func TestMultipartTransformer(t *testing.T) {
 Content-Disposition: form-data; name="PtrBool"
 Content-Type: text/plain; charset=utf-8
 
-
+true
 --482e04792f538c09f4dafe5a8c5d792c214b257e5126c4092bf5232cdcbf
 Content-Disposition: form-data; name="PtrInt"
 Content-Type: text/plain; charset=utf-8
@@ -122,20 +122,22 @@ text
 	}
 
 	type TestData struct {
-		PtrBool     *bool `name:",omitempty"`
-		PtrInt      *int
-		Bool        bool
-		Bytes       []byte `name:"bytes"`
-		FirstName   string `name:"first_name"`
-		StructSlice []Sub
-		StringSlice []string
-		StringArray [3]string
-		Struct      Sub                     `mime:"xml"`
-		Files       []*multipart.FileHeader `name:",omitempty"`
-		File        *multipart.FileHeader   `name:",omitempty"`
+		PtrBoolEmpty *bool `name:",omitempty"`
+		PtrBool      *bool `name:",omitempty"`
+		PtrInt       *int
+		Bool         bool
+		Bytes        []byte `name:"bytes"`
+		FirstName    string `name:"first_name,omitempty"`
+		StructSlice  []Sub
+		StringSlice  []string
+		StringArray  [3]string
+		Struct       Sub                     `mime:"xml"`
+		Files        []*multipart.FileHeader `name:",omitempty"`
+		File         *multipart.FileHeader   `name:",omitempty"`
 	}
 
 	data := TestData{}
+	data.PtrBool = ptr.Bool(true)
 	data.FirstName = "test"
 	data.Bool = true
 	data.Bytes = []byte("bytes")
