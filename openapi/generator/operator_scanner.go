@@ -89,26 +89,31 @@ func (scanner *OperatorScanner) scanSummaryAndDescription(op *Operator, typeName
 }
 
 func (scanner *OperatorScanner) scanReturns(op *Operator, typeName *types.TypeName) {
-	method, ok := typesutil.FromTType(typeName.Type()).MethodByName("Output")
-	if ok {
-		results, n := scanner.pkg.FuncResultsOf(method.(*typesutil.TMethod).Func)
-		if n == 2 {
-			for _, v := range results[0] {
-				if v.Type != nil {
-					if v.Type.String() != types.Typ[types.UntypedNil].String() {
-						if op.SuccessType != nil && op.SuccessType.String() != v.Type.String() {
-							logrus.Warnf(fmt.Sprintf("%s success result must be same struct, but got %v, already set %v", op.ID, v.Type, op.SuccessType))
+	for _, typ := range []types.Type{
+		typeName.Type(),
+		types.NewPointer(typeName.Type()),
+	} {
+		method, ok := typesutil.FromTType(typ).MethodByName("Output")
+		if ok {
+			results, n := scanner.pkg.FuncResultsOf(method.(*typesutil.TMethod).Func)
+			if n == 2 {
+				for _, v := range results[0] {
+					if v.Type != nil {
+						if v.Type.String() != types.Typ[types.UntypedNil].String() {
+							if op.SuccessType != nil && op.SuccessType.String() != v.Type.String() {
+								logrus.Warnf(fmt.Sprintf("%s success result must be same struct, but got %v, already set %v", op.ID, v.Type, op.SuccessType))
+							}
+							op.SuccessType = v.Type
+							op.SuccessStatus, op.SuccessResponse = scanner.getResponse(v.Type, v.Expr)
 						}
-						op.SuccessType = v.Type
-						op.SuccessStatus, op.SuccessResponse = scanner.getResponse(v.Type, v.Expr)
 					}
 				}
 			}
-		}
 
-		if scanner.StatusErrScanner.StatusErrType != nil {
-			op.StatusErrors = scanner.StatusErrScanner.StatusErrorsInFunc(method.(*typesutil.TMethod).Func)
-			op.StatusErrorSchema = scanner.DefinitionScanner.getSchemaByType(scanner.StatusErrScanner.StatusErrType)
+			if scanner.StatusErrScanner.StatusErrType != nil {
+				op.StatusErrors = scanner.StatusErrScanner.StatusErrorsInFunc(method.(*typesutil.TMethod).Func)
+				op.StatusErrorSchema = scanner.DefinitionScanner.getSchemaByType(scanner.StatusErrScanner.StatusErrType)
+			}
 		}
 	}
 }

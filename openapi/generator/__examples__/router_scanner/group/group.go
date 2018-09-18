@@ -10,7 +10,7 @@ import (
 )
 
 var GroupRouter = courier.NewRouter(httptransport.Group("/group"))
-var HeathRouter = courier.NewRouter(Health{})
+var HeathRouter = courier.NewRouter(&Health{})
 
 func init() {
 	GroupRouter.Register(HeathRouter)
@@ -20,10 +20,10 @@ type Health struct {
 	httpx.MethodHead
 }
 
-func (Health) Path() string {
+func (*Health) Path() string {
 	return "/health"
 }
 
-func (Health) Output(ctx context.Context) (result interface{}, err error) {
+func (*Health) Output(ctx context.Context) (result interface{}, err error) {
 	return
 }

@@ -111,18 +111,25 @@ type OperatorTypeName struct {
 }
 
 func (operator *OperatorTypeName) SingleStringResultOf(pkg *packagesx.Package, name string) (string, bool) {
-	method, ok := typesutil.FromTType(operator.Type()).MethodByName(name)
-	if ok {
-		results, n := pkg.FuncResultsOf(method.(*typesutil.TMethod).Func)
-		if n == 1 {
-			for _, v := range results[0] {
-				if v.Value != nil {
-					s, _ := strconv.Unquote(v.Value.String())
-					return s, true
+	for _, typ := range []types.Type{
+		operator.Type(),
+		types.NewPointer(operator.Type()),
+	} {
+		method, ok := typesutil.FromTType(typ).MethodByName(name)
+		if ok {
+			results, n := pkg.FuncResultsOf(method.(*typesutil.TMethod).Func)
+			if n == 1 {
+				for _, v := range results[0] {
+					if v.Value != nil {
+						s, _ := strconv.Unquote(v.Value.String())
+						return s, true
+					}
 				}
 			}
 		}
+
 	}
+
 	return "", false
 }
 

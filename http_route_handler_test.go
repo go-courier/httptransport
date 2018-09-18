@@ -155,7 +155,7 @@ X-Service: service-test@1.0.0
 
 		reqData := routes.Create{
 			Data: routes.Data{
-				ID:    "123456",
+				ID: "123456",
 			},
 		}
 
