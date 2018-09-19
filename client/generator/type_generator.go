@@ -250,7 +250,7 @@ func (g *TypeGenerator) FieldOf(name string, propSchema *oas.Schema, requiredFie
 	}
 
 	if propSchema.Default != nil {
-		appendTag("default", fmt.Sprintf("%v", propSchema.Extensions[generator.XTagValidate]))
+		appendTag("default", fmt.Sprintf("%v", propSchema.Default))
 	}
 
 	field = field.WithTags(tags)
