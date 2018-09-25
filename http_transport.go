@@ -56,6 +56,9 @@ type HttpTransport struct {
 	// Logger
 	Logger *logrus.Logger
 
+	CertFile string
+	KeyFile  string
+
 	httpRouter *httprouter.Router
 }
 
@@ -112,6 +115,10 @@ func (t *HttpTransport) Serve(router *courier.Router) error {
 	go t.graceful(srv, t.Logger, 10*time.Second)
 
 	courierPrintln("%s listen on %s", t.ServiceMeta, srv.Addr)
+
+	if t.CertFile != "" && t.KeyFile != "" {
+		return srv.ListenAndServeTLS(t.CertFile, t.KeyFile)
+	}
 
 	return srv.ListenAndServe()
 }
