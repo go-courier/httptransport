@@ -11,14 +11,13 @@ import (
 	"time"
 
 	"github.com/go-courier/courier"
+	"github.com/go-courier/httptransport"
 	"github.com/go-courier/httptransport/client/roundtrippers"
 	"github.com/go-courier/httptransport/httpx"
 	"github.com/go-courier/httptransport/transformers"
 	"github.com/go-courier/reflectx/typesutil"
 	"github.com/go-courier/statuserror"
 	"github.com/sirupsen/logrus"
-
-	"github.com/go-courier/httptransport"
 )
 
 type HttpTransport func(rt http.RoundTripper) http.RoundTripper
@@ -52,7 +51,8 @@ func (c *Client) Do(operationID string, req interface{}, metas ...courier.Metada
 	request, err := c.newRequest(operationID, req, metas...)
 	if err != nil {
 		return &Result{
-			Err: RequestFailed.StatusErr().WithDesc(err.Error()),
+			Err:      RequestFailed.StatusErr().WithDesc(err.Error()),
+			NewError: defErrorHandler,
 		}
 	}
 
@@ -60,12 +60,14 @@ func (c *Client) Do(operationID string, req interface{}, metas ...courier.Metada
 	resp, err := httpClient.Do(request)
 	if err != nil {
 		return &Result{
-			Err: RequestFailed.StatusErr().WithDesc(err.Error()),
+			Err:      RequestFailed.StatusErr().WithDesc(err.Error()),
+			NewError: defErrorHandler,
 		}
 	}
 	return &Result{
 		Response:       resp,
 		transformerMgr: c.RequestTransformerMgr.TransformerMgr,
+		NewError:       defErrorHandler,
 	}
 }
 
@@ -185,4 +187,8 @@ func GetShortConnClient(timeout time.Duration, httpTransports ...HttpTransport) 
 	}
 
 	return client
+}
+
+func defErrorHandler() error {
+	return &statuserror.StatusErr{}
 }
