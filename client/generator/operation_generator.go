@@ -2,6 +2,7 @@ package generator
 
 import (
 	"net/http"
+	"regexp"
 	"sort"
 	"strings"
 
@@ -29,6 +30,7 @@ func (g *OperationGenerator) Scan(openapi *oas.OpenAPI) {
 		*oas.Operation
 	}{}
 	operationIDs := make([]string, 0)
+	braceToColonRe := regexp.MustCompile(`(.*){(.*)}(.*)`)
 
 	for path := range openapi.Paths.Paths {
 		pathItems := openapi.Paths.Paths[path]
@@ -45,7 +47,7 @@ func (g *OperationGenerator) Scan(openapi *oas.OpenAPI) {
 				*oas.Operation
 			}{
 				Method:    strings.ToUpper(string(method)),
-				Path:      path,
+				Path:      braceToColonRe.ReplaceAllString(path, `$1:$2$3`),
 				Operation: op,
 			}
 			operationIDs = append(operationIDs, op.OperationId)
