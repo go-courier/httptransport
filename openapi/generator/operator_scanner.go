@@ -203,6 +203,10 @@ func (scanner *OperatorScanner) getResponse(tpe types.Type, expr ast.Expr) (stat
 		}
 	}
 
+	if contentType == "" {
+		contentType = httpx.MIME_JSON
+	}
+
 	response.AddContent(contentType, oas.NewMediaTypeWithSchema(scanner.DefinitionScanner.getSchemaByType(tpe)))
 
 	return
@@ -216,42 +220,23 @@ func (scanner *OperatorScanner) scanParameterOrRequestBody(op *Operator, typeStr
 			panic(fmt.Errorf("missing tag `in` for %s of %s", field.Name(), op.ID))
 		}
 
-		schema := scanner.DefinitionScanner.getSchemaByType(field.Type().(*typesutil.TType).Type)
+		name, flags := tagValueAndFlagsByTagString(field.Tag().Get("name"))
+
+		schema := scanner.DefinitionScanner.propSchemaByField(
+			field.Name(),
+			field.Type().(*typesutil.TType).Type,
+			field.Tag(),
+			name,
+			flags,
+			scanner.pkg.CommentsOf(scanner.pkg.IdentOf(field.(*typesutil.TStructField).Var)),
+		)
 
 		transformer, err := transformers.TransformerMgrDefault.NewTransformer(field.Type(), transformers.TransformerOption{
 			MIME: field.Tag().Get("mime"),
 		})
+
 		if err != nil {
 			panic(err)
-		}
-
-		defaultValue, hasDefault := field.Tag().Lookup("default")
-		if hasDefault {
-			schema.Default = defaultValue
-		}
-
-		validate, hasValidate := field.Tag().Lookup("validate")
-		if hasValidate {
-			if err := BindSchemaValidationByValidateBytes(schema, field.Type().(*typesutil.TType).Type, []byte(validate)); err != nil {
-				panic(err)
-			}
-		}
-		schema.Description = scanner.pkg.CommentsOf(scanner.pkg.IdentOf(field.(*typesutil.TStructField).Var))
-
-		schema.AddExtension(XGoFieldName, field.Name())
-
-		tagKeys := map[string]string{
-			"name":     XTagName,
-			"mime":     XTagMime,
-			"json":     XTagJSON,
-			"xml":      XTagXML,
-			"validate": XTagValidate,
-		}
-
-		for k, extKey := range tagKeys {
-			if v, ok := field.Tag().Lookup(k); ok {
-				schema.AddExtension(extKey, v)
-			}
 		}
 
 		switch location {

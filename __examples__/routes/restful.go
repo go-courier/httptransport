@@ -51,8 +51,9 @@ type Data struct {
 // get by id
 type GetByID struct {
 	httpx.MethodGet
-	Name  string   `name:"name,omitempty" in:"query"`
-	Label []string `name:"label,omitempty" in:"query"`
+	Protocol types.Protocol `name:"protocol,omitempty" in:"query"`
+	Name     string         `name:"name,omitempty" in:"query"`
+	Label    []string       `name:"label,omitempty" in:"query"`
 }
 
 func (req GetByID) Output(ctx context.Context) (interface{}, error) {

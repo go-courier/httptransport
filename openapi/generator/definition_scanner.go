@@ -294,60 +294,16 @@ func (scanner *DefinitionScanner) getSchemaByType(typ types.Type) *oas.Schema {
 				name = field.Name()
 			}
 
-			defaultValue := tags.Get("default")
-			validate, hasValidate := tags.Lookup("validate")
-
 			required := true
 			if hasOmitempty, ok := flags["omitempty"]; ok {
 				required = !hasOmitempty
 			}
 
-			propSchema := scanner.getSchemaByType(structFieldType)
-			refSchema := (*oas.Schema)(nil)
-
-			if propSchema.Refer != nil {
-				refSchema = propSchema
-				propSchema = &oas.Schema{}
-			}
-
-			if flags != nil && flags["string"] {
-				propSchema.Type = oas.TypeString
-			}
-
-			if defaultValue != "" {
-				propSchema.Default = defaultValue
-			}
-
-			if hasValidate {
-				if err := BindSchemaValidationByValidateBytes(propSchema, field.Type(), []byte(validate)); err != nil {
-					panic(err)
-				}
-			}
-
-			propSchema.Description = scanner.pkg.CommentsOf(scanner.pkg.IdentOf(field))
-			propSchema.AddExtension(XGoFieldName, field.Name())
-
-			tagKeys := map[string]string{
-				"name":     XTagName,
-				"mime":     XTagMime,
-				"json":     XTagJSON,
-				"xml":      XTagXML,
-				"validate": XTagValidate,
-			}
-
-			for k, extKey := range tagKeys {
-				if v, ok := tags.Lookup(k); ok {
-					propSchema.AddExtension(extKey, v)
-				}
-			}
-
-			if refSchema != nil {
-				propSchema = oas.AllOf(
-					refSchema,
-					propSchema,
-				)
-			}
-			structSchema.SetProperty(name, propSchema, required)
+			structSchema.SetProperty(
+				name,
+				scanner.propSchemaByField(field.Name(), structFieldType, tags, name, flags, scanner.pkg.CommentsOf(scanner.pkg.IdentOf(field))),
+				required,
+			)
 		}
 
 		if len(schemas) > 0 {
@@ -357,6 +313,66 @@ func (scanner *DefinitionScanner) getSchemaByType(typ types.Type) *oas.Schema {
 		return structSchema
 	}
 	return nil
+}
+
+func (scanner *DefinitionScanner) propSchemaByField(
+	fieldName string,
+	fieldType types.Type,
+	tags reflect.StructTag,
+	name string,
+	flags map[string]bool,
+	desc string,
+) *oas.Schema {
+	propSchema := scanner.getSchemaByType(fieldType)
+	refSchema := (*oas.Schema)(nil)
+
+	if propSchema.Refer != nil {
+		refSchema = propSchema
+		propSchema = &oas.Schema{}
+	}
+
+	defaultValue := tags.Get("default")
+	validate, hasValidate := tags.Lookup("validate")
+
+	if flags != nil && flags["string"] {
+		propSchema.Type = oas.TypeString
+	}
+
+	if defaultValue != "" {
+		propSchema.Default = defaultValue
+	}
+
+	if hasValidate {
+		if err := BindSchemaValidationByValidateBytes(propSchema, fieldType, []byte(validate)); err != nil {
+			panic(err)
+		}
+	}
+
+	propSchema.Description = desc
+	propSchema.AddExtension(XGoFieldName, fieldName)
+
+	tagKeys := map[string]string{
+		"name":     XTagName,
+		"mime":     XTagMime,
+		"json":     XTagJSON,
+		"xml":      XTagXML,
+		"validate": XTagValidate,
+	}
+
+	for k, extKey := range tagKeys {
+		if v, ok := tags.Lookup(k); ok {
+			propSchema.AddExtension(extKey, v)
+		}
+	}
+
+	if refSchema != nil {
+		return oas.AllOf(
+			refSchema,
+			propSchema,
+		)
+	}
+
+	return propSchema
 }
 
 type StructFieldUniqueChecker map[string]*types.Var

@@ -34,7 +34,7 @@
         "responses": {
           "200": {
             "content": {
-              "": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/GithubComGoCourierHttptransportHttpxAttachment"
                 }
@@ -84,7 +84,7 @@
         "responses": {
           "201": {
             "content": {
-              "": {
+              "application/json": {
                 "schema": {
                   "type": "null"
                 }
@@ -289,7 +289,14 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Data"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/Data"
+                  },
+                  {
+                    "x-go-field-name": "Data"
+                  }
+                ]
               }
             }
           }
@@ -297,7 +304,7 @@
         "responses": {
           "201": {
             "content": {
-              "": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Data"
                 }
@@ -396,12 +403,27 @@
               "x-go-field-name": "Name",
               "x-tag-name": "name,omitempty"
             }
+          },
+          {
+            "name": "protocol",
+            "in": "query",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Protocol"
+                },
+                {
+                  "x-go-field-name": "Protocol",
+                  "x-tag-name": "protocol,omitempty"
+                }
+              ]
+            }
           }
         ],
         "responses": {
           "200": {
             "content": {
-              "": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Data"
                 }
@@ -435,7 +457,14 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Data"
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/Data"
+                  },
+                  {
+                    "x-go-field-name": "Data"
+                  }
+                ]
               }
             }
           }

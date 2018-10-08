@@ -117,13 +117,14 @@ func (req *FormURLEncoded) Invoke(c github_com_go_courier_courier.Client, metas 
 }
 
 type GetByID struct {
-	ID    string   `in:"path" name:"id" validate:"@string[6,]"`
-	Label []string `in:"query" name:"label,omitempty"`
-	Name  string   `in:"query" name:"name,omitempty"`
+	ID       string   `in:"path" name:"id" validate:"@string[6,]"`
+	Label    []string `in:"query" name:"label,omitempty"`
+	Name     string   `in:"query" name:"name,omitempty"`
+	Protocol Protocol `in:"query" name:"protocol,omitempty"`
 }
 
 func (GetByID) Path() string {
-	return "/demo/restful/{id}"
+	return "/demo/restful/:id"
 }
 
 func (GetByID) Method() string {
@@ -186,16 +187,16 @@ type RemoveByID struct {
 }
 
 func (RemoveByID) Path() string {
-	return "/demo/restful/{id}"
+	return "/demo/restful/:id"
 }
 
 func (RemoveByID) Method() string {
 	return "DELETE"
 }
 
-// @StatusErr[Unauthorized][401999001][Unauthorized]!
 // @StatusErr[InternalServerError][500100001][InternalServerError]
 // @StatusErr[InternalServerError][500999001][InternalServerError]
+// @StatusErr[Unauthorized][401999001][Unauthorized]!
 func (req *RemoveByID) Invoke(c github_com_go_courier_courier.Client, metas ...github_com_go_courier_courier.Metadata) (github_com_go_courier_courier.Metadata, error) {
 	return c.Do("demo.RemoveByID", req, metas...).Into(nil)
 }
@@ -223,7 +224,7 @@ type UpdateByID struct {
 }
 
 func (UpdateByID) Path() string {
-	return "/demo/restful/{id}"
+	return "/demo/restful/:id"
 }
 
 func (UpdateByID) Method() string {

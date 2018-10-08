@@ -162,7 +162,14 @@ func TestOperatorScanner(t *testing.T) {
     "content": {
       "application/json": {
         "schema": {
-          "$ref": "#/components/schemas/Data"
+          "allOf": [
+            {
+              "$ref": "#/components/schemas/Data"
+            },
+            {
+              "x-go-field-name": "Data"
+            }
+          ]
         }
       }
     }

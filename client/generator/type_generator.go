@@ -208,6 +208,14 @@ func (g *TypeGenerator) FieldsFrom(schema *oas.Schema) (fields []*codegen.Snippe
 func (g *TypeGenerator) FieldOf(name string, propSchema *oas.Schema, requiredFields map[string]bool) *codegen.SnippetField {
 	isRequired := requiredFields[name]
 
+	if len(propSchema.AllOf) == 2 && propSchema.AllOf[1].Type == "" {
+		propSchema = &oas.Schema{
+			Reference:      propSchema.AllOf[0].Reference,
+			SchemaObject:   propSchema.AllOf[1].SchemaObject,
+			SpecExtensions: propSchema.AllOf[1].SpecExtensions,
+		}
+	}
+
 	fieldName := codegen.UpperCamelCase(name)
 	if propSchema.Extensions[generator.XGoFieldName] != nil {
 		fieldName = propSchema.Extensions[generator.XGoFieldName].(string)
