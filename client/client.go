@@ -52,7 +52,8 @@ func (c *Client) Do(operationID string, req interface{}, metas ...courier.Metada
 	request, err := c.newRequest(operationID, req, metas...)
 	if err != nil {
 		return &Result{
-			Err: RequestFailed.StatusErr().WithDesc(err.Error()),
+			Client: c,
+			Err:    RequestFailed.StatusErr().WithDesc(err.Error()),
 		}
 	}
 
@@ -60,10 +61,12 @@ func (c *Client) Do(operationID string, req interface{}, metas ...courier.Metada
 	resp, err := httpClient.Do(request)
 	if err != nil {
 		return &Result{
-			Err: RequestFailed.StatusErr().WithDesc(err.Error()),
+			Client: c,
+			Err:    RequestFailed.StatusErr().WithDesc(err.Error()),
 		}
 	}
 	return &Result{
+		Client:         c,
 		Response:       resp,
 		transformerMgr: c.RequestTransformerMgr.TransformerMgr,
 	}
@@ -107,13 +110,17 @@ func (c *Client) newRequest(operationID string, req interface{}, metas ...courie
 
 type Result struct {
 	transformerMgr transformers.TransformerMgr
-	NewError       func() error
+	*Client
 	*http.Response
 	Err error
 }
 
 func (r *Result) Into(body interface{}) (courier.Metadata, error) {
-	defer r.Body.Close()
+	defer func() {
+		if r.Response != nil && r.Body != nil {
+			r.Body.Close()
+		}
+	}()
 
 	if r.Err != nil {
 		return nil, r.Err

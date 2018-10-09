@@ -57,4 +57,17 @@ func TestClient(t *testing.T) {
 		t.Log(ipInfo)
 		t.Log(meta)
 	}
+
+	errClient := &Client{
+		Timeout: 100 * time.Second,
+	}
+	errClient.SetDefaults()
+
+	{
+		ipInfo := IpInfo{}
+
+		_, err := errClient.Do("json", &GetByJSON{}).Into(&ipInfo)
+		require.Error(t, err)
+	}
+
 }
