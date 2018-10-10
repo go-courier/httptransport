@@ -114,7 +114,9 @@ func (params *FlattenParams) CollectParams(typ typesutil.Type, mgr TransformerMg
 
 func NewValidator(field typesutil.StructField, validateStr string, omitempty bool, transformer Transformer, mgr validator.ValidatorMgr) (validator.Validator, error) {
 	if validateStr == "" && typesutil.Deref(field.Type()).Kind() == reflect.Struct {
-		validateStr = "@struct" + "<" + transformer.NamedByTag() + ">"
+		if _, ok := typesutil.EncodingTextMarshalerTypeReplacer(field.Type()); !ok {
+			validateStr = "@struct" + "<" + transformer.NamedByTag() + ">"
+		}
 	}
 
 	if t, ok := transformer.(interface {

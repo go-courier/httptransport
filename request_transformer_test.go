@@ -9,6 +9,7 @@ import (
 	"reflect"
 	"regexp"
 	"testing"
+	"time"
 
 	"github.com/go-courier/httptransport/transformers"
 	"github.com/go-courier/reflectx"
@@ -29,6 +30,31 @@ func UnifyRequestData(data []byte) []byte {
 	return data
 }
 
+// openapi:strfmt date-time
+type Datetime time.Time
+
+func (dt Datetime) IsZero() bool {
+	unix := time.Time(dt).Unix()
+	return unix == 0 || unix == (time.Time{}).Unix()
+}
+
+func (dt Datetime) MarshalText() ([]byte, error) {
+	str := time.Time(dt).Format(time.RFC3339)
+	return []byte(str), nil
+}
+
+func (dt *Datetime) UnmarshalText(data []byte) (error) {
+	if len(data) != 0 {
+		return nil
+	}
+	t, err := time.Parse(time.RFC3339, string(data))
+	if err != nil {
+		return err
+	}
+	*dt = Datetime(t)
+	return nil
+}
+
 func TestRequestTransformer(t *testing.T) {
 	mgr := NewRequestTransformerMgr(nil, nil)
 
@@ -39,11 +65,12 @@ func TestRequestTransformer(t *testing.T) {
 	}
 
 	type Queries struct {
-		QInt            int      `name:"int" in:"query"`
-		QString         string   `name:"string" in:"query"`
-		QSlice          []string `name:"slice" in:"query"`
-		QBytes          []byte   `name:"bytes,omitempty" in:"query"`
-		QBytesOmitEmpty []byte   `name:"bytesOmit,omitempty" in:"query"`
+		QInt            int       `name:"int" in:"query"`
+		QString         string    `name:"string" in:"query"`
+		QSlice          []string  `name:"slice" in:"query"`
+		QBytes          []byte    `name:"bytes,omitempty" in:"query"`
+		StartedAt       *Datetime `name:"startedAt,omitempty" in:"query"`
+		QBytesOmitEmpty []byte    `name:"bytesOmit,omitempty" in:"query"`
 	}
 
 	type Cookies struct {
