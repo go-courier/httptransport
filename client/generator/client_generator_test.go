@@ -1,6 +1,7 @@
 package generator
 
 import (
+	"github.com/stretchr/testify/require"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -18,4 +19,9 @@ func TestOpenAPIGenerator(t *testing.T) {
 
 	g.Load()
 	g.Output(dir)
+}
+
+func TestToColonPath(t *testing.T) {
+	require.Equal(t, "/user/:userID/tags/:tagID", toColonPath("/user/{userID}/tags/{tagID}"))
+	require.Equal(t, "/user/:userID", toColonPath("/user/{userID}"))
 }

@@ -23,6 +23,15 @@ type OperationGenerator struct {
 	File        *codegen.File
 }
 
+var reBraceToColon = regexp.MustCompile("/\\{([^/]+)\\}")
+
+func toColonPath(path string) string {
+	return reBraceToColon.ReplaceAllStringFunc(path, func(str string) string {
+		name := reBraceToColon.FindAllStringSubmatch(str, -1)[0][1]
+		return "/:" + name
+	})
+}
+
 func (g *OperationGenerator) Scan(openapi *oas.OpenAPI) {
 	ops := map[string]struct {
 		Method string
@@ -30,7 +39,6 @@ func (g *OperationGenerator) Scan(openapi *oas.OpenAPI) {
 		*oas.Operation
 	}{}
 	operationIDs := make([]string, 0)
-	braceToColonRe := regexp.MustCompile(`(.*){(.*)}(.*)`)
 
 	for path := range openapi.Paths.Paths {
 		pathItems := openapi.Paths.Paths[path]
@@ -47,7 +55,7 @@ func (g *OperationGenerator) Scan(openapi *oas.OpenAPI) {
 				*oas.Operation
 			}{
 				Method:    strings.ToUpper(string(method)),
-				Path:      braceToColonRe.ReplaceAllString(path, `$1:$2$3`),
+				Path:      toColonPath(path),
 				Operation: op,
 			}
 			operationIDs = append(operationIDs, op.OperationId)
