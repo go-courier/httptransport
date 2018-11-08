@@ -49,10 +49,19 @@ type HttpRouteHandler struct {
 	requestTransformers []*RequestTransformer
 }
 
+func ContextWithOperationID(ctx context.Context, operationID string) context.Context {
+	return context.WithValue(ctx, "courier.OperationID", operationID)
+}
+
+func OperationIDFromContext(ctx context.Context) string {
+	return ctx.Value("courier.OperationID").(string)
+}
+
 func (handler *HttpRouteHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	ctx = ContextWithHttpRequest(ctx, r)
 	ctx = ContextWithServiceMeta(ctx, *handler.serviceMeta)
+	ctx = ContextWithOperationID(ctx, handler.operatorFactories[len(handler.operatorFactories)-1].Type.Name())
 
 	rw.Header().Set("X-Service", handler.serviceMeta.String())
 
