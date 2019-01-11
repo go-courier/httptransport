@@ -91,6 +91,10 @@ func ResponseFrom(v interface{}) *Response {
 	return response
 }
 
+type Upgrader interface {
+	Upgrade(w http.ResponseWriter, r *http.Request) error
+}
+
 type Response struct {
 	// value of Body
 	Value       interface{}
@@ -102,6 +106,10 @@ type Response struct {
 }
 
 func (response *Response) WriteTo(rw http.ResponseWriter, r *http.Request, writeToBody func(w io.Writer, response *Response) error) error {
+	if upgrader, ok := response.Value.(Upgrader); ok {
+		return upgrader.Upgrade(rw, r)
+	}
+
 	if response.StatusCode == 0 {
 		if response.Value == nil {
 			response.StatusCode = http.StatusNoContent

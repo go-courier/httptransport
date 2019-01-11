@@ -276,7 +276,7 @@ X-Service: service-test@1.0.0
 Content-Type: application/json; charset=utf-8
 X-Service: service-test@1.0.0
 
-{"key":"BadRequest","code":400000000,"msg":"invalid parameters","desc":"","canBeTalkError":false,"id":"","sources":["service-test@1.0.0"],"errorFields":[{"field":"id","msg":"string length should be larger than 6, but got invalid value 10","in":"path"}]}
+{"key":"BadRequest","code":400000000,"msg":"invalid parameters","desc":"","canBeTalkError":false,"id":"","sources":["service-test@1.0.0"],"errorFields":[{"field":"id","msg":"string length should be larger than 6, but got invalid value 2","in":"path"}]}
 `, string(rw.MustDumpResponse()))
 	})
 }
