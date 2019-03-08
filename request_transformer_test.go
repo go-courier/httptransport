@@ -1,14 +1,17 @@
-package httptransport
+package httptransport_test
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
+	"github.com/go-courier/httptransport"
 	"github.com/go-courier/httptransport/__examples__/constants/types"
 	"mime/multipart"
 	"net/http"
 	"net/http/httputil"
 	"reflect"
 	"regexp"
+	"sort"
 	"testing"
 	"time"
 
@@ -57,7 +60,7 @@ func (dt *Datetime) UnmarshalText(data []byte) (error) {
 }
 
 func TestRequestTransformer(t *testing.T) {
-	mgr := NewRequestTransformerMgr(nil, nil)
+	mgr := httptransport.NewRequestTransformerMgr(nil, nil)
 
 	type Headers struct {
 		HInt    int    `in:"header"`
@@ -252,7 +255,7 @@ test2
 				require.Equal(t, string(UnifyRequestData([]byte(c.expect))), string(UnifyRequestData(data)))
 
 				rv := reflectx.New(reflectx.Deref(reflect.TypeOf(c.req)))
-				e := rtForSomeRequest.DecodeFromRequestInfo(NewRequestInfo(req), rv)
+				e := rtForSomeRequest.DecodeFromRequestInfo(httptransport.NewRequestInfo(req), rv)
 				require.NoError(t, e)
 				require.Equal(t, reflectx.Indirect(reflect.ValueOf(c.req)).Interface(), reflectx.Indirect(rv).Interface())
 			}
@@ -267,7 +270,7 @@ func TestRequestTransformer_DecodeFromRequestInfo_WithDefaults(t *testing.T) {
 		QString  string         `name:"string,omitempty" in:"query" default:"s"`
 	}
 
-	mgr := NewRequestTransformerMgr(nil, nil)
+	mgr := httptransport.NewRequestTransformerMgr(nil, nil)
 
 	rtForSomeRequest, err := mgr.NewRequestTransformer(reflect.TypeOf(&Req{}))
 	require.NoError(t, err)
@@ -278,100 +281,182 @@ func TestRequestTransformer_DecodeFromRequestInfo_WithDefaults(t *testing.T) {
 	req, err := rtForSomeRequest.NewRequest(http.MethodGet, "/", &Req{})
 	require.NoError(t, err)
 
-
 	r := &Req{}
 
-	err = rtForSomeRequest.DecodeFromRequestInfo(NewRequestInfo(req), r)
+	err = rtForSomeRequest.DecodeFromRequestInfo(httptransport.NewRequestInfo(req), r)
 	require.NoError(t, err)
 
 	require.Equal(t, r, &Req{
 		Protocol: types.PROTOCOL__HTTP,
-		QInt: 1,
-		QString: "s",
+		QInt:     1,
+		QString:  "s",
 	})
 }
+
+func TestRequestTransformer_DecodeFromRequestInfo_WithEnumValidate(t *testing.T) {
+	type Req struct {
+		Protocol types.Protocol `name:"protocol,omitempty" validate:"@string{HTTP}" in:"query" default:"HTTP"`
+	}
+
+	mgr := httptransport.NewRequestTransformerMgr(nil, nil)
+
+	rtForSomeRequest, err := mgr.NewRequestTransformer(reflect.TypeOf(&Req{}))
+	require.NoError(t, err)
+	if err != nil {
+		return
+	}
+
+	req, err := rtForSomeRequest.NewRequest(http.MethodGet, "/", &Req{
+		Protocol: types.PROTOCOL__HTTP,
+	})
+	require.NoError(t, err)
+
+	r := &Req{}
+
+	err = rtForSomeRequest.DecodeFromRequestInfo(httptransport.NewRequestInfo(req), r)
+	require.NoError(t, err)
+
+	require.Equal(t, r, &Req{
+		Protocol: types.PROTOCOL__HTTP,
+	})
+}
+
+func TestRequestTransformer_DecodeFromRequestInfo_Failed(t *testing.T) {
+	mgr := httptransport.NewRequestTransformerMgr(nil, nil)
+
+	type NestedForFailed struct {
+		A string `json:"a" validate:"@string[1,]"`
+		B string `name:"b" default:"1" validate:"@string[1,]"`
+		C string `json:"c" validate:"@string[2,]?"`
+	}
+
+	type DataForFailed struct {
+		A      string `validate:"@string[1,]"`
+		B      string `default:"1" validate:"@string[1,]"`
+		C      string `json:"c" validate:"@string[2,]?"`
+		NestedForFailed NestedForFailed
+	}
+
+	type ReqForFailed struct {
+		ID            string   `in:"path" name:"id" validate:"@string[2,]"`
+		QString       string   `in:"query" name:"string,omitempty" default:"11" validate:"@string[2,]"`
+		QSlice        []string `in:"query" name:"slice,omitempty" validate:"@slice<@string[2,]>[2,]"`
+		DataForFailed `in:"body"`
+	}
+
+	rtForSomeRequest, err := mgr.NewRequestTransformer(reflect.TypeOf(&ReqForFailed{}))
+	if err != nil {
+		return
+	}
+
+	req, err := rtForSomeRequest.NewRequest(http.MethodGet, "/:id", &ReqForFailed{
+		ID:      "1",
+		QString: "!",
+		QSlice:  []string{"11", "1"},
+		DataForFailed: DataForFailed{
+			C: "1",
+		},
+	})
+	if err != nil {
+		return
+	}
+
+	e := rtForSomeRequest.DecodeFromRequestInfo(httptransport.NewRequestInfo(req), &ReqForFailed{})
+	if e == nil {
+		return
+	}
+
+	errFields := e.(*statuserror.StatusErr).ErrorFields
+
+	sort.Slice(errFields, func(i, j int) bool {
+		return errFields[i].Field < errFields[j].Field
+	})
+
+	data, _ := json.MarshalIndent(errFields, "", "  ")
+
+	require.Equal(t, `[
+  {
+    "field": "A",
+    "msg": "missing required field",
+    "in": "body"
+  },
+  {
+    "field": "B",
+    "msg": "missing required field",
+    "in": "body"
+  },
+  {
+    "field": "NestedForFailed.B",
+    "msg": "missing required field",
+    "in": "body"
+  },
+  {
+    "field": "NestedForFailed.a",
+    "msg": "missing required field",
+    "in": "body"
+  },
+  {
+    "field": "c",
+    "msg": "string length should be larger than 2, but got invalid value 1",
+    "in": "body"
+  },
+  {
+    "field": "id",
+    "msg": "string length should be larger than 2, but got invalid value 1",
+    "in": "path"
+  },
+  {
+    "field": "slice[1]",
+    "msg": "string length should be larger than 2, but got invalid value 1",
+    "in": "query"
+  },
+  {
+    "field": "string",
+    "msg": "string length should be larger than 2, but got invalid value 1",
+    "in": "query"
+  }
+]`, string(data))
+}
+
 
 type ReqWithPostValidate struct {
 	StartedAt string `in:"query"`
 }
 
-func (ReqWithPostValidate) PostValidate(badRequest *BadRequest) {
+func (ReqWithPostValidate) PostValidate(badRequest *httptransport.BadRequest) {
 	badRequest.AddErr(fmt.Errorf("ops"), "query", "StartedAt")
 }
 
-func TestRequestTransformer_DecodeFromRequestInfo_Failed(t *testing.T) {
-	type Nested struct {
-		A string `name:"a" validate:"@string[1,]"`
-		B string `name:"b" default:"1" validate:"@string[1,]"`
-		C string `name:"c" validate:"@string[2,]?"`
+
+func ExampleRequestTransformer_DecodeFromRequestInfo_FailedOfPost() {
+	mgr := httptransport.NewRequestTransformerMgr(nil, nil)
+
+	rtForSomeRequest, err := mgr.NewRequestTransformer(reflect.TypeOf(&ReqWithPostValidate{}))
+	if err != nil {
+		return
 	}
 
-	type Data struct {
-		A      string `validate:"@string[1,]"`
-		B      string `default:"1" validate:"@string[1,]"`
-		C      string `validate:"@string[2,]?"`
-		Nested Nested
+	req, err := rtForSomeRequest.NewRequest(http.MethodPost, "/:id", &ReqWithPostValidate{
+	})
+	if err != nil {
+		return
 	}
 
-	cases := []struct {
-		name string
-		path string
-		req  interface{}
-	}{
-		{
-			"validate failed",
-			"/:id",
-			struct {
-				ID      string   `in:"path" name:"id" validate:"@string[2,]"`
-				QString string   `in:"query" name:"string,omitempty" default:"11" validate:"@string[2,]"`
-				QSlice  []string `in:"query" name:"slice,omitempty" validate:"@slice<@string[2,]>[2,]"`
-				Data    `in:"body"`
-			}{
-				ID:      "1",
-				QString: "!",
-				QSlice:  []string{"11", "1"},
-				Data: Data{
-					C: "1",
-				},
-			},
-		},
-		{
-			"post validate",
-			"/:id",
-			ReqWithPostValidate{},
-		},
+	e := rtForSomeRequest.DecodeFromRequestInfo(httptransport.NewRequestInfo(req), &ReqWithPostValidate{})
+	if e == nil {
+		return
 	}
 
-	mgr := NewRequestTransformerMgr(nil, nil)
+	errFields := e.(*statuserror.StatusErr).ErrorFields
 
-	for _, c := range cases {
-		t.Run(c.name, func(t *testing.T) {
-			rtForSomeRequest, err := mgr.NewRequestTransformer(reflect.TypeOf(c.req))
-			require.NoError(t, err)
-			if err != nil {
-				return
-			}
+	sort.Slice(errFields, func(i, j int) bool {
+		return errFields[i].Field < errFields[j].Field
+	})
 
-			{
-				_, err := rtForSomeRequest.NewRequest(http.MethodGet, c.path, struct{}{})
-				require.Error(t, err)
-			}
-
-			req, err := rtForSomeRequest.NewRequest(http.MethodGet, c.path, c.req)
-			require.NoError(t, err)
-
-			{
-				err := rtForSomeRequest.DecodeFromRequestInfo(NewRequestInfo(req), struct{}{})
-				require.Error(t, err)
-			}
-
-			rv := reflectx.New(reflectx.Deref(reflect.TypeOf(c.req)))
-			e := rtForSomeRequest.DecodeFromRequestInfo(NewRequestInfo(req), rv)
-			require.Error(t, e)
-
-			for _, ef := range e.(*statuserror.StatusErr).ErrorFields {
-				fmt.Println(ef)
-			}
-		})
+	for _, ef := range errFields {
+		fmt.Println(ef)
 	}
+	// Output:
+	// StartedAt in query - missing required field
+	// StartedAt in query - ops
 }
