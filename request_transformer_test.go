@@ -3,6 +3,7 @@ package httptransport
 import (
 	"bytes"
 	"fmt"
+	"github.com/go-courier/httptransport/__examples__/constants/types"
 	"mime/multipart"
 	"net/http"
 	"net/http/httputil"
@@ -257,6 +258,37 @@ test2
 			}
 		})
 	}
+}
+
+func TestRequestTransformer_DecodeFromRequestInfo_WithDefaults(t *testing.T) {
+	type Req struct {
+		Protocol types.Protocol `name:"protocol,omitempty" in:"query" default:"HTTP"`
+		QInt     int            `name:"int,omitempty" in:"query" default:"1"`
+		QString  string         `name:"string,omitempty" in:"query" default:"s"`
+	}
+
+	mgr := NewRequestTransformerMgr(nil, nil)
+
+	rtForSomeRequest, err := mgr.NewRequestTransformer(reflect.TypeOf(&Req{}))
+	require.NoError(t, err)
+	if err != nil {
+		return
+	}
+
+	req, err := rtForSomeRequest.NewRequest(http.MethodGet, "/", &Req{})
+	require.NoError(t, err)
+
+
+	r := &Req{}
+
+	err = rtForSomeRequest.DecodeFromRequestInfo(NewRequestInfo(req), r)
+	require.NoError(t, err)
+
+	require.Equal(t, r, &Req{
+		Protocol: types.PROTOCOL__HTTP,
+		QInt: 1,
+		QString: "s",
+	})
 }
 
 type ReqWithPostValidate struct {

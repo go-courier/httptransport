@@ -124,6 +124,7 @@ func NewValidator(field typesutil.StructField, validateStr string, omitempty boo
 	}); ok {
 		return t.NewValidator(field.Type(), mgr)
 	}
+
 	return mgr.Compile([]byte(validateStr), field.Type(), func(rule *validator.Rule) {
 		if omitempty {
 			rule.Optional = true

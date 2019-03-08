@@ -119,6 +119,7 @@ func (mgr *RequestTransformerMgr) newRequestTransformer(typ reflect.Type) (*Requ
 			errSet.AddErr(err, field.Name())
 			return true
 		}
+
 		parameter.Validator = parameterValidator
 		rt.parameters[fieldName] = parameter
 
@@ -357,6 +358,7 @@ func (t *RequestTransformer) DecodeFromRequestInfo(info *RequestInfo, v interfac
 				badRequestError.AddErr(err, param.In, param.Name)
 			}
 		}
+
 	}, "in")
 
 	if postValidator, ok := rv.Interface().(PostValidator); ok {
