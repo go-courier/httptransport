@@ -195,7 +195,7 @@ func (g *TypeGenerator) FieldsFrom(schema *oas.Schema) (fields []*codegen.Snippe
 
 	requiredFieldSet := map[string]bool{}
 
-	for _, name := range schema.Required {
+	for _, name := range finalSchema.Required {
 		requiredFieldSet[name] = true
 	}
 
