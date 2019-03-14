@@ -358,7 +358,7 @@ func TestRequestTransformer_DecodeFromRequestInfo_Failed(t *testing.T) {
 	mgr := httptransport.NewRequestTransformerMgr(nil, nil)
 
 	type NestedForFailed struct {
-		A string `json:"a" validate:"@string[1,]"`
+		A string `json:"a" validate:"@string[1,]" errMsg:"A wrong"`
 		B string `name:"b" default:"1" validate:"@string[1,]"`
 		C string `json:"c" validate:"@string[2,]?"`
 	}
@@ -425,7 +425,7 @@ func TestRequestTransformer_DecodeFromRequestInfo_Failed(t *testing.T) {
   },
   {
     "field": "NestedForFailed.a",
-    "msg": "missing required field",
+    "msg": "A wrong",
     "in": "body"
   },
   {

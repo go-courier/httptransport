@@ -3,7 +3,6 @@ package httptransport
 import (
 	"bytes"
 	"context"
-	stderrors "errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -114,7 +113,7 @@ func (mgr *RequestTransformerMgr) newRequestTransformer(ctx context.Context, typ
 		}
 		parameter.Transformer = transformer
 
-		parameterValidator, err := transformers.NewValidator(validator.ContextWithValidatorMgr(context.Background(), mgr.ValidatorMgr) ,field, tag.Get(validator.TagValidate), omitempty, transformer)
+		parameterValidator, err := transformers.NewValidator(validator.ContextWithValidatorMgr(context.Background(), mgr.ValidatorMgr), field, tag.Get(validator.TagValidate), omitempty, transformer)
 		if err != nil {
 			errSet.AddErr(err, field.Name())
 			return true
@@ -352,9 +351,6 @@ func (t *RequestTransformer) DecodeFromRequestInfo(info *RequestInfo, v interfac
 
 		if param.Validator != nil {
 			if err := param.Validator.Validate(fieldValue); err != nil {
-				if errMsg, exists := field.Tag.Lookup("errMsg"); exists {
-					err = stderrors.New(errMsg)
-				}
 				badRequestError.AddErr(err, param.In, param.Name)
 			}
 		}
