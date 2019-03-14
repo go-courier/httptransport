@@ -1,6 +1,7 @@
 package transformers
 
 import (
+	"context"
 	"encoding/xml"
 	"io"
 	"mime"
@@ -29,7 +30,7 @@ func (XMLTransformer) NamedByTag() string {
 	return "xml"
 }
 
-func (XMLTransformer) New(typesutil.Type, TransformerMgr) (Transformer, error) {
+func (XMLTransformer) New(context.Context, typesutil.Type) (Transformer, error) {
 	return &XMLTransformer{}, nil
 }
 

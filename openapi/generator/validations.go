@@ -12,7 +12,7 @@ import (
 func BindSchemaValidationByValidateBytes(s *oas.Schema, typ types.Type, validateBytes []byte) error {
 	ttype := typesutil.FromTType(typ)
 
-	fieldValidator, err := validator.ValidatorMgrDefault.Compile(validateBytes, ttype, func(rule *validator.Rule) {
+	fieldValidator, err := validator.ValidatorMgrDefault.Compile(nil, validateBytes, ttype, func(rule *validator.Rule) {
 		rule.DefaultValue = nil
 	})
 	if err != nil {

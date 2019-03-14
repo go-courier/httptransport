@@ -231,7 +231,7 @@ func (scanner *OperatorScanner) scanParameterOrRequestBody(op *Operator, typeStr
 			scanner.pkg.CommentsOf(scanner.pkg.IdentOf(field.(*typesutil.TStructField).Var)),
 		)
 
-		transformer, err := transformers.TransformerMgrDefault.NewTransformer(field.Type(), transformers.TransformerOption{
+		transformer, err := transformers.TransformerMgrDefault.NewTransformer(nil, field.Type(), transformers.TransformerOption{
 			MIME: field.Tag().Get("mime"),
 		})
 

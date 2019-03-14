@@ -2,6 +2,7 @@ package transformers
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -50,7 +51,7 @@ func (transformer *FormTransformer) String() string {
 	return transformer.Names()[0]
 }
 
-func (FormTransformer) New(typ typesutil.Type, mgr TransformerMgr) (Transformer, error) {
+func (FormTransformer) New(ctx context.Context, typ typesutil.Type) (Transformer, error) {
 	transformer := &FormTransformer{}
 
 	typ = typesutil.Deref(typ)
@@ -60,7 +61,7 @@ func (FormTransformer) New(typ typesutil.Type, mgr TransformerMgr) (Transformer,
 
 	transformer.FlattenParams = &FlattenParams{}
 
-	if err := transformer.FlattenParams.CollectParams(typ, mgr); err != nil {
+	if err := transformer.FlattenParams.CollectParams(ctx, typ); err != nil {
 		return nil, err
 	}
 

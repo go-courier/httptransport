@@ -148,7 +148,7 @@ func (r *Result) Into(body interface{}) (courier.Metadata, error) {
 		}
 	} else {
 		rv := reflect.ValueOf(body)
-		transformer, err := r.transformerMgr.NewTransformer(typesutil.FromRType(rv.Type()), transformers.TransformerOption{
+		transformer, err := r.transformerMgr.NewTransformer(nil, typesutil.FromRType(rv.Type()), transformers.TransformerOption{
 			MIME: contentType,
 		})
 

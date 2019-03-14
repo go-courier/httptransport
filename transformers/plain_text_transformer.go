@@ -1,6 +1,7 @@
 package transformers
 
 import (
+	"context"
 	"io"
 	"io/ioutil"
 	"mime"
@@ -30,7 +31,7 @@ func (PlainTextTransformer) NamedByTag() string {
 	return ""
 }
 
-func (PlainTextTransformer) New(typesutil.Type, TransformerMgr) (Transformer, error) {
+func (PlainTextTransformer) New(context.Context, typesutil.Type) (Transformer, error) {
 	return &PlainTextTransformer{}, nil
 }
 

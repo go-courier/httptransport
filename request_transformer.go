@@ -48,19 +48,19 @@ func (mgr *RequestTransformerMgr) NewRequest(method string, rawUrl string, v int
 	if v == nil {
 		return http.NewRequest(method, rawUrl, nil)
 	}
-	rt, err := mgr.NewRequestTransformer(reflect.TypeOf(v))
+	rt, err := mgr.NewRequestTransformer(context.Background(), reflect.TypeOf(v))
 	if err != nil {
 		return nil, err
 	}
 	return rt.NewRequest(method, rawUrl, v)
 }
 
-func (mgr *RequestTransformerMgr) NewRequestTransformer(typ reflect.Type) (*RequestTransformer, error) {
+func (mgr *RequestTransformerMgr) NewRequestTransformer(ctx context.Context, typ reflect.Type) (*RequestTransformer, error) {
 	key := reflectx.FullTypeName(typ)
 	if v, ok := mgr.cache.Load(key); ok {
 		return v.(*RequestTransformer), nil
 	}
-	rt, err := mgr.newRequestTransformer(typ)
+	rt, err := mgr.newRequestTransformer(ctx, typ)
 	if err != nil {
 		return nil, err
 	}
@@ -68,12 +68,12 @@ func (mgr *RequestTransformerMgr) NewRequestTransformer(typ reflect.Type) (*Requ
 	return rt, nil
 }
 
-func (mgr *RequestTransformerMgr) newRequestTransformer(typ reflect.Type) (*RequestTransformer, error) {
+func (mgr *RequestTransformerMgr) newRequestTransformer(ctx context.Context, typ reflect.Type) (*RequestTransformer, error) {
 	errSet := errors.NewErrorSet("")
 
 	rt := &RequestTransformer{}
 	rt.Type = reflectx.Deref(typ)
-	rt.parameters = map[string]*RequestParameter{}
+	rt.Parameters = map[string]*RequestParameter{}
 
 	typesutil.EachField(typesutil.FromRType(rt.Type), "name", func(field typesutil.StructField, fieldDisplayName string, omitempty bool) bool {
 		tag := field.Tag()
@@ -104,7 +104,7 @@ func (mgr *RequestTransformerMgr) newRequestTransformer(typ reflect.Type) (*Requ
 					}
 				}
 			}
-			return mgr.NewTransformer(targetType, transformOpt)
+			return mgr.NewTransformer(ctx, targetType, transformOpt)
 		}
 
 		transformer, err := getTransformer()
@@ -114,14 +114,14 @@ func (mgr *RequestTransformerMgr) newRequestTransformer(typ reflect.Type) (*Requ
 		}
 		parameter.Transformer = transformer
 
-		parameterValidator, err := transformers.NewValidator(field, tag.Get(validator.TagValidate), omitempty, transformer, mgr.ValidatorMgr)
+		parameterValidator, err := transformers.NewValidator(validator.ContextWithValidatorMgr(context.Background(), mgr.ValidatorMgr) ,field, tag.Get(validator.TagValidate), omitempty, transformer)
 		if err != nil {
 			errSet.AddErr(err, field.Name())
 			return true
 		}
 
 		parameter.Validator = parameterValidator
-		rt.parameters[fieldName] = parameter
+		rt.Parameters[fieldName] = parameter
 
 		return true
 	}, "in")
@@ -137,7 +137,7 @@ type RequestTransformerMgr struct {
 
 type RequestTransformer struct {
 	Type       reflect.Type
-	parameters map[string]*RequestParameter
+	Parameters map[string]*RequestParameter
 }
 
 func (t *RequestTransformer) NewRequest(method string, rawUrl string, v interface{}) (*http.Request, error) {
@@ -186,7 +186,7 @@ func (t *RequestTransformer) NewRequest(method string, rawUrl string, v interfac
 	}
 
 	transformers.NamedStructFieldValueRange(reflect.Indirect(rv), func(fieldValue reflect.Value, field *reflect.StructField) {
-		param := t.parameters[field.Name]
+		param := t.Parameters[field.Name]
 		if param == nil {
 			return
 		}
@@ -282,7 +282,7 @@ func (e *BadRequest) Err() error {
 	}
 	msg := e.msg
 	if msg == "" {
-		msg = "invalid parameters"
+		msg = "invalid Parameters"
 	}
 	err := statuserror.
 		NewStatusErr("BadRequest", http.StatusBadRequest*1e6, msg).
@@ -312,7 +312,7 @@ func (t *RequestTransformer) DecodeFromRequestInfo(info *RequestInfo, v interfac
 	badRequestError := &BadRequest{}
 
 	transformers.NamedStructFieldValueRange(reflect.Indirect(rv), func(fieldValue reflect.Value, field *reflect.StructField) {
-		param := t.parameters[field.Name]
+		param := t.Parameters[field.Name]
 		if param == nil {
 			return
 		}

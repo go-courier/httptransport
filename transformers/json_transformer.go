@@ -2,6 +2,7 @@ package transformers
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"io/ioutil"
@@ -33,7 +34,7 @@ func (transformer *JSONTransformer) String() string {
 	return transformer.Names()[0]
 }
 
-func (JSONTransformer) New(typesutil.Type, TransformerMgr) (Transformer, error) {
+func (JSONTransformer) New(context.Context, typesutil.Type) (Transformer, error) {
 	return &JSONTransformer{}, nil
 }
 

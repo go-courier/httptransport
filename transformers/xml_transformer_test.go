@@ -30,7 +30,7 @@ func TestXMLTransformer(t *testing.T) {
 	data.Data.StringSlice = []string{"1", "2", "3"}
 	data.Data.StringAttrSlice = []string{"1", "2", "3"}
 
-	ct, _ := TransformerMgrDefault.NewTransformer(typesutil.FromRType(reflect.TypeOf(data)), TransformerOption{
+	ct, _ := TransformerMgrDefault.NewTransformer(nil, typesutil.FromRType(reflect.TypeOf(data)), TransformerOption{
 		MIME: "xml",
 	})
 

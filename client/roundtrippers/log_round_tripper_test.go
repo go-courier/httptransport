@@ -13,7 +13,7 @@ func TestLogRoundTripper(t *testing.T) {
 	mgr := httptransport.NewRequestTransformerMgr(nil, nil)
 	mgr.SetDefaults()
 
-	req, _ := mgr.NewRequest(http.MethodGet, "https://google.com", nil)
+	req, _ := mgr.NewRequest(http.MethodGet, "https://github.com", nil)
 
 	NewLogRoundTripper(logrus.StandardLogger())(http.DefaultTransport).RoundTrip(req)
 }

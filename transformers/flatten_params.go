@@ -1,6 +1,7 @@
 package transformers
 
 import (
+	"context"
 	"go/ast"
 	"reflect"
 
@@ -16,7 +17,7 @@ type FlattenParams struct {
 	validators        map[string]validator.Validator
 }
 
-func (params *FlattenParams) NewValidator(typ typesutil.Type, mgr validator.ValidatorMgr) (validator.Validator, error) {
+func (params *FlattenParams) NewValidator(ctx context.Context, typ typesutil.Type) (validator.Validator, error) {
 	typ = typesutil.Deref(typ)
 	params.validators = map[string]validator.Validator{}
 
@@ -24,7 +25,7 @@ func (params *FlattenParams) NewValidator(typ typesutil.Type, mgr validator.Vali
 
 	typesutil.EachField(typ, "name", func(field typesutil.StructField, fieldDisplayName string, omitempty bool) bool {
 		fieldName := field.Name()
-		fieldValidator, err := NewValidator(field, field.Tag().Get("validate"), omitempty, params.fieldTransformers[fieldName], mgr)
+		fieldValidator, err := NewValidator(ctx, field, field.Tag().Get("validate"), omitempty, params.fieldTransformers[fieldName])
 		if err != nil {
 			errSet.AddErr(err, fieldName)
 			return true
@@ -73,17 +74,19 @@ func (params *FlattenParams) validate(rv reflect.Value, errSet *errors.ErrorSet)
 			continue
 		}
 
-		if fieldValidator, ok := params.validators[field.Name]; ok {
+		if fieldValidator, ok := params.validators[field.Name]; ok && fieldValidator != nil {
 			err := fieldValidator.Validate(fieldValue)
 			errSet.AddErr(err, fieldName)
 		}
 	}
 }
-func (params *FlattenParams) CollectParams(typ typesutil.Type, mgr TransformerMgr) error {
+func (params *FlattenParams) CollectParams(ctx context.Context, typ typesutil.Type) error {
 	params.fieldTransformers = map[string]Transformer{}
 	params.fieldOpts = map[string]TransformerOption{}
 
 	errSet := errors.NewErrorSet("")
+
+	mgr := TransformerMgrFromContext(ctx)
 
 	typesutil.EachField(typ, "name", func(field typesutil.StructField, fieldDisplayName string, omitempty bool) bool {
 		opt := TransformerOptionFromStructField(field)
@@ -98,7 +101,7 @@ func (params *FlattenParams) CollectParams(typ typesutil.Type, mgr TransformerMg
 			}
 		}
 
-		fieldTransformer, err := mgr.NewTransformer(targetType, opt)
+		fieldTransformer, err := mgr.NewTransformer(ctx, targetType, opt)
 		if err != nil {
 			errSet.AddErr(err, fieldName)
 			return true
@@ -112,20 +115,24 @@ func (params *FlattenParams) CollectParams(typ typesutil.Type, mgr TransformerMg
 	return errSet.Err()
 }
 
-func NewValidator(field typesutil.StructField, validateStr string, omitempty bool, transformer Transformer, mgr validator.ValidatorMgr) (validator.Validator, error) {
+type MayValidator interface {
+	NewValidator(ctx context.Context, typ typesutil.Type) (validator.Validator, error)
+}
+
+func NewValidator(ctx context.Context, field typesutil.StructField, validateStr string, omitempty bool, transformer Transformer) (validator.Validator, error) {
 	if validateStr == "" && typesutil.Deref(field.Type()).Kind() == reflect.Struct {
 		if _, ok := typesutil.EncodingTextMarshalerTypeReplacer(field.Type()); !ok {
-			validateStr = "@struct" + "<" + transformer.NamedByTag() + ">"
+			ctx = validator.ContextWithNamedTagKey(ctx, transformer.NamedByTag())
 		}
 	}
 
-	if t, ok := transformer.(interface {
-		NewValidator(typ typesutil.Type, mgr validator.ValidatorMgr) (validator.Validator, error)
-	}); ok {
-		return t.NewValidator(field.Type(), mgr)
+	if t, ok := transformer.(MayValidator); ok {
+		return t.NewValidator(ctx, field.Type())
 	}
 
-	return mgr.Compile([]byte(validateStr), field.Type(), func(rule *validator.Rule) {
+	mgr := validator.ValidatorMgrFromContext(ctx)
+
+	return mgr.Compile(ctx, []byte(validateStr), field.Type(), func(rule *validator.Rule) {
 		if omitempty {
 			rule.Optional = true
 		}

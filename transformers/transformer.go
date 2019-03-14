@@ -2,6 +2,7 @@ package transformers
 
 import (
 	"bytes"
+	"context"
 	"encoding"
 	"fmt"
 	"io"
@@ -15,7 +16,19 @@ import (
 )
 
 type TransformerMgr interface {
-	NewTransformer(typesutil.Type, TransformerOption) (Transformer, error)
+	NewTransformer(context.Context, typesutil.Type, TransformerOption) (Transformer, error)
+}
+
+const (
+	contextKeyTransformerMgr = "#####TransformerMgr#####"
+)
+
+func ContextWithTransformerMgr(ctx context.Context, mgr TransformerMgr) context.Context {
+	return context.WithValue(ctx, contextKeyTransformerMgr, mgr)
+}
+
+func TransformerMgrFromContext(ctx context.Context) TransformerMgr {
+	return ctx.Value(contextKeyTransformerMgr).(TransformerMgr)
 }
 
 type Transformer interface {
@@ -24,7 +37,7 @@ type Transformer interface {
 	Names() []string
 	// create transformer new transformer instance by type
 	// in this step will to check transformer is valid for type
-	New(typesutil.Type, TransformerMgr) (Transformer, error)
+	New(context.Context, typesutil.Type) (Transformer, error)
 
 	// named by tag
 	NamedByTag() string
@@ -122,7 +135,11 @@ func (c *TransformerFactory) Register(transformers ...Transformer) {
 var typeEncodingTextMarshaler = reflect.TypeOf((*encoding.TextMarshaler)(nil)).Elem()
 var typeEncodingTextUnmarshaler = reflect.TypeOf((*encoding.TextUnmarshaler)(nil)).Elem()
 
-func (c *TransformerFactory) NewTransformer(typ typesutil.Type, opt TransformerOption) (Transformer, error) {
+func (c *TransformerFactory) NewTransformer(ctx context.Context, typ typesutil.Type, opt TransformerOption) (Transformer, error) {
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
 	key := typesutil.FullTypeName(typ) + opt.String()
 
 	if v, ok := c.cache.Load(key); ok {
@@ -149,7 +166,7 @@ func (c *TransformerFactory) NewTransformer(typ typesutil.Type, opt TransformerO
 	}
 
 	if ct, ok := c.transformerSet[opt.MIME]; ok {
-		contentTransformer, err := ct.New(typ, c)
+		contentTransformer, err := ct.New(ContextWithTransformerMgr(ctx, c), typ)
 		if err != nil {
 			return nil, err
 		}

@@ -32,7 +32,7 @@ func TestJSONTransformer(t *testing.T) {
 		} `json:"data"`
 	}{}
 
-	ct, _ := TransformerMgrDefault.NewTransformer(typesutil.FromRType(reflect.TypeOf(data)), TransformerOption{})
+	ct, _ := TransformerMgrDefault.NewTransformer(nil,typesutil.FromRType(reflect.TypeOf(data)), TransformerOption{})
 
 	cases := []struct {
 		json     string

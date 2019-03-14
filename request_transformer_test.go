@@ -6,12 +6,14 @@ import (
 	"fmt"
 	"github.com/go-courier/httptransport"
 	"github.com/go-courier/httptransport/__examples__/constants/types"
+	"github.com/go-courier/validator/errors"
 	"mime/multipart"
 	"net/http"
 	"net/http/httputil"
 	"reflect"
 	"regexp"
 	"sort"
+	"strconv"
 	"testing"
 	"time"
 
@@ -105,7 +107,7 @@ func TestRequestTransformer(t *testing.T) {
 		req    interface{}
 	}{
 		{
-			"full parameters",
+			"full Parameters",
 			"/:id",
 			`GET /1?bytes=bytes&int=1&slice=1&slice=2&string=string HTTP/1.1
 Content-Type: application/json; charset=utf-8
@@ -245,7 +247,7 @@ test2
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			for i := 0; i < 5; i++ {
-				rtForSomeRequest, err := mgr.NewRequestTransformer(reflect.TypeOf(c.req))
+				rtForSomeRequest, err := mgr.NewRequestTransformer(nil, reflect.TypeOf(c.req))
 				require.NoError(t, err)
 
 				req, err := rtForSomeRequest.NewRequest(http.MethodGet, c.path, c.req)
@@ -263,6 +265,37 @@ test2
 	}
 }
 
+func ExampleNewRequestTransformer() {
+	mgr := httptransport.NewRequestTransformerMgr(nil, nil)
+
+	type PlainBody struct {
+		A string `json:"a" validate:"@string[2,]"`
+	}
+
+	type Req struct {
+		Protocol  types.Protocol `name:"protocol,omitempty" in:"query" default:"HTTP"`
+		QInt      int            `name:"int,omitempty" in:"query" default:"1"`
+		QString   string         `name:"string,omitempty" in:"query" default:"s"`
+		PlainBody PlainBody      `in:"body" mime:"plain" validate:"@struct<json>"`
+	}
+
+	req := &Req{}
+	req.PlainBody.A = "1"
+
+	rtForSomeRequest, err := mgr.NewRequestTransformer(nil, reflect.TypeOf(req))
+	if err != nil {
+		panic(err)
+	}
+
+	statusErr := rtForSomeRequest.Parameters["PlainBody"].Validator.Validate(req.PlainBody)
+
+	statusErr.(*errors.ErrorSet).Each(func(fieldErr *errors.FieldError) {
+		fmt.Println(fieldErr.Field, strconv.Quote(fieldErr.Error.Error()))
+	})
+	// Output:
+	// a "string length should be larger than 2, but got invalid value 1"
+}
+
 func TestRequestTransformer_DecodeFromRequestInfo_WithDefaults(t *testing.T) {
 	type Req struct {
 		Protocol types.Protocol `name:"protocol,omitempty" in:"query" default:"HTTP"`
@@ -272,7 +305,7 @@ func TestRequestTransformer_DecodeFromRequestInfo_WithDefaults(t *testing.T) {
 
 	mgr := httptransport.NewRequestTransformerMgr(nil, nil)
 
-	rtForSomeRequest, err := mgr.NewRequestTransformer(reflect.TypeOf(&Req{}))
+	rtForSomeRequest, err := mgr.NewRequestTransformer(nil, reflect.TypeOf(&Req{}))
 	require.NoError(t, err)
 	if err != nil {
 		return
@@ -286,11 +319,11 @@ func TestRequestTransformer_DecodeFromRequestInfo_WithDefaults(t *testing.T) {
 	err = rtForSomeRequest.DecodeFromRequestInfo(httptransport.NewRequestInfo(req), r)
 	require.NoError(t, err)
 
-	require.Equal(t, r, &Req{
+	require.Equal(t, &Req{
 		Protocol: types.PROTOCOL__HTTP,
 		QInt:     1,
 		QString:  "s",
-	})
+	}, r)
 }
 
 func TestRequestTransformer_DecodeFromRequestInfo_WithEnumValidate(t *testing.T) {
@@ -300,7 +333,7 @@ func TestRequestTransformer_DecodeFromRequestInfo_WithEnumValidate(t *testing.T)
 
 	mgr := httptransport.NewRequestTransformerMgr(nil, nil)
 
-	rtForSomeRequest, err := mgr.NewRequestTransformer(reflect.TypeOf(&Req{}))
+	rtForSomeRequest, err := mgr.NewRequestTransformer(nil, reflect.TypeOf(&Req{}))
 	require.NoError(t, err)
 	if err != nil {
 		return
@@ -331,9 +364,9 @@ func TestRequestTransformer_DecodeFromRequestInfo_Failed(t *testing.T) {
 	}
 
 	type DataForFailed struct {
-		A      string `validate:"@string[1,]"`
-		B      string `default:"1" validate:"@string[1,]"`
-		C      string `json:"c" validate:"@string[2,]?"`
+		A               string `validate:"@string[1,]"`
+		B               string `default:"1" validate:"@string[1,]"`
+		C               string `json:"c" validate:"@string[2,]?"`
 		NestedForFailed NestedForFailed
 	}
 
@@ -344,7 +377,7 @@ func TestRequestTransformer_DecodeFromRequestInfo_Failed(t *testing.T) {
 		DataForFailed `in:"body"`
 	}
 
-	rtForSomeRequest, err := mgr.NewRequestTransformer(reflect.TypeOf(&ReqForFailed{}))
+	rtForSomeRequest, err := mgr.NewRequestTransformer(nil, reflect.TypeOf(&ReqForFailed{}))
 	if err != nil {
 		return
 	}
@@ -418,7 +451,6 @@ func TestRequestTransformer_DecodeFromRequestInfo_Failed(t *testing.T) {
 ]`, string(data))
 }
 
-
 type ReqWithPostValidate struct {
 	StartedAt string `in:"query"`
 }
@@ -427,11 +459,10 @@ func (ReqWithPostValidate) PostValidate(badRequest *httptransport.BadRequest) {
 	badRequest.AddErr(fmt.Errorf("ops"), "query", "StartedAt")
 }
 
-
 func ExampleRequestTransformer_DecodeFromRequestInfo_FailedOfPost() {
 	mgr := httptransport.NewRequestTransformerMgr(nil, nil)
 
-	rtForSomeRequest, err := mgr.NewRequestTransformer(reflect.TypeOf(&ReqWithPostValidate{}))
+	rtForSomeRequest, err := mgr.NewRequestTransformer(nil, reflect.TypeOf(&ReqWithPostValidate{}))
 	if err != nil {
 		return
 	}

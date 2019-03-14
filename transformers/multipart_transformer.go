@@ -2,6 +2,7 @@ package transformers
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"mime"
@@ -38,7 +39,7 @@ func (transformer *MultipartTransformer) String() string {
 	return transformer.Names()[0]
 }
 
-func (MultipartTransformer) New(typ typesutil.Type, mgr TransformerMgr) (Transformer, error) {
+func (MultipartTransformer) New(ctx context.Context, typ typesutil.Type) (Transformer, error) {
 	transformer := &MultipartTransformer{}
 
 	typ = typesutil.Deref(typ)
@@ -48,7 +49,7 @@ func (MultipartTransformer) New(typ typesutil.Type, mgr TransformerMgr) (Transfo
 
 	transformer.FlattenParams = &FlattenParams{}
 
-	if err := transformer.FlattenParams.CollectParams(typ, mgr); err != nil {
+	if err := transformer.FlattenParams.CollectParams(ctx, typ); err != nil {
 		return nil, err
 	}
 

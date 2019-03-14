@@ -157,7 +157,7 @@ text
 		MustNewFileHeader("Files", "file1.txt", bytes.NewBufferString("text1")),
 	}
 
-	ct, _ := TransformerMgrDefault.NewTransformer(typesutil.FromRType(reflect.TypeOf(data)), TransformerOption{
+	ct, _ := TransformerMgrDefault.NewTransformer(nil,typesutil.FromRType(reflect.TypeOf(data)), TransformerOption{
 		MIME: "multipart",
 	})
 
