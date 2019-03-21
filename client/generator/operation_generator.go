@@ -3,11 +3,8 @@ package generator
 import (
 	"net/http"
 	"regexp"
-	"sort"
-	"strings"
 
 	"github.com/go-courier/codegen"
-	"github.com/go-courier/httptransport/openapi/generator"
 	"github.com/go-courier/oas"
 )
 
@@ -33,41 +30,9 @@ func toColonPath(path string) string {
 }
 
 func (g *OperationGenerator) Scan(openapi *oas.OpenAPI) {
-	ops := map[string]struct {
-		Method string
-		Path   string
-		*oas.Operation
-	}{}
-	operationIDs := make([]string, 0)
-
-	for path := range openapi.Paths.Paths {
-		pathItems := openapi.Paths.Paths[path]
-		for method := range pathItems.Operations.Operations {
-			op := pathItems.Operations.Operations[method]
-
-			if strings.HasPrefix(op.OperationId, "OpenAPI") {
-				continue
-			}
-
-			ops[op.OperationId] = struct {
-				Method string
-				Path   string
-				*oas.Operation
-			}{
-				Method:    strings.ToUpper(string(method)),
-				Path:      toColonPath(path),
-				Operation: op,
-			}
-			operationIDs = append(operationIDs, op.OperationId)
-		}
-	}
-
-	sort.Strings(operationIDs)
-
-	for _, id := range operationIDs {
-		op := ops[id]
-		g.WriteOperation(op.Method, op.Path, op.Operation)
-	}
+	eachOperation(openapi, func(method string, path string, op *oas.Operation) {
+		g.WriteOperation(method, path, op)
+	})
 }
 
 func (g *OperationGenerator) ID(id string) string {
@@ -195,41 +160,12 @@ func isOk(code int) bool {
 }
 
 func (g *OperationGenerator) ResponseType(responses *oas.Responses) (codegen.SnippetType, []string) {
-	if responses == nil {
+	mediaType, statusErrors := mediaTypeAndStatusErrors(responses)
+
+	if mediaType == nil {
 		return nil, nil
 	}
 
-	response := (*oas.Response)(nil)
-
-	statusErrors := make([]string, 0)
-
-	for code := range responses.Responses {
-		if isOk(code) {
-			response = responses.Responses[code]
-		} else {
-			extensions := responses.Responses[code].Extensions
-
-			if extensions != nil {
-				if errors, ok := extensions[generator.XStatusErrs]; ok {
-					if errs, ok := errors.([]interface{}); ok {
-						for _, err := range errs {
-							statusErrors = append(statusErrors, err.(string))
-						}
-					}
-				}
-			}
-		}
-	}
-
-	if response == nil {
-		return nil, nil
-	}
-
-	for contentType := range response.Content {
-		mediaType := response.Content[contentType]
-		typ, _ := NewTypeGenerator(g.ServiceName, g.File).Type(mediaType.Schema)
-		return typ, statusErrors
-	}
-
-	return nil, statusErrors
+	typ, _ := NewTypeGenerator(g.ServiceName, g.File).Type(mediaType.Schema)
+	return typ, statusErrors
 }

@@ -4,9 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/go-courier/httptransport"
-	"github.com/go-courier/httptransport/__examples__/constants/types"
-	"github.com/go-courier/validator/errors"
 	"mime/multipart"
 	"net/http"
 	"net/http/httputil"
@@ -17,10 +14,14 @@ import (
 	"testing"
 	"time"
 
+	"github.com/go-courier/httptransport/__examples__/constants/types"
 	"github.com/go-courier/httptransport/transformers"
 	"github.com/go-courier/reflectx"
 	"github.com/go-courier/statuserror"
+	"github.com/go-courier/validator/errors"
 	"github.com/stretchr/testify/require"
+
+	"github.com/go-courier/httptransport"
 )
 
 var reContentTypeWithBoundary = regexp.MustCompile(`Content-Type: multipart/form-data; boundary=([A-Za-z0-9]+)`)
@@ -49,7 +50,7 @@ func (dt Datetime) MarshalText() ([]byte, error) {
 	return []byte(str), nil
 }
 
-func (dt *Datetime) UnmarshalText(data []byte) (error) {
+func (dt *Datetime) UnmarshalText(data []byte) error {
 	if len(data) != 0 {
 		return nil
 	}
@@ -467,8 +468,7 @@ func ExampleRequestTransformer_DecodeFromRequestInfo_FailedOfPost() {
 		return
 	}
 
-	req, err := rtForSomeRequest.NewRequest(http.MethodPost, "/:id", &ReqWithPostValidate{
-	})
+	req, err := rtForSomeRequest.NewRequest(http.MethodPost, "/:id", &ReqWithPostValidate{})
 	if err != nil {
 		return
 	}

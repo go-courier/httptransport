@@ -4,7 +4,6 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
-	"github.com/go-courier/httptransport/client"
 	"io/ioutil"
 	"net/http"
 	"net/http/httputil"
@@ -13,6 +12,7 @@ import (
 	"time"
 
 	"github.com/go-courier/httptransport/__examples__/routes"
+	"github.com/go-courier/httptransport/client"
 	"github.com/stretchr/testify/require"
 
 	"github.com/go-courier/httptransport"

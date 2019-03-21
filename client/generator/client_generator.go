@@ -75,6 +75,12 @@ func (g *ClientGenerator) Output(cwd string) {
 
 	{
 		file := codegen.NewFile(pkgName, path.Join(rootPath, "client.go"))
+		NewServiceClientGenerator(g.ServiceName, file).Scan(g.openAPI)
+		file.WriteFile()
+	}
+
+	{
+		file := codegen.NewFile(pkgName, path.Join(rootPath, "operations.go"))
 		NewOperationGenerator(g.ServiceName, file).Scan(g.openAPI)
 		file.WriteFile()
 	}

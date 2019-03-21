@@ -1,11 +1,12 @@
 package generator
 
 import (
-	"github.com/stretchr/testify/require"
 	"net/url"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestOpenAPIGenerator(t *testing.T) {
