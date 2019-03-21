@@ -51,6 +51,18 @@ func eachOperation(openapi *oas.OpenAPI, mapper func(method string, path string,
 	}
 }
 
+func requestBodyMediaType(requestBody *oas.RequestBody) *oas.MediaType {
+	if requestBody == nil {
+		return nil
+	}
+
+	for contentType := range requestBody.Content {
+		mediaType := requestBody.Content[contentType]
+		return mediaType
+	}
+	return nil
+}
+
 func mediaTypeAndStatusErrors(responses *oas.Responses) (*oas.MediaType, []string) {
 	if responses == nil {
 		return nil, nil

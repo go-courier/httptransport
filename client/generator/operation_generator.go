@@ -134,25 +134,21 @@ func (g *OperationGenerator) ParamField(parameter *oas.Parameter) *codegen.Snipp
 }
 
 func (g *OperationGenerator) RequestBodyField(requestBody *oas.RequestBody) *codegen.SnippetField {
-	if requestBody == nil {
+	mediaType := requestBodyMediaType(requestBody)
+
+	if mediaType == nil {
 		return nil
 	}
 
-	for contentType := range requestBody.Content {
-		mediaType := requestBody.Content[contentType]
+	field := NewTypeGenerator(g.ServiceName, g.File).FieldOf("Data", mediaType.Schema, map[string]bool{})
 
-		field := NewTypeGenerator(g.ServiceName, g.File).FieldOf("Data", mediaType.Schema, map[string]bool{})
-
-		tag := `in:"body"`
-		if field.Tag != "" {
-			tag = tag + " " + field.Tag
-		}
-		field.Tag = tag
-
-		return field
+	tag := `in:"body"`
+	if field.Tag != "" {
+		tag = tag + " " + field.Tag
 	}
+	field.Tag = tag
 
-	return nil
+	return field
 }
 
 func isOk(code int) bool {

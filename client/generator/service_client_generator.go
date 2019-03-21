@@ -83,45 +83,46 @@ func (g *ServiceClientGenerator) WriteClient() {
 func (g *ServiceClientGenerator) OperationMethod(operation *oas.Operation, asInterface bool) codegen.Snippet {
 	mediaType, _ := mediaTypeAndStatusErrors(&operation.Responses)
 
+	params := make([]*codegen.SnippetField, 0)
+
+	hasReq := len(operation.Parameters) != 0 || requestBodyMediaType(operation.RequestBody) != nil
+
+	if hasReq {
+		params = append(params, codegen.Var(codegen.Star(codegen.Type(operation.OperationId)), "req"))
+	}
+
+	params = append(params, codegen.Var(codegen.Ellipsis(codegen.Type(g.File.Use("github.com/go-courier/courier", "Metadata"))), "metas"))
+
+	returns := make([]*codegen.SnippetField, 0)
+
 	if mediaType != nil {
 		respType, _ := NewTypeGenerator(g.ServiceName, g.File).Type(mediaType.Schema)
 
 		if respType != nil {
-			m := codegen.Func(
-				codegen.Var(codegen.Star(codegen.Type(operation.OperationId)), "req"),
-				codegen.Var(codegen.Ellipsis(codegen.Type(g.File.Use("github.com/go-courier/courier", "Metadata"))), "metas"),
-			).
-				Named(operation.OperationId).
-				Return(
-					codegen.Var(codegen.Star(respType)),
-					codegen.Var(codegen.Type(g.File.Use("github.com/go-courier/courier", "Metadata"))),
-					codegen.Var(codegen.Error),
-				)
-
-			if asInterface {
-				return m
-			}
-
-			return m.
-				MethodOf(codegen.Var(codegen.Star(codegen.Type(g.ClientInstanceName())), "c")).
-				Do(codegen.Return(codegen.Expr("req.Invoke(c.Client)")))
+			returns = append(returns, codegen.Var(codegen.Star(respType)))
 		}
 	}
 
-	m := codegen.Func(
-		codegen.Var(codegen.Ellipsis(codegen.Type(g.File.Use("github.com/go-courier/courier", "Metadata"))), "metas"),
-	).
-		Return(
-			codegen.Var(codegen.Type(g.File.Use("github.com/go-courier/courier", "Metadata"))),
-			codegen.Var(codegen.Error),
-		).
+	returns = append(
+		returns,
+		codegen.Var(codegen.Type(g.File.Use("github.com/go-courier/courier", "Metadata"))),
+		codegen.Var(codegen.Error),
+	)
+
+	m := codegen.Func(params...).
+		Return(returns...).
 		Named(operation.OperationId)
 
 	if asInterface {
 		return m
 	}
 
-	return m.
-		MethodOf(codegen.Var(codegen.Star(codegen.Type(g.ClientInstanceName())), "c")).
-		Do(codegen.Return(codegen.Expr("(&?{}).Invoke(c.Client)", codegen.Type(operation.OperationId))))
+	m = m.
+		MethodOf(codegen.Var(codegen.Star(codegen.Type(g.ClientInstanceName())), "c"))
+
+	if hasReq {
+		return m.Do(codegen.Return(codegen.Expr("req.Invoke(c.Client)")))
+	}
+
+	return m.Do(codegen.Return(codegen.Expr("(&?{}).Invoke(c.Client)", codegen.Type(operation.OperationId))))
 }
