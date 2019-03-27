@@ -54,13 +54,13 @@ func (h *loggerHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		header := req.Header
 
 		fields := logrus.Fields{
-			"tag":        "access",
-			"request_id": header.Get(httpx.HeaderRequestID),
-			"remote_ip":  httpx.ClientIP(req),
-			"method":     req.Method,
-			"pathname":   req.URL.Path,
-			"user_agent": header.Get(httpx.HeaderUserAgent),
-			"cost":       fmt.Sprintf("%0.3fms", float64(duration/time.Millisecond)),
+			"tag":         "access",
+			"request_id":  header.Get(httpx.HeaderRequestID),
+			"remote_ip":   httpx.ClientIP(req),
+			"method":      req.Method,
+			"request_url": req.URL.String(),
+			"user_agent":  header.Get(httpx.HeaderUserAgent),
+			"cost":        fmt.Sprintf("%0.3fms", float64(duration/time.Millisecond)),
 		}
 
 		fields["status"] = loggerRw.StatusCode
