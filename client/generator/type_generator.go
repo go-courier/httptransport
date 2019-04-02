@@ -115,7 +115,10 @@ func (g *TypeGenerator) TypeIndirect(schema *oas.Schema) (codegen.SnippetType, b
 	}
 
 	if len(schema.AllOf) > 0 {
-		return codegen.Struct(g.FieldsFrom(schema)...), false
+		if schema.AllOf[len(schema.AllOf)-1].Type == oas.TypeObject {
+			return codegen.Struct(g.FieldsFrom(schema)...), false
+		}
+		return g.TypeIndirect(mayComposedAllOf(schema))
 	}
 
 	if schema.Type == oas.TypeObject {
@@ -200,7 +203,7 @@ func (g *TypeGenerator) FieldsFrom(schema *oas.Schema) (fields []*codegen.Snippe
 	}
 
 	for _, name := range names {
-		fields = append(fields, g.FieldOf(name, mayComposedFieldSchema(finalSchema.Properties[name]), requiredFieldSet))
+		fields = append(fields, g.FieldOf(name, mayComposedAllOf(finalSchema.Properties[name]), requiredFieldSet))
 	}
 	return
 }
@@ -208,7 +211,7 @@ func (g *TypeGenerator) FieldsFrom(schema *oas.Schema) (fields []*codegen.Snippe
 func (g *TypeGenerator) FieldOf(name string, propSchema *oas.Schema, requiredFields map[string]bool) *codegen.SnippetField {
 	isRequired := requiredFields[name]
 
-	if len(propSchema.AllOf) == 2 && propSchema.AllOf[1].Type == "" {
+	if len(propSchema.AllOf) == 2 && propSchema.AllOf[1].Type != oas.TypeObject {
 		propSchema = &oas.Schema{
 			Reference:      propSchema.AllOf[0].Reference,
 			SchemaObject:   propSchema.AllOf[1].SchemaObject,
@@ -265,9 +268,9 @@ func (g *TypeGenerator) FieldOf(name string, propSchema *oas.Schema, requiredFie
 	return field
 }
 
-func mayComposedFieldSchema(schema *oas.Schema) *oas.Schema {
+func mayComposedAllOf(schema *oas.Schema) *oas.Schema {
 	// for named field
-	if schema.AllOf != nil && len(schema.AllOf) == 2 && schema.AllOf[len(schema.AllOf)-1].Type == "" {
+	if schema.AllOf != nil && len(schema.AllOf) == 2 && schema.AllOf[len(schema.AllOf)-1].Type != oas.TypeObject {
 		nextSchema := &oas.Schema{
 			Reference:    schema.AllOf[0].Reference,
 			SchemaObject: schema.AllOf[1].SchemaObject,
