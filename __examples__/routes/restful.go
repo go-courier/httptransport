@@ -43,9 +43,15 @@ func (req Create) Output(ctx context.Context) (interface{}, error) {
 }
 
 type Data struct {
-	ID       string         `json:"id"`
-	Label    string         `json:"label"`
-	Protocol types.Protocol `json:"protocol,omitempty"`
+	ID        string         `json:"id"`
+	Label     string         `json:"label"`
+	PtrString *string        `json:"ptrString,omitempty"`
+	SubData   *SubData       `json:"subData,omitempty"`
+	Protocol  types.Protocol `json:"protocol,omitempty"`
+}
+
+type SubData struct {
+	Name string `json:"name"`
 }
 
 // get by id

@@ -506,6 +506,24 @@
                 "x-tag-json": "protocol,omitempty"
               }
             ]
+          },
+          "ptrString": {
+            "type": "string",
+            "x-go-field-name": "PtrString",
+            "x-go-star-level": 1,
+            "x-tag-json": "ptrString,omitempty"
+          },
+          "subData": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SubData"
+              },
+              {
+                "x-go-field-name": "SubData",
+                "x-go-star-level": 1,
+                "x-tag-json": "subData,omitempty"
+              }
+            ]
           }
         },
         "required": [
@@ -680,6 +698,20 @@
           }
         ],
         "x-id": "Protocol"
+      },
+      "SubData": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "x-go-field-name": "Name",
+            "x-tag-json": "name"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "x-id": "SubData"
       }
     }
   }

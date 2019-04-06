@@ -13,9 +13,11 @@ import (
 type BytesBuffer = bytes.Buffer
 
 type Data struct {
-	ID       string   `json:"id"`
-	Label    string   `json:"label"`
-	Protocol Protocol `json:"protocol,omitempty"`
+	ID        string   `json:"id"`
+	Label     string   `json:"label"`
+	Protocol  Protocol `json:"protocol,omitempty"`
+	PtrString *string  `json:"ptrString,omitempty"`
+	SubData   *SubData `json:"subData,omitempty"`
 }
 
 type GithubComGoCourierHttptransportHttpxAttachment = github_com_go_courier_httptransport_httpx.Attachment
@@ -31,6 +33,10 @@ type GithubComGoCourierStatuserrorErrorFields = github_com_go_courier_statuserro
 type GithubComGoCourierStatuserrorStatusErr = github_com_go_courier_statuserror.StatusErr
 
 type Protocol = DemoProtocol
+
+type SubData struct {
+	Name string `json:"name"`
+}
 
 // openapi:enum
 type DemoProtocol int

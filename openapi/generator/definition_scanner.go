@@ -225,13 +225,18 @@ func (scanner *DefinitionScanner) getSchemaByType(typ types.Type) *oas.Schema {
 			return oas.NewSchema(typeName, format)
 		}
 	case *types.Pointer:
-		count := 0
+		count := 1
 		elem := t.Elem()
-		for t != nil {
-			elem = t.Elem()
-			t, _ = t.Elem().(*types.Pointer)
-			count++
+
+		for {
+			if p, ok := elem.(*types.Pointer); ok {
+				elem = p.Elem()
+				count++
+			} else {
+				break
+			}
 		}
+
 		s := scanner.getSchemaByType(elem)
 		markPointer(s, count)
 		return s
@@ -266,6 +271,7 @@ func (scanner *DefinitionScanner) getSchemaByType(typ types.Type) *oas.Schema {
 			}
 
 			structFieldType := field.Type()
+
 			tags := reflect.StructTag(t.Tag(i))
 
 			tagValueForName := tags.Get("json")
@@ -324,11 +330,13 @@ func (scanner *DefinitionScanner) propSchemaByField(
 	desc string,
 ) *oas.Schema {
 	propSchema := scanner.getSchemaByType(fieldType)
+
 	refSchema := (*oas.Schema)(nil)
 
 	if propSchema.Refer != nil {
 		refSchema = propSchema
 		propSchema = &oas.Schema{}
+		propSchema.Extensions = refSchema.Extensions
 	}
 
 	defaultValue := tags.Get("default")
