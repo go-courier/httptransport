@@ -270,12 +270,12 @@ func ExampleNewRequestTransformer() {
 	mgr := httptransport.NewRequestTransformerMgr(nil, nil)
 
 	type PlainBody struct {
-		A string `json:"a" validate:"@string[2,]"`
+		A   string `json:"a" validate:"@string[2,]"`
+		Int int    `json:"int,omitempty" default:"0" validate:"@int[0,]"`
 	}
 
 	type Req struct {
 		Protocol  types.Protocol `name:"protocol,omitempty" in:"query" default:"HTTP"`
-		QInt      int            `name:"int,omitempty" in:"query" default:"1"`
 		QString   string         `name:"string,omitempty" in:"query" default:"s"`
 		PlainBody PlainBody      `in:"body" mime:"plain" validate:"@struct<json>"`
 	}
