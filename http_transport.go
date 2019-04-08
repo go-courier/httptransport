@@ -112,15 +112,32 @@ func (t *HttpTransport) Serve(router *courier.Router) error {
 	srv.Addr = fmt.Sprintf(":%d", t.Port)
 	srv.Handler = MiddlewareChain(t.Middlewares...)(t)
 
-	go t.graceful(srv, t.Logger, 10*time.Second)
+	stopCh := make(chan os.Signal, 1)
+	signal.Notify(stopCh, os.Interrupt, syscall.SIGTERM)
 
-	courierPrintln("%s listen on %s", t.ServiceMeta, srv.Addr)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 
-	if t.CertFile != "" && t.KeyFile != "" {
-		return srv.ListenAndServeTLS(t.CertFile, t.KeyFile)
-	}
+	go func() {
+		courierPrintln("%s listen on %s", t.ServiceMeta, srv.Addr)
 
-	return srv.ListenAndServe()
+		if t.CertFile != "" && t.KeyFile != "" {
+			if err := srv.ListenAndServeTLS(t.CertFile, t.KeyFile); err != nil {
+				logrus.Error(err)
+			}
+			return
+		}
+
+		if err := srv.ListenAndServe(); err != nil {
+			logrus.Error(err)
+		}
+	}()
+
+	<-stopCh
+
+	t.Logger.Infof("shutdowning in %s", 10*time.Second)
+
+	return srv.Shutdown(ctx)
 }
 
 func (t *HttpTransport) convertRouterToHttpRouter(router *courier.Router) *httprouter.Router {
@@ -152,21 +169,4 @@ func (t *HttpTransport) convertRouterToHttpRouter(router *courier.Router) *httpr
 	}
 
 	return httpRouter
-}
-
-func (t *HttpTransport) graceful(srv *http.Server, logger *logrus.Logger, timeout time.Duration) {
-	stop := make(chan os.Signal, 1)
-	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
-	<-stop
-
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
-	defer cancel()
-
-	logger.Infof("shutdown with timeout: %s", timeout)
-
-	if err := srv.Shutdown(ctx); err != nil {
-		logger.Errorf("shutdown failed: %s", err)
-	} else {
-		logger.Infof("stopped")
-	}
 }
