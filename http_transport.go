@@ -123,13 +123,21 @@ func (t *HttpTransport) Serve(router *courier.Router) error {
 
 		if t.CertFile != "" && t.KeyFile != "" {
 			if err := srv.ListenAndServeTLS(t.CertFile, t.KeyFile); err != nil {
-				logrus.Error(err)
+				if err == http.ErrServerClosed {
+					logrus.Error(err)
+				} else {
+					logrus.Fatal(err)
+				}
 			}
 			return
 		}
 
 		if err := srv.ListenAndServe(); err != nil {
-			logrus.Error(err)
+			if err == http.ErrServerClosed {
+				logrus.Error(err)
+			} else {
+				logrus.Fatal(err)
+			}
 		}
 	}()
 
