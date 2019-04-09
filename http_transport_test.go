@@ -26,8 +26,7 @@ func TestHttpTransport(t *testing.T) {
 	ht.Port = 8080
 
 	go func() {
-		err := ht.Serve(routes.RootRouter)
-		require.Error(t, err)
+		ht.Serve(routes.RootRouter)
 	}()
 
 	time.Sleep(200 * time.Millisecond)
@@ -41,6 +40,7 @@ func TestHttpTransport(t *testing.T) {
 
 	time.Sleep(1 * time.Second)
 	p, _ := os.FindProcess(os.Getpid())
+
 	p.Signal(os.Interrupt)
 }
 
@@ -58,8 +58,7 @@ func SkipTestHttpTransportWithTLS(t *testing.T) {
 	ht.Port = 8081
 
 	go func() {
-		err := ht.Serve(routes.RootRouter)
-		require.Error(t, err)
+		ht.Serve(routes.RootRouter)
 	}()
 
 	time.Sleep(200 * time.Millisecond)

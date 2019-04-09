@@ -89,8 +89,12 @@ func (handler *HttpRouteHandler) ServeHTTP(rw http.ResponseWriter, r *http.Reque
 		}
 
 		if !opFactory.IsLast {
-			// set result in context with key of operator name
-			ctx = context.WithValue(ctx, opFactory.ContextKey, result)
+			if c, ok := result.(context.Context); ok {
+				ctx = c
+			} else {
+				// set result in context with key of operator name
+				ctx = context.WithValue(ctx, opFactory.ContextKey, result)
+			}
 			continue
 		}
 

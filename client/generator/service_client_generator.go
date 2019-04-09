@@ -22,6 +22,24 @@ func (g *ServiceClientGenerator) Scan(openapi *oas.OpenAPI) {
 
 	g.WriteClient()
 
+	g.File.WriteBlock(codegen.Expr(`
+
+func (c *` + g.ClientInstanceName() + `) WithContext(ctx context.Context) `+g.ClientInterfaceName()+` {
+	cc := new(`+g.ClientInstanceName()+`)
+	cc.Client = c.Client
+	cc.ctx = ctx
+	return cc
+}
+
+func (c *` + g.ClientInstanceName() + `) Context() context.Context {
+	if c.ctx != nil {
+      return c.ctx
+    }
+	return context.Background()
+}
+
+`))
+
 	eachOperation(openapi, func(method string, path string, op *oas.Operation) {
 		g.File.WriteBlock(
 			g.OperationMethod(op, false),
@@ -30,7 +48,12 @@ func (g *ServiceClientGenerator) Scan(openapi *oas.OpenAPI) {
 }
 
 func (g *ServiceClientGenerator) WriteClientInterface(openapi *oas.OpenAPI) {
-	snippets := make([]codegen.SnippetCanBeInterfaceMethod, 0)
+	varContext := codegen.Var(codegen.Type(g.File.Use("context", "Context")))
+
+	snippets := []codegen.SnippetCanBeInterfaceMethod{
+		codegen.Func(varContext).Named("WithContext").Return(codegen.Var(codegen.Type(g.ClientInterfaceName()))),
+		codegen.Func().Named("Context").Return(varContext),
+	}
 
 	eachOperation(openapi, func(method string, path string, op *oas.Operation) {
 		snippets = append(snippets, g.OperationMethod(op, true).(*codegen.FuncType))
@@ -73,6 +96,7 @@ func (g *ServiceClientGenerator) WriteClient() {
 		codegen.DeclType(
 			codegen.Var(codegen.Struct(
 				codegen.Var(codegen.Type(g.File.Use("github.com/go-courier/courier", "Client")), "Client"),
+				codegen.Var(codegen.Type(g.File.Use("context", "Context")), "ctx"),
 			),
 				g.ClientInstanceName(),
 			),
@@ -121,8 +145,8 @@ func (g *ServiceClientGenerator) OperationMethod(operation *oas.Operation, asInt
 		MethodOf(codegen.Var(codegen.Star(codegen.Type(g.ClientInstanceName())), "c"))
 
 	if hasReq {
-		return m.Do(codegen.Return(codegen.Expr("req.Invoke(c.Client)")))
+		return m.Do(codegen.Return(codegen.Expr("req.InvokeContext(c.Context(), c.Client)")))
 	}
 
-	return m.Do(codegen.Return(codegen.Expr("(&?{}).Invoke(c.Client)", codegen.Type(operation.OperationId))))
+	return m.Do(codegen.Return(codegen.Expr("(&?{}).InvokeContext(c.Context(), c.Client)", codegen.Type(operation.OperationId))))
 }

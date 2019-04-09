@@ -1,6 +1,7 @@
 package client
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"mime"
@@ -48,8 +49,8 @@ func (c *Client) SetDefaults() {
 	}
 }
 
-func (c *Client) Do(operationID string, req interface{}, metas ...courier.Metadata) courier.Result {
-	request, err := c.newRequest(operationID, req, metas...)
+func (c *Client) Do(ctx context.Context, req interface{}, metas ...courier.Metadata) courier.Result {
+	request, err := c.newRequest(ctx, req, metas...)
 	if err != nil {
 		return &Result{
 			Client: c,
@@ -83,7 +84,11 @@ func (c *Client) toUrl(path string) string {
 	return url + path
 }
 
-func (c *Client) newRequest(operationID string, req interface{}, metas ...courier.Metadata) (*http.Request, error) {
+func (c *Client) newRequest(ctx context.Context, req interface{}, metas ...courier.Metadata) (*http.Request, error) {
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
 	method := ""
 	path := ""
 
@@ -99,12 +104,14 @@ func (c *Client) newRequest(operationID string, req interface{}, metas ...courie
 	if err != nil {
 		return nil, RequestTransformFailed.StatusErr().WithDesc(err.Error())
 	}
+
+	request = request.WithContext(ctx)
+
 	for k, vs := range courier.FromMetas(metas...) {
 		for _, v := range vs {
 			request.Header.Add(k, v)
 		}
 	}
-	request.Header.Add("X-Operation-Id", operationID)
 	return request, nil
 }
 

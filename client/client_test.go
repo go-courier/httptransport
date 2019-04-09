@@ -41,7 +41,7 @@ func TestClient(t *testing.T) {
 	{
 		ipInfo := IpInfo{}
 
-		meta, err := ipInfoClient.Do("json", &GetByJSON{}).Into(&ipInfo)
+		meta, err := ipInfoClient.Do(nil, &GetByJSON{}).Into(&ipInfo)
 		require.NoError(t, err)
 
 		t.Log(ipInfo)
@@ -51,7 +51,7 @@ func TestClient(t *testing.T) {
 	{
 		ipInfo := IpInfo{}
 
-		meta, err := ipInfoClient.Do("xml", &GetByXML{}).Into(&ipInfo)
+		meta, err := ipInfoClient.Do(nil, &GetByXML{}).Into(&ipInfo)
 		require.NoError(t, err)
 
 		t.Log(ipInfo)
@@ -66,7 +66,7 @@ func TestClient(t *testing.T) {
 	{
 		ipInfo := IpInfo{}
 
-		_, err := errClient.Do("json", &GetByJSON{}).Into(&ipInfo)
+		_, err := errClient.Do(nil, &GetByJSON{}).Into(&ipInfo)
 		require.Error(t, err)
 	}
 
