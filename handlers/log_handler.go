@@ -51,6 +51,8 @@ func (h *loggerHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	defer func() {
 		duration := time.Now().Sub(startAt)
 
+		logger := h.logger.WithContext(req.Context())
+
 		header := req.Header
 
 		fields := logrus.Fields{
@@ -67,12 +69,12 @@ func (h *loggerHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 
 		if loggerRw.ErrMsg != nil {
 			if loggerRw.StatusCode >= http.StatusInternalServerError {
-				h.logger.WithFields(fields).Error(string(loggerRw.ErrMsg))
+				logger.WithFields(fields).Error(string(loggerRw.ErrMsg))
 			} else {
-				h.logger.WithFields(fields).Warn(string(loggerRw.ErrMsg))
+				logger.WithFields(fields).Warn(string(loggerRw.ErrMsg))
 			}
 		} else {
-			h.logger.WithFields(fields).Info("")
+			logger.WithFields(fields).Info("")
 		}
 	}()
 
