@@ -9,7 +9,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func LogHandler(logger *logrus.Logger) func(handler http.Handler) http.Handler {
+func LogHandler(logger *logrus.Entry) func(handler http.Handler) http.Handler {
 	return func(handler http.Handler) http.Handler {
 		return &loggerHandler{
 			logger:      logger,
@@ -19,7 +19,7 @@ func LogHandler(logger *logrus.Logger) func(handler http.Handler) http.Handler {
 }
 
 type loggerHandler struct {
-	logger      *logrus.Logger
+	logger      *logrus.Entry
 	nextHandler http.Handler
 }
 

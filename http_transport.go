@@ -54,7 +54,7 @@ type HttpTransport struct {
 	TransformerMgr transformers.TransformerMgr
 
 	// Logger
-	Logger *logrus.Logger
+	Logger *logrus.Entry
 
 	CertFile string
 	KeyFile  string
@@ -76,7 +76,7 @@ func (t *HttpTransport) SetDefaults() {
 	}
 
 	if t.Logger == nil {
-		t.Logger = logrus.StandardLogger()
+		t.Logger = logrus.WithField("service", t.ServiceMeta.String())
 	}
 
 	if t.Middlewares == nil {
@@ -98,8 +98,6 @@ func courierPrintln(format string, args ...interface{}) {
 
 func (t *HttpTransport) Serve(router *courier.Router) error {
 	t.SetDefaults()
-
-	t.Logger.AddHook(&ServiceMetaHook{ServiceMeta: t.ServiceMeta})
 
 	t.httpRouter = t.convertRouterToHttpRouter(router)
 

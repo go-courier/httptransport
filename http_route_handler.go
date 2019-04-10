@@ -10,6 +10,7 @@ import (
 	"github.com/go-courier/courier"
 	"github.com/go-courier/httptransport/httpx"
 	"github.com/go-courier/httptransport/transformers"
+	"github.com/go-courier/metax"
 	"github.com/go-courier/reflectx/typesutil"
 	"github.com/go-courier/statuserror"
 )
@@ -58,12 +59,18 @@ func OperationIDFromContext(ctx context.Context) string {
 }
 
 func (handler *HttpRouteHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
+	operationID := handler.operatorFactories[len(handler.operatorFactories)-1].Type.Name()
+
 	ctx := r.Context()
 	ctx = ContextWithHttpRequest(ctx, r)
 	ctx = ContextWithServiceMeta(ctx, *handler.serviceMeta)
-	ctx = ContextWithOperationID(ctx, handler.operatorFactories[len(handler.operatorFactories)-1].Type.Name())
+	ctx = ContextWithOperationID(ctx, operationID)
+	ctx = metax.ContextWithMeta(ctx, metax.Meta{
+		"operation": {operationID},
+		"service":   {handler.serviceMeta.String()},
+	})
 
-	rw.Header().Set("X-Service", handler.serviceMeta.String())
+	rw.Header().Set("X-Meta", metax.MetaFromContext(ctx).String())
 
 	requestInfo := NewRequestInfo(r)
 
