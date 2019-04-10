@@ -66,8 +66,7 @@ func (handler *HttpRouteHandler) ServeHTTP(rw http.ResponseWriter, r *http.Reque
 	ctx = ContextWithServiceMeta(ctx, *handler.serviceMeta)
 	ctx = ContextWithOperationID(ctx, operationID)
 	ctx = metax.ContextWithMeta(ctx, metax.Meta{
-		"operator": {operationID},
-		"service":   {handler.serviceMeta.String()},
+		"operator": {handler.serviceMeta.String() + "#" + operationID},
 	})
 
 	rw.Header().Set("X-Meta", metax.MetaFromContext(ctx).String())

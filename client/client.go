@@ -112,6 +112,7 @@ func (c *Client) newRequest(ctx context.Context, req interface{}, metas ...couri
 			request.Header.Add(k, v)
 		}
 	}
+
 	return request, nil
 }
 

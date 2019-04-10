@@ -24,8 +24,8 @@ func (g *ServiceClientGenerator) Scan(openapi *oas.OpenAPI) {
 
 	g.File.WriteBlock(codegen.Expr(`
 
-func (c *` + g.ClientInstanceName() + `) WithContext(ctx context.Context) `+g.ClientInterfaceName()+` {
-	cc := new(`+g.ClientInstanceName()+`)
+func (c *` + g.ClientInstanceName() + `) WithContext(ctx context.Context) ` + g.ClientInterfaceName() + ` {
+	cc := new(` + g.ClientInstanceName() + `)
 	cc.Client = c.Client
 	cc.ctx = ctx
 	return cc

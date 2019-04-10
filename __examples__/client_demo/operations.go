@@ -21,7 +21,7 @@ func (Cookie) Method() string {
 }
 
 func (req *Cookie) InvokeContext(ctx context.Context, c github_com_go_courier_courier.Client, metas ...github_com_go_courier_courier.Metadata) (github_com_go_courier_courier.Metadata, error) {
-	ctx = github_com_go_courier_metax.ContextWithMeta(ctx, github_com_go_courier_metax.MetaFromContext(ctx).With("operation", "demo.Cookie"))
+	ctx = github_com_go_courier_metax.ContextWith(ctx, "operationID", "demo.Cookie")
 	return c.Do(ctx, req, metas...).Into(nil)
 }
 
@@ -44,7 +44,7 @@ func (Create) Method() string {
 func (req *Create) InvokeContext(ctx context.Context, c github_com_go_courier_courier.Client, metas ...github_com_go_courier_courier.Metadata) (*Data, github_com_go_courier_courier.Metadata, error) {
 	resp := new(Data)
 
-	ctx = github_com_go_courier_metax.ContextWithMeta(ctx, github_com_go_courier_metax.MetaFromContext(ctx).With("operation", "demo.Create"))
+	ctx = github_com_go_courier_metax.ContextWith(ctx, "operationID", "demo.Create")
 	meta, err := c.Do(ctx, req, metas...).Into(resp)
 
 	return resp, meta, err
@@ -68,7 +68,7 @@ func (DownloadFile) Method() string {
 func (req *DownloadFile) InvokeContext(ctx context.Context, c github_com_go_courier_courier.Client, metas ...github_com_go_courier_courier.Metadata) (*GithubComGoCourierHttptransportHttpxAttachment, github_com_go_courier_courier.Metadata, error) {
 	resp := new(GithubComGoCourierHttptransportHttpxAttachment)
 
-	ctx = github_com_go_courier_metax.ContextWithMeta(ctx, github_com_go_courier_metax.MetaFromContext(ctx).With("operation", "demo.DownloadFile"))
+	ctx = github_com_go_courier_metax.ContextWith(ctx, "operationID", "demo.DownloadFile")
 	meta, err := c.Do(ctx, req, metas...).Into(resp)
 
 	return resp, meta, err
@@ -96,7 +96,7 @@ func (FormMultipartWithFile) Method() string {
 }
 
 func (req *FormMultipartWithFile) InvokeContext(ctx context.Context, c github_com_go_courier_courier.Client, metas ...github_com_go_courier_courier.Metadata) (github_com_go_courier_courier.Metadata, error) {
-	ctx = github_com_go_courier_metax.ContextWithMeta(ctx, github_com_go_courier_metax.MetaFromContext(ctx).With("operation", "demo.FormMultipartWithFile"))
+	ctx = github_com_go_courier_metax.ContextWith(ctx, "operationID", "demo.FormMultipartWithFile")
 	return c.Do(ctx, req, metas...).Into(nil)
 }
 
@@ -119,7 +119,7 @@ func (FormMultipartWithFiles) Method() string {
 }
 
 func (req *FormMultipartWithFiles) InvokeContext(ctx context.Context, c github_com_go_courier_courier.Client, metas ...github_com_go_courier_courier.Metadata) (github_com_go_courier_courier.Metadata, error) {
-	ctx = github_com_go_courier_metax.ContextWithMeta(ctx, github_com_go_courier_metax.MetaFromContext(ctx).With("operation", "demo.FormMultipartWithFiles"))
+	ctx = github_com_go_courier_metax.ContextWith(ctx, "operationID", "demo.FormMultipartWithFiles")
 	return c.Do(ctx, req, metas...).Into(nil)
 }
 
@@ -144,7 +144,7 @@ func (FormURLEncoded) Method() string {
 }
 
 func (req *FormURLEncoded) InvokeContext(ctx context.Context, c github_com_go_courier_courier.Client, metas ...github_com_go_courier_courier.Metadata) (github_com_go_courier_courier.Metadata, error) {
-	ctx = github_com_go_courier_metax.ContextWithMeta(ctx, github_com_go_courier_metax.MetaFromContext(ctx).With("operation", "demo.FormURLEncoded"))
+	ctx = github_com_go_courier_metax.ContextWith(ctx, "operationID", "demo.FormURLEncoded")
 	return c.Do(ctx, req, metas...).Into(nil)
 }
 
@@ -170,7 +170,7 @@ func (GetByID) Method() string {
 func (req *GetByID) InvokeContext(ctx context.Context, c github_com_go_courier_courier.Client, metas ...github_com_go_courier_courier.Metadata) (*Data, github_com_go_courier_courier.Metadata, error) {
 	resp := new(Data)
 
-	ctx = github_com_go_courier_metax.ContextWithMeta(ctx, github_com_go_courier_metax.MetaFromContext(ctx).With("operation", "demo.GetByID"))
+	ctx = github_com_go_courier_metax.ContextWith(ctx, "operationID", "demo.GetByID")
 	meta, err := c.Do(ctx, req, metas...).Into(resp)
 
 	return resp, meta, err
@@ -192,7 +192,7 @@ func (HealthCheck) Method() string {
 }
 
 func (req *HealthCheck) InvokeContext(ctx context.Context, c github_com_go_courier_courier.Client, metas ...github_com_go_courier_courier.Metadata) (github_com_go_courier_courier.Metadata, error) {
-	ctx = github_com_go_courier_metax.ContextWithMeta(ctx, github_com_go_courier_metax.MetaFromContext(ctx).With("operation", "demo.HealthCheck"))
+	ctx = github_com_go_courier_metax.ContextWith(ctx, "operationID", "demo.HealthCheck")
 	return c.Do(ctx, req, metas...).Into(nil)
 }
 
@@ -212,7 +212,7 @@ func (Redirect) Method() string {
 }
 
 func (req *Redirect) InvokeContext(ctx context.Context, c github_com_go_courier_courier.Client, metas ...github_com_go_courier_courier.Metadata) (github_com_go_courier_courier.Metadata, error) {
-	ctx = github_com_go_courier_metax.ContextWithMeta(ctx, github_com_go_courier_metax.MetaFromContext(ctx).With("operation", "demo.Redirect"))
+	ctx = github_com_go_courier_metax.ContextWith(ctx, "operationID", "demo.Redirect")
 	return c.Do(ctx, req, metas...).Into(nil)
 }
 
@@ -232,7 +232,7 @@ func (RedirectWhenError) Method() string {
 }
 
 func (req *RedirectWhenError) InvokeContext(ctx context.Context, c github_com_go_courier_courier.Client, metas ...github_com_go_courier_courier.Metadata) (github_com_go_courier_courier.Metadata, error) {
-	ctx = github_com_go_courier_metax.ContextWithMeta(ctx, github_com_go_courier_metax.MetaFromContext(ctx).With("operation", "demo.RedirectWhenError"))
+	ctx = github_com_go_courier_metax.ContextWith(ctx, "operationID", "demo.RedirectWhenError")
 	return c.Do(ctx, req, metas...).Into(nil)
 }
 
@@ -253,7 +253,7 @@ func (RemoveByID) Method() string {
 }
 
 func (req *RemoveByID) InvokeContext(ctx context.Context, c github_com_go_courier_courier.Client, metas ...github_com_go_courier_courier.Metadata) (github_com_go_courier_courier.Metadata, error) {
-	ctx = github_com_go_courier_metax.ContextWithMeta(ctx, github_com_go_courier_metax.MetaFromContext(ctx).With("operation", "demo.RemoveByID"))
+	ctx = github_com_go_courier_metax.ContextWith(ctx, "operationID", "demo.RemoveByID")
 	return c.Do(ctx, req, metas...).Into(nil)
 }
 
@@ -275,7 +275,7 @@ func (ShowImage) Method() string {
 func (req *ShowImage) InvokeContext(ctx context.Context, c github_com_go_courier_courier.Client, metas ...github_com_go_courier_courier.Metadata) (*GithubComGoCourierHttptransportHttpxImagePNG, github_com_go_courier_courier.Metadata, error) {
 	resp := new(GithubComGoCourierHttptransportHttpxImagePNG)
 
-	ctx = github_com_go_courier_metax.ContextWithMeta(ctx, github_com_go_courier_metax.MetaFromContext(ctx).With("operation", "demo.ShowImage"))
+	ctx = github_com_go_courier_metax.ContextWith(ctx, "operationID", "demo.ShowImage")
 	meta, err := c.Do(ctx, req, metas...).Into(resp)
 
 	return resp, meta, err
@@ -299,7 +299,7 @@ func (UpdateByID) Method() string {
 }
 
 func (req *UpdateByID) InvokeContext(ctx context.Context, c github_com_go_courier_courier.Client, metas ...github_com_go_courier_courier.Metadata) (github_com_go_courier_courier.Metadata, error) {
-	ctx = github_com_go_courier_metax.ContextWithMeta(ctx, github_com_go_courier_metax.MetaFromContext(ctx).With("operation", "demo.UpdateByID"))
+	ctx = github_com_go_courier_metax.ContextWith(ctx, "operationID", "demo.UpdateByID")
 	return c.Do(ctx, req, metas...).Into(nil)
 }
 

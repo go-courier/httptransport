@@ -79,7 +79,7 @@ func (g *OperationGenerator) WriteOperation(method string, path string, operatio
 
 	g.File.Write(codegen.Comments(statusErrors...).Bytes())
 
-	ctxWithMeta := `ctx = ` + g.File.Use("github.com/go-courier/metax", "ContextWithMeta") + `(ctx, ` + g.File.Use("github.com/go-courier/metax", "MetaFromContext") + `(ctx).With("operation","` + g.ID(id) + `"))`
+	ctxWithMeta := `ctx = ` + g.File.Use("github.com/go-courier/metax", "ContextWith") + `(ctx, "operationID","` + g.ID(id) + `")`
 
 	if respType != nil {
 		g.File.WriteBlock(

@@ -31,11 +31,10 @@ func (rt *LogRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) 
 		cost := time.Now().Sub(startedAt)
 
 		logger := rt.logger.WithContext(req.Context()).WithFields(logrus.Fields{
-			"operation": req.Header.Get("X-Operation-Id"),
-			"cost":      fmt.Sprintf("%0.3fms", float64(cost/time.Millisecond)),
-			"method":    req.Method,
-			"url":       req.URL.String(),
-			"metadata":  req.Header,
+			"cost":     fmt.Sprintf("%0.3fms", float64(cost/time.Millisecond)),
+			"method":   req.Method,
+			"url":      req.URL.String(),
+			"metadata": req.Header,
 		})
 
 		if err == nil {
