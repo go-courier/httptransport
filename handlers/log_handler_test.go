@@ -29,7 +29,7 @@ func ExampleLogHandler() {
 		}
 	}
 
-	handler := LogHandler(logrus.StandardLogger())(handle).(*loggerHandler)
+	handler := LogHandler(logrus.WithField("service", ""))(handle).(*loggerHandler)
 
 	for _, method := range []string{http.MethodGet, http.MethodPut, http.MethodDelete, http.MethodPost} {
 		req, _ := http.NewRequest(method, "/", nil)
