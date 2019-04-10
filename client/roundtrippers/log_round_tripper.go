@@ -8,7 +8,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func NewLogRoundTripper(logger *logrus.Logger) func(roundTripper http.RoundTripper) http.RoundTripper {
+func NewLogRoundTripper(logger *logrus.Entry) func(roundTripper http.RoundTripper) http.RoundTripper {
 	return func(roundTripper http.RoundTripper) http.RoundTripper {
 		return &LogRoundTripper{
 			logger:           logger,
@@ -18,7 +18,7 @@ func NewLogRoundTripper(logger *logrus.Logger) func(roundTripper http.RoundTripp
 }
 
 type LogRoundTripper struct {
-	logger           *logrus.Logger
+	logger           *logrus.Entry
 	nextRoundTripper http.RoundTripper
 }
 
@@ -30,7 +30,7 @@ func (rt *LogRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) 
 	defer func() {
 		cost := time.Now().Sub(startedAt)
 
-		logger := rt.logger.WithFields(logrus.Fields{
+		logger := rt.logger.WithContext(req.Context()).WithFields(logrus.Fields{
 			"operation": req.Header.Get("X-Operation-Id"),
 			"cost":      fmt.Sprintf("%0.3fms", float64(cost/time.Millisecond)),
 			"method":    req.Method,

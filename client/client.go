@@ -40,7 +40,7 @@ func (c *Client) SetDefaults() {
 		c.RequestTransformerMgr.SetDefaults()
 	}
 	if c.HttpTransports == nil {
-		c.HttpTransports = []HttpTransport{roundtrippers.NewLogRoundTripper(logrus.StandardLogger())}
+		c.HttpTransports = []HttpTransport{roundtrippers.NewLogRoundTripper(logrus.WithField("client", ""))}
 	}
 	if c.NewError == nil {
 		c.NewError = func() error {
