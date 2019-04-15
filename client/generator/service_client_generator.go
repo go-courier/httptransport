@@ -145,8 +145,8 @@ func (g *ServiceClientGenerator) OperationMethod(operation *oas.Operation, asInt
 		MethodOf(codegen.Var(codegen.Star(codegen.Type(g.ClientInstanceName())), "c"))
 
 	if hasReq {
-		return m.Do(codegen.Return(codegen.Expr("req.InvokeContext(c.Context(), c.Client)")))
+		return m.Do(codegen.Return(codegen.Expr("req.InvokeContext(c.Context(), c.Client, metas...)")))
 	}
 
-	return m.Do(codegen.Return(codegen.Expr("(&?{}).InvokeContext(c.Context(), c.Client)", codegen.Type(operation.OperationId))))
+	return m.Do(codegen.Return(codegen.Expr("(&?{}).InvokeContext(c.Context(), c.Client, metas...)", codegen.Type(operation.OperationId))))
 }

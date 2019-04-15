@@ -50,53 +50,53 @@ func (c *ClientDemoStruct) Context() context.Context {
 }
 
 func (c *ClientDemoStruct) Cookie(req *Cookie, metas ...github_com_go_courier_courier.Metadata) (github_com_go_courier_courier.Metadata, error) {
-	return req.InvokeContext(c.Context(), c.Client)
+	return req.InvokeContext(c.Context(), c.Client, metas...)
 }
 
 func (c *ClientDemoStruct) Create(req *Create, metas ...github_com_go_courier_courier.Metadata) (*Data, github_com_go_courier_courier.Metadata, error) {
-	return req.InvokeContext(c.Context(), c.Client)
+	return req.InvokeContext(c.Context(), c.Client, metas...)
 }
 
 func (c *ClientDemoStruct) DownloadFile(metas ...github_com_go_courier_courier.Metadata) (*GithubComGoCourierHttptransportHttpxAttachment, github_com_go_courier_courier.Metadata, error) {
-	return (&DownloadFile{}).InvokeContext(c.Context(), c.Client)
+	return (&DownloadFile{}).InvokeContext(c.Context(), c.Client, metas...)
 }
 
 func (c *ClientDemoStruct) FormMultipartWithFile(req *FormMultipartWithFile, metas ...github_com_go_courier_courier.Metadata) (github_com_go_courier_courier.Metadata, error) {
-	return req.InvokeContext(c.Context(), c.Client)
+	return req.InvokeContext(c.Context(), c.Client, metas...)
 }
 
 func (c *ClientDemoStruct) FormMultipartWithFiles(req *FormMultipartWithFiles, metas ...github_com_go_courier_courier.Metadata) (github_com_go_courier_courier.Metadata, error) {
-	return req.InvokeContext(c.Context(), c.Client)
+	return req.InvokeContext(c.Context(), c.Client, metas...)
 }
 
 func (c *ClientDemoStruct) FormURLEncoded(req *FormURLEncoded, metas ...github_com_go_courier_courier.Metadata) (github_com_go_courier_courier.Metadata, error) {
-	return req.InvokeContext(c.Context(), c.Client)
+	return req.InvokeContext(c.Context(), c.Client, metas...)
 }
 
 func (c *ClientDemoStruct) GetByID(req *GetByID, metas ...github_com_go_courier_courier.Metadata) (*Data, github_com_go_courier_courier.Metadata, error) {
-	return req.InvokeContext(c.Context(), c.Client)
+	return req.InvokeContext(c.Context(), c.Client, metas...)
 }
 
 func (c *ClientDemoStruct) HealthCheck(metas ...github_com_go_courier_courier.Metadata) (github_com_go_courier_courier.Metadata, error) {
-	return (&HealthCheck{}).InvokeContext(c.Context(), c.Client)
+	return (&HealthCheck{}).InvokeContext(c.Context(), c.Client, metas...)
 }
 
 func (c *ClientDemoStruct) Redirect(metas ...github_com_go_courier_courier.Metadata) (github_com_go_courier_courier.Metadata, error) {
-	return (&Redirect{}).InvokeContext(c.Context(), c.Client)
+	return (&Redirect{}).InvokeContext(c.Context(), c.Client, metas...)
 }
 
 func (c *ClientDemoStruct) RedirectWhenError(metas ...github_com_go_courier_courier.Metadata) (github_com_go_courier_courier.Metadata, error) {
-	return (&RedirectWhenError{}).InvokeContext(c.Context(), c.Client)
+	return (&RedirectWhenError{}).InvokeContext(c.Context(), c.Client, metas...)
 }
 
 func (c *ClientDemoStruct) RemoveByID(req *RemoveByID, metas ...github_com_go_courier_courier.Metadata) (github_com_go_courier_courier.Metadata, error) {
-	return req.InvokeContext(c.Context(), c.Client)
+	return req.InvokeContext(c.Context(), c.Client, metas...)
 }
 
 func (c *ClientDemoStruct) ShowImage(metas ...github_com_go_courier_courier.Metadata) (*GithubComGoCourierHttptransportHttpxImagePNG, github_com_go_courier_courier.Metadata, error) {
-	return (&ShowImage{}).InvokeContext(c.Context(), c.Client)
+	return (&ShowImage{}).InvokeContext(c.Context(), c.Client, metas...)
 }
 
 func (c *ClientDemoStruct) UpdateByID(req *UpdateByID, metas ...github_com_go_courier_courier.Metadata) (github_com_go_courier_courier.Metadata, error) {
-	return req.InvokeContext(c.Context(), c.Client)
+	return req.InvokeContext(c.Context(), c.Client, metas...)
 }
