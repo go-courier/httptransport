@@ -93,13 +93,13 @@ func (scanner *DefinitionScanner) Def(typeName *types.TypeName) *oas.Schema {
 
 	if doc, fmtName := parseStrfmt(doc); fmtName != "" {
 		s := oas.NewSchema(oas.TypeString, fmtName)
-		s.Description = doc
+		s.Description = dropMarkedLines(doc)
 		return scanner.addDef(typeName, s)
 	}
 
 	if doc, typ := parseType(doc); typ != "" {
 		s := oas.NewSchema(oas.Type(typ), "")
-		s.Description = doc
+		s.Description = dropMarkedLines(doc)
 		return scanner.addDef(typeName, s)
 	}
 
@@ -127,7 +127,7 @@ func (scanner *DefinitionScanner) Def(typeName *types.TypeName) *oas.Schema {
 	}
 
 	s := scanner.getSchemaByType(typeName.Type().Underlying())
-	setDescription(s, doc)
+	setDescription(s, dropMarkedLines(doc))
 	return scanner.addDef(typeName, s)
 }
 
@@ -356,7 +356,7 @@ func (scanner *DefinitionScanner) propSchemaByField(
 		}
 	}
 
-	propSchema.Description = desc
+	propSchema.Description = dropMarkedLines(desc)
 	propSchema.AddExtension(XGoFieldName, fieldName)
 
 	tagKeys := map[string]string{

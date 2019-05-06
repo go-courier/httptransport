@@ -57,3 +57,17 @@ func tagValueAndFlagsByTagString(tagString string) (string, map[string]bool) {
 	}
 	return v, tagFlags
 }
+
+func filterMarkedLines(comments []string) []string {
+	lines := make([]string, 0)
+	for _, line := range comments {
+		if !strings.HasPrefix(line, "@") {
+			lines = append(lines, line)
+		}
+	}
+	return lines
+}
+
+func dropMarkedLines(doc string) string  {
+	return strings.Join(filterMarkedLines(strings.Split(doc, "\n")), "\n")
+}

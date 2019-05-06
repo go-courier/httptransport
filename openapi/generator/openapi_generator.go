@@ -120,6 +120,9 @@ func (g *OpenAPIGenerator) getOperationByOperatorTypes(method string, operatorTy
 	for idx, operatorType := range operatorTypes {
 		operator := g.operatorScanner.Operator(operatorType.TypeName)
 		operator.BindOperation(method, operation, idx == length-1)
+		if operator.Deprecated {
+			operation.Deprecated = true
+		}
 	}
 
 	return operation

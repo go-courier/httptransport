@@ -78,7 +78,16 @@ func (scanner *OperatorScanner) Operator(typeName *types.TypeName) *Operator {
 }
 
 func (scanner *OperatorScanner) scanSummaryAndDescription(op *Operator, typeName *types.TypeName) {
-	comments := strings.Split(scanner.pkg.CommentsOf(scanner.pkg.IdentOf(typeName)), "\n")
+	lines := scanner.pkg.CommentsOf(scanner.pkg.IdentOf(typeName))
+	comments := strings.Split(lines, "\n")
+
+	for i := range comments {
+		if strings.Index(comments[i], "@deprecated") != -1 {
+			op.Deprecated = true
+		}
+	}
+
+	comments = filterMarkedLines(comments)
 
 	if comments[0] != "" {
 		op.Summary = comments[0]
@@ -261,6 +270,7 @@ func (scanner *OperatorScanner) scanParameterOrRequestBody(op *Operator, typeStr
 type Operator struct {
 	ID string
 
+	Deprecated  bool
 	Tag         string
 	Summary     string
 	Description string
