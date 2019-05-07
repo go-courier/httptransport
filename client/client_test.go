@@ -2,6 +2,7 @@ package client
 
 import (
 	"encoding/xml"
+	"net/http"
 	"testing"
 	"time"
 
@@ -38,7 +39,19 @@ func TestClient(t *testing.T) {
 	}
 	ipInfoClient.SetDefaults()
 
-	{
+	t.Run("direct request", func(t *testing.T) {
+		ipInfo := IpInfo{}
+
+		request, _ := http.NewRequest("GET", "http://ip-api.com/json", nil)
+
+		meta, err := ipInfoClient.Do(nil, request).Into(&ipInfo)
+		require.NoError(t, err)
+
+		t.Log(ipInfo)
+		t.Log(meta)
+	})
+
+	t.Run("request by struct", func(t *testing.T) {
 		ipInfo := IpInfo{}
 
 		meta, err := ipInfoClient.Do(nil, &GetByJSON{}).Into(&ipInfo)
@@ -46,9 +59,9 @@ func TestClient(t *testing.T) {
 
 		t.Log(ipInfo)
 		t.Log(meta)
-	}
+	})
 
-	{
+	t.Run("request by struct as xml", func(t *testing.T) {
 		ipInfo := IpInfo{}
 
 		meta, err := ipInfoClient.Do(nil, &GetByXML{}).Into(&ipInfo)
@@ -56,18 +69,19 @@ func TestClient(t *testing.T) {
 
 		t.Log(ipInfo)
 		t.Log(meta)
-	}
+	})
 
-	errClient := &Client{
-		Timeout: 100 * time.Second,
-	}
-	errClient.SetDefaults()
+	t.Run("err request", func(t *testing.T) {
+		errClient := &Client{
+			Timeout: 100 * time.Second,
+		}
+		errClient.SetDefaults()
 
-	{
-		ipInfo := IpInfo{}
+		{
+			ipInfo := IpInfo{}
 
-		_, err := errClient.Do(nil, &GetByJSON{}).Into(&ipInfo)
-		require.Error(t, err)
-	}
-
+			_, err := errClient.Do(nil, &GetByJSON{}).Into(&ipInfo)
+			require.Error(t, err)
+		}
+	})
 }

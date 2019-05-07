@@ -50,13 +50,17 @@ func (c *Client) SetDefaults() {
 }
 
 func (c *Client) Do(ctx context.Context, req interface{}, metas ...courier.Metadata) courier.Result {
-	request, err := c.newRequest(ctx, req, metas...)
-	if err != nil {
-		return &Result{
-			NewError:       c.NewError,
-			TransformerMgr: c.RequestTransformerMgr.TransformerMgr,
-			Err:            RequestFailed.StatusErr().WithDesc(err.Error()),
+	request, ok := req.(*http.Request)
+	if !ok {
+		request2, err := c.newRequest(ctx, req, metas...)
+		if err != nil {
+			return &Result{
+				NewError:       c.NewError,
+				TransformerMgr: c.RequestTransformerMgr.TransformerMgr,
+				Err:            RequestFailed.StatusErr().WithDesc(err.Error()),
+			}
 		}
+		request = request2
 	}
 
 	httpClient := GetShortConnClient(c.Timeout, c.HttpTransports...)
