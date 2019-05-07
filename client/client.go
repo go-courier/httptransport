@@ -53,8 +53,9 @@ func (c *Client) Do(ctx context.Context, req interface{}, metas ...courier.Metad
 	request, err := c.newRequest(ctx, req, metas...)
 	if err != nil {
 		return &Result{
-			Client: c,
-			Err:    RequestFailed.StatusErr().WithDesc(err.Error()),
+			NewError:       c.NewError,
+			TransformerMgr: c.RequestTransformerMgr.TransformerMgr,
+			Err:            RequestFailed.StatusErr().WithDesc(err.Error()),
 		}
 	}
 
@@ -62,14 +63,15 @@ func (c *Client) Do(ctx context.Context, req interface{}, metas ...courier.Metad
 	resp, err := httpClient.Do(request)
 	if err != nil {
 		return &Result{
-			Client: c,
-			Err:    RequestFailed.StatusErr().WithDesc(err.Error()),
+			NewError:       c.NewError,
+			Err:            RequestFailed.StatusErr().WithDesc(err.Error()),
+			TransformerMgr: c.RequestTransformerMgr.TransformerMgr,
 		}
 	}
 	return &Result{
-		Client:         c,
+		NewError:       c.NewError,
+		TransformerMgr: c.RequestTransformerMgr.TransformerMgr,
 		Response:       resp,
-		transformerMgr: c.RequestTransformerMgr.TransformerMgr,
 	}
 }
 
@@ -117,10 +119,10 @@ func (c *Client) newRequest(ctx context.Context, req interface{}, metas ...couri
 }
 
 type Result struct {
-	transformerMgr transformers.TransformerMgr
-	*Client
 	*http.Response
-	Err error
+	transformers.TransformerMgr
+	NewError func() error
+	Err      error
 }
 
 func (r *Result) Into(body interface{}) (courier.Metadata, error) {
@@ -156,7 +158,7 @@ func (r *Result) Into(body interface{}) (courier.Metadata, error) {
 		}
 	} else {
 		rv := reflect.ValueOf(body)
-		transformer, err := r.transformerMgr.NewTransformer(nil, typesutil.FromRType(rv.Type()), transformers.TransformerOption{
+		transformer, err := r.NewTransformer(nil, typesutil.FromRType(rv.Type()), transformers.TransformerOption{
 			MIME: contentType,
 		})
 
