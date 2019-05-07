@@ -6,7 +6,7 @@ import (
 
 // @StatusErr[InternalServerError][500100001][InternalServerError]
 func call() {
-	fmt.Println(InternalServerError)
+	fmt.Println(InternalServerError.StatusErr().WithDesc("test"))
 }
 
 func main() {

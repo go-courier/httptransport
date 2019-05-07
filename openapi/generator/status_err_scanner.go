@@ -55,6 +55,12 @@ func (scanner *StatusErrScanner) StatusErrorsInFunc(typeFunc *types.Func) []*sta
 					callIdent := identList[len(identList)-1]
 					obj := pkg.TypesInfo.ObjectOf(callIdent)
 
+					if obj != nil && obj.Pkg() != nil && obj.Pkg().Path() == scanner.StatusErrType.Obj().Pkg().Path() {
+						for i := range identList {
+							scanner.mayAddStateErrorByObject(typeFunc, pkg.TypesInfo.ObjectOf(identList[i]))
+						}
+						return false
+					}
 					if nextTypeFunc, ok := obj.(*types.Func); ok && nextTypeFunc != typeFunc && nextTypeFunc.Pkg() != nil {
 						scanner.appendStateErrs(typeFunc, scanner.StatusErrorsInFunc(nextTypeFunc)...)
 					}

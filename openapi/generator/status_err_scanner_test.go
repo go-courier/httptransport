@@ -15,6 +15,13 @@ func TestStatusErrScanner(t *testing.T) {
 
 	scanner := NewStatusErrScanner(pkg)
 
-	statusErrs := scanner.StatusErrorsInFunc(pkg.Func("main"))
-	require.Len(t, statusErrs, 3)
+	{
+		statusErrs := scanner.StatusErrorsInFunc(pkg.Func("main"))
+		require.Len(t, statusErrs, 3)
+	}
+
+	{
+		statusErrs := scanner.StatusErrorsInFunc(pkg.Func("call"))
+		require.Len(t, statusErrs, 2)
+	}
 }
