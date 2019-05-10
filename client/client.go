@@ -31,7 +31,7 @@ type Client struct {
 	Timeout               time.Duration
 	RequestTransformerMgr *httptransport.RequestTransformerMgr
 	HttpTransports        []HttpTransport
-	NewError              func() error
+	NewError              func(resp *http.Response) error
 }
 
 func (c *Client) SetDefaults() {
@@ -43,8 +43,12 @@ func (c *Client) SetDefaults() {
 		c.HttpTransports = []HttpTransport{roundtrippers.NewLogRoundTripper(logrus.WithField("client", ""))}
 	}
 	if c.NewError == nil {
-		c.NewError = func() error {
-			return &statuserror.StatusErr{}
+		c.NewError = func(resp *http.Response) error {
+			return &statuserror.StatusErr{
+				Code:    resp.StatusCode * 1e6,
+				Msg:     resp.Status,
+				Sources: []string{resp.Request.Host},
+			}
 		}
 	}
 }
@@ -55,9 +59,9 @@ func (c *Client) Do(ctx context.Context, req interface{}, metas ...courier.Metad
 		request2, err := c.newRequest(ctx, req, metas...)
 		if err != nil {
 			return &Result{
+				Err:            RequestFailed.StatusErr().WithDesc(err.Error()),
 				NewError:       c.NewError,
 				TransformerMgr: c.RequestTransformerMgr.TransformerMgr,
-				Err:            RequestFailed.StatusErr().WithDesc(err.Error()),
 			}
 		}
 		request = request2
@@ -67,8 +71,8 @@ func (c *Client) Do(ctx context.Context, req interface{}, metas ...courier.Metad
 	resp, err := httpClient.Do(request)
 	if err != nil {
 		return &Result{
-			NewError:       c.NewError,
 			Err:            RequestFailed.StatusErr().WithDesc(err.Error()),
+			NewError:       c.NewError,
 			TransformerMgr: c.RequestTransformerMgr.TransformerMgr,
 		}
 	}
@@ -125,7 +129,7 @@ func (c *Client) newRequest(ctx context.Context, req interface{}, metas ...couri
 type Result struct {
 	*http.Response
 	transformers.TransformerMgr
-	NewError func() error
+	NewError func(resp *http.Response) error
 	Err      error
 }
 
@@ -143,7 +147,7 @@ func (r *Result) Into(body interface{}) (courier.Metadata, error) {
 	meta := courier.Metadata(r.Header)
 
 	if !isOk(r.StatusCode) {
-		body = r.NewError()
+		body = r.NewError(r.Response)
 	}
 
 	if body == nil {

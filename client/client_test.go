@@ -51,6 +51,16 @@ func TestClient(t *testing.T) {
 		t.Log(meta)
 	})
 
+	t.Run("direct request 404", func(t *testing.T) {
+		request, _ := http.NewRequest("GET", "https://api.github.com/xxxxn", nil)
+
+		meta, err := ipInfoClient.Do(nil, request).Into(nil)
+		require.Error(t, err)
+
+		t.Log(err)
+		t.Log(meta)
+	})
+
 	t.Run("request by struct", func(t *testing.T) {
 		ipInfo := IpInfo{}
 
