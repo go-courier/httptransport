@@ -58,6 +58,15 @@ func OperationIDFromContext(ctx context.Context) string {
 	return ctx.Value("courier.OperationID").(string)
 }
 
+func ContextWithOperatorMeta(ctx context.Context, om *courier.OperatorMeta) context.Context {
+	return context.WithValue(ctx, "courier.OperatorMeta", om)
+}
+
+func OperatorMetaFromContext(ctx context.Context) *courier.OperatorMeta {
+	v, _ := ctx.Value("courier.OperatorMeta").(*courier.OperatorMeta)
+	return v
+}
+
 func (handler *HttpRouteHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	operationID := handler.operatorFactories[len(handler.operatorFactories)-1].Type.Name()
 
@@ -77,6 +86,8 @@ func (handler *HttpRouteHandler) ServeHTTP(rw http.ResponseWriter, r *http.Reque
 		opFactory := handler.operatorFactories[i]
 
 		op := opFactory.New()
+
+		ctx = ContextWithOperatorMeta(ctx, opFactory)
 
 		rt := handler.requestTransformers[i]
 		if rt != nil {
