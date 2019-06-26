@@ -1,6 +1,7 @@
 package client
 
 import (
+	"context"
 	"encoding/xml"
 	"net/http"
 	"testing"
@@ -90,7 +91,7 @@ func TestClient(t *testing.T) {
 		{
 			ipInfo := IpInfo{}
 
-			_, err := errClient.Do(nil, &GetByJSON{}).Into(&ipInfo)
+			_, err := errClient.Do(ContextWithClient(context.Background(), GetShortConnClient(10*time.Second)), &GetByJSON{}).Into(&ipInfo)
 			require.Error(t, err)
 		}
 	})

@@ -53,6 +53,20 @@ func (c *Client) SetDefaults() {
 	}
 }
 
+func ContextWithClient(ctx context.Context, c *http.Client) context.Context {
+	return context.WithValue(ctx, "courier.Client", c)
+}
+
+func ClientFromContext(ctx context.Context) *http.Client {
+	if ctx == nil {
+		return nil
+	}
+	if c, ok := ctx.Value("courier.Client").(*http.Client); ok {
+		return c
+	}
+	return nil
+}
+
 func (c *Client) Do(ctx context.Context, req interface{}, metas ...courier.Metadata) courier.Result {
 	request, ok := req.(*http.Request)
 	if !ok {
@@ -67,7 +81,11 @@ func (c *Client) Do(ctx context.Context, req interface{}, metas ...courier.Metad
 		request = request2
 	}
 
-	httpClient := GetShortConnClient(c.Timeout, c.HttpTransports...)
+	httpClient := ClientFromContext(ctx)
+	if httpClient == nil {
+		httpClient = GetShortConnClient(c.Timeout, c.HttpTransports...)
+	}
+
 	resp, err := httpClient.Do(request)
 	if err != nil {
 		return &Result{
