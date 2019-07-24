@@ -102,10 +102,11 @@ func (c *Client) Do(ctx context.Context, req interface{}, metas ...courier.Metad
 }
 
 func (c *Client) toUrl(path string) string {
-	if c.Protocol == "" {
-		c.Protocol = "http"
+	protocol := c.Protocol
+	if protocol == "" {
+		protocol = "http"
 	}
-	url := fmt.Sprintf("%s://%s", c.Protocol, c.Host)
+	url := fmt.Sprintf("%s://%s", protocol, c.Host)
 	if c.Port > 0 {
 		url = fmt.Sprintf("%s:%d", url, c.Port)
 	}
