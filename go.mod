@@ -17,7 +17,7 @@ require (
 	github.com/go-courier/validator v1.4.6
 	github.com/julienschmidt/httprouter v1.2.0
 	github.com/mattn/go-colorable v0.1.1
-	github.com/mattn/go-isatty v0.0.7
+	github.com/mattn/go-isatty v0.0.9
 	github.com/sirupsen/logrus v1.4.1
 	github.com/stretchr/testify v1.3.0
 )
