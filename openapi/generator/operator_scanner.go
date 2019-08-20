@@ -139,6 +139,7 @@ func (scanner *OperatorScanner) firstValueOfFunc(named *types.Named, name string
 					}
 				}
 			}
+			return nil, true
 		}
 	}
 	return nil, false
@@ -205,10 +206,18 @@ func (scanner *OperatorScanner) getResponse(tpe types.Type, expr ast.Expr) (stat
 
 	if named, ok := tpe.(*types.Named); ok {
 		if v, ok := scanner.firstValueOfFunc(named, "ContentType"); ok {
-			contentType = v.(string)
+			if s, ok := v.(string); ok {
+				contentType = s
+			}
+			if contentType == "" {
+				contentType = "*"
+			}
+			fmt.Println(contentType)
 		}
 		if v, ok := scanner.firstValueOfFunc(named, "StatusCode"); ok {
-			statusCode = int(v.(int64))
+			if i, ok := v.(int64); ok {
+				statusCode = int(i)
+			}
 		}
 	}
 
@@ -378,6 +387,10 @@ var positionOrders = map[oas.Position]string{
 }
 
 func valueOf(v constant.Value) interface{} {
+	if v == nil {
+		return nil
+	}
+
 	switch v.Kind() {
 	case constant.Float:
 		v, _ := strconv.ParseFloat(v.String(), 10)

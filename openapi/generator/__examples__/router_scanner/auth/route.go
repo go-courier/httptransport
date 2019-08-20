@@ -53,14 +53,15 @@ type Data struct {
 	A string
 	B string
 	C string
+	ctype string
 }
 
 func (Data) Status() int {
 	return http.StatusOK
 }
 
-func (Data) ContentType() string {
-	return httpx.MIME_JSON
+func (d Data) ContentType() string {
+	return d.ctype
 }
 
 type FormDataMultipart struct {

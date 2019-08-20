@@ -177,7 +177,7 @@ func TestOperatorScanner(t *testing.T) {
   "responses": {
     "200": {
       "content": {
-        "application/json": {
+        "*": {
           "schema": {
             "$ref": "#/components/schemas/Data"
           }
