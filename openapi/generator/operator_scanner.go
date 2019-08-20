@@ -128,7 +128,7 @@ func (scanner *OperatorScanner) scanReturns(op *Operator, typeName *types.TypeNa
 }
 
 func (scanner *OperatorScanner) firstValueOfFunc(named *types.Named, name string) (interface{}, bool) {
-	method, ok := typesutil.FromTType(named).MethodByName(name)
+	method, ok := typesutil.FromTType(types.NewPointer(named)).MethodByName(name)
 	if ok {
 		results, n := scanner.pkg.FuncResultsOf(method.(*typesutil.TMethod).Func)
 		if n == 1 {

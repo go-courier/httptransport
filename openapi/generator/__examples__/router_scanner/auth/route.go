@@ -60,7 +60,7 @@ func (Data) Status() int {
 	return http.StatusOK
 }
 
-func (d Data) ContentType() string {
+func (d *Data) ContentType() string {
 	return d.ctype
 }
 

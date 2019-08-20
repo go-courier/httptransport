@@ -34,7 +34,7 @@
         "responses": {
           "200": {
             "content": {
-              "application/json": {
+              "application/octet-stream": {
                 "schema": {
                   "$ref": "#/components/schemas/GithubComGoCourierHttptransportHttpxAttachment"
                 }
