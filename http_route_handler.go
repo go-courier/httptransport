@@ -91,7 +91,7 @@ func (handler *HttpRouteHandler) ServeHTTP(rw http.ResponseWriter, r *http.Reque
 
 		rt := handler.requestTransformers[i]
 		if rt != nil {
-			err := rt.DecodeFromRequestInfo(requestInfo, op)
+			err := rt.DecodeFrom(requestInfo, opFactory, op)
 			if err != nil {
 				handler.writeErr(rw, r, err)
 				return

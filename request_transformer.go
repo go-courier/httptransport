@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"go/ast"
 	"io"
 	"net/http"
 	"net/textproto"
@@ -12,6 +13,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/go-courier/courier"
 	"github.com/go-courier/httptransport/httpx"
 	"github.com/go-courier/httptransport/transformers"
 	"github.com/go-courier/reflectx"
@@ -297,7 +299,7 @@ type PostValidator interface {
 	PostValidate(badRequest *BadRequest)
 }
 
-func (t *RequestTransformer) DecodeFromRequestInfo(info *RequestInfo, v interface{}) error {
+func (t *RequestTransformer) DecodeFrom(info *RequestInfo, meta *courier.OperatorMeta, v interface{}) error {
 	rv, ok := v.(reflect.Value)
 	if !ok {
 		rv = reflect.ValueOf(v)
@@ -309,6 +311,16 @@ func (t *RequestTransformer) DecodeFromRequestInfo(info *RequestInfo, v interfac
 	}
 
 	badRequestError := &BadRequest{}
+
+	getValues := func(in string, name string) []string {
+		if in == "meta" {
+			if meta.Params != nil {
+				return meta.Params[name]
+			}
+			return []string{}
+		}
+		return info.Values(in, name)
+	}
 
 	transformers.NamedStructFieldValueRange(reflect.Indirect(rv), func(fieldValue reflect.Value, field *reflect.StructField) {
 		param := t.Parameters[field.Name]
@@ -322,9 +334,9 @@ func (t *RequestTransformer) DecodeFromRequestInfo(info *RequestInfo, v interfac
 			}
 		} else {
 			maybe := transformers.NewMaybeTransformer(param.Transformer, &param.CommonTransformOption)
+			values := getValues(param.In, param.Name)
 
 			if param.Explode {
-				values := info.Values(param.In, param.Name)
 				lenOfValues := len(values)
 
 				if param.Omitempty && lenOfValues == 0 {
@@ -343,7 +355,11 @@ func (t *RequestTransformer) DecodeFromRequestInfo(info *RequestInfo, v interfac
 					}
 				}
 			} else {
-				if err := maybe.DecodeFromReader(bytes.NewBufferString(info.Value(param.In, param.Name)), fieldValue); err != nil {
+				value := ""
+				if len(values) > 0 {
+					value = values[0]
+				}
+				if err := maybe.DecodeFromReader(bytes.NewBufferString(value), fieldValue); err != nil {
 					badRequestError.AddErr(err, param.In, param.Name)
 				}
 			}
@@ -460,4 +476,47 @@ func (info *RequestInfo) CookieValues(name string) []string {
 
 func (info *RequestInfo) Body() io.Reader {
 	return info.Request.Body
+}
+
+func OperatorParamsFromStruct(v interface{}) map[string][]string {
+	rv := reflectx.Indirect(reflect.ValueOf(v))
+	if rv.Kind() != reflect.Struct {
+		panic(fmt.Errorf("must struct"))
+	}
+
+	params := map[string][]string{}
+
+	transformers.NamedStructFieldValueRange(rv, func(fieldValue reflect.Value, field *reflect.StructField) {
+		tag, ok := field.Tag.Lookup("in")
+		if !ok || tag != "meta" {
+			return
+		}
+
+		fieldDisplayName, _, _ := typesutil.FieldDisplayName(field.Tag, "name", field.Name)
+
+		if !ast.IsExported(field.Name) || fieldDisplayName == "-" {
+			return
+		}
+
+		values := make([]string, 0)
+
+		switch fieldValue.Kind() {
+		case reflect.Array, reflect.Slice:
+			for i := 0; i < fieldValue.Len(); i++ {
+				v, err := reflectx.MarshalText(fieldValue.Index(i).Interface())
+				if err == nil {
+					values = append(values, string(v))
+				}
+			}
+		default:
+			v, err := reflectx.MarshalText(fieldValue.Interface())
+			if err == nil {
+				values = append(values, string(v))
+			}
+		}
+
+		params[fieldDisplayName] = values
+	})
+
+	return params
 }
