@@ -245,7 +245,7 @@ func (scanner *DefinitionScanner) getSchemaByType(typ types.Type) *oas.Schema {
 		if keySchema != nil && len(keySchema.Type) > 0 && keySchema.Type != "string" {
 			panic(fmt.Errorf("only support map[string]interface{}"))
 		}
-		return oas.MapOf(scanner.getSchemaByType(t.Elem()))
+		return oas.KeyValueOf(keySchema, scanner.getSchemaByType(t.Elem()))
 	case *types.Slice:
 		return oas.ItemsOf(scanner.getSchemaByType(t.Elem()))
 	case *types.Array:

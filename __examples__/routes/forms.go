@@ -5,6 +5,7 @@ import (
 	"mime/multipart"
 
 	"github.com/go-courier/courier"
+	"github.com/go-courier/httptransport/__examples__/constants/types"
 	"github.com/go-courier/httptransport/httpx"
 
 	"github.com/go-courier/httptransport"
@@ -42,10 +43,11 @@ func (req FormURLEncoded) Output(ctx context.Context) (resp interface{}, err err
 type FormMultipartWithFile struct {
 	httpx.MethodPost
 	FormData struct {
-		String string                `name:"string,omitempty"`
-		Slice  []string              `name:"slice,omitempty"`
-		Data   Data                  `name:"data,omitempty"`
-		File   *multipart.FileHeader `name:"file"`
+		Map    map[types.Protocol]int `name:"map,omitempty"`
+		String string                 `name:"string,omitempty"`
+		Slice  []string               `name:"slice,omitempty"`
+		Data   Data                   `name:"data,omitempty"`
+		File   *multipart.FileHeader  `name:"file"`
 	} `in:"body" mime:"multipart"`
 }
 

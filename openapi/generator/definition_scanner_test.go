@@ -116,6 +116,9 @@ func TestDefinitionScanner(t *testing.T) {
   "additionalProperties": {
     "$ref": "#/components/schemas/String"
   },
+  "propertyNames": {
+    "type": "string"
+  },
   "x-id": "Map"
 }`}, {
 			"ArrayString", // language=JSON
@@ -213,7 +216,13 @@ func TestDefinitionScanner(t *testing.T) {
             "id"
           ]
         },
+        "propertyNames": {
+          "type": "string"
+        },
         "minProperties": 0
+      },
+      "propertyNames": {
+        "type": "string"
       },
       "maxProperties": 3,
       "minProperties": 0,

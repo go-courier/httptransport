@@ -124,9 +124,12 @@ func (g *TypeGenerator) TypeIndirect(schema *oas.Schema) (codegen.SnippetType, b
 	if schema.Type == oas.TypeObject {
 		if schema.AdditionalProperties != nil {
 			tpe, _ := g.Type(schema.AdditionalProperties.Schema)
-			return codegen.Map(codegen.String, tpe), false
+			keyTyp := codegen.SnippetType(codegen.String)
+			if schema.PropertyNames != nil {
+				keyTyp, _ = g.Type(schema.PropertyNames)
+			}
+			return codegen.Map(keyTyp, tpe), false
 		}
-
 		return codegen.Struct(g.FieldsFrom(schema)...), false
 	}
 

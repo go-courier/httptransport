@@ -126,6 +126,18 @@
                     "x-go-star-level": 1,
                     "x-tag-name": "file"
                   },
+                  "map": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "integer",
+                      "format": "int32"
+                    },
+                    "propertyNames": {
+                      "$ref": "#/components/schemas/Protocol"
+                    },
+                    "x-go-field-name": "Map",
+                    "x-tag-name": "map,omitempty"
+                  },
                   "slice": {
                     "type": "array",
                     "items": {
