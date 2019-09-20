@@ -120,10 +120,9 @@ type MayValidator interface {
 }
 
 func NewValidator(ctx context.Context, field typesutil.StructField, validateStr string, omitempty bool, transformer Transformer) (validator.Validator, error) {
-	if validateStr == "" && typesutil.Deref(field.Type()).Kind() == reflect.Struct {
-		if _, ok := typesutil.EncodingTextMarshalerTypeReplacer(field.Type()); !ok {
-			ctx = validator.ContextWithNamedTagKey(ctx, transformer.NamedByTag())
-		}
+	namedTagKey := transformer.NamedByTag()
+	if namedTagKey != "" {
+		ctx = validator.ContextWithNamedTagKey(ctx, namedTagKey)
 	}
 
 	if t, ok := transformer.(MayValidator); ok {

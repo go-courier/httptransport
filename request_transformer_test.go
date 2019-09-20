@@ -299,10 +299,16 @@ func ExampleNewRequestTransformer() {
 }
 
 func TestRequestTransformer_DecodeFromRequestInfo_WithDefaults(t *testing.T) {
+	type Data struct {
+		String string `json:"string,omitempty" default:"111" validate:"@string[3,]"`
+		Int    int    `json:"int,omitempty" default:"111" validate:"@int[3,]"`
+	}
+
 	type Req struct {
 		Protocol types.Protocol `name:"protocol,omitempty" in:"query" default:"HTTP"`
 		QInt     int            `name:"int,omitempty" in:"query" default:"1"`
 		QString  string         `name:"string,omitempty" in:"query" default:"s"`
+		List     []Data         `in:"body"`
 	}
 
 	mgr := httptransport.NewRequestTransformerMgr(nil, nil)
@@ -313,7 +319,14 @@ func TestRequestTransformer_DecodeFromRequestInfo_WithDefaults(t *testing.T) {
 		return
 	}
 
-	req, err := rtForSomeRequest.NewRequest(http.MethodGet, "/", &Req{})
+	req, err := rtForSomeRequest.NewRequest(http.MethodGet, "/", &Req{
+		List: []Data{
+			{
+				String: "2222",
+			},
+			{},
+		},
+	})
 	require.NoError(t, err)
 
 	r := &Req{}
@@ -325,6 +338,16 @@ func TestRequestTransformer_DecodeFromRequestInfo_WithDefaults(t *testing.T) {
 		Protocol: types.PROTOCOL__HTTP,
 		QInt:     1,
 		QString:  "s",
+		List: []Data{
+			{
+				String: "2222",
+				Int:    111,
+			},
+			{
+				String: "111",
+				Int:    111,
+			},
+		},
 	}, r)
 }
 
