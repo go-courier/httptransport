@@ -148,6 +148,7 @@
                   },
                   "string": {
                     "type": "string",
+                    "deprecated": true,
                     "x-go-field-name": "String",
                     "x-tag-name": "string,omitempty"
                   }

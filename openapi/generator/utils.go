@@ -68,6 +68,6 @@ func filterMarkedLines(comments []string) []string {
 	return lines
 }
 
-func dropMarkedLines(doc string) string  {
-	return strings.Join(filterMarkedLines(strings.Split(doc, "\n")), "\n")
+func dropMarkedLines(lines []string) string  {
+	return strings.Join(filterMarkedLines(lines), "\n")
 }

@@ -228,7 +228,8 @@ func (g *TypeGenerator) FieldOf(name string, propSchema *oas.Schema, requiredFie
 	}
 
 	typ, _ := g.Type(propSchema)
-	field := codegen.Var(typ, fieldName).WithComments(propSchema.Description)
+
+	field := codegen.Var(typ, fieldName).WithComments(mayPrefixDeprecated(propSchema.Description, propSchema.Deprecated)...)
 
 	tags := map[string][]string{}
 

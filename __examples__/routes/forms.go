@@ -44,6 +44,7 @@ type FormMultipartWithFile struct {
 	httpx.MethodPost
 	FormData struct {
 		Map    map[types.Protocol]int `name:"map,omitempty"`
+		// @deprecated
 		String string                 `name:"string,omitempty"`
 		Slice  []string               `name:"slice,omitempty"`
 		Data   Data                   `name:"data,omitempty"`

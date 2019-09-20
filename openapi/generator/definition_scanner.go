@@ -43,14 +43,25 @@ func addExtension(s *oas.Schema, key string, v interface{}) {
 	}
 }
 
-func setDescription(s *oas.Schema, doc string) {
+func setMetaFromDoc(s *oas.Schema, doc string) {
 	if s == nil {
 		return
 	}
+
+	lines := strings.Split(doc, "\n")
+
+	for i := range lines {
+		if strings.Index(lines[i], "@deprecated") != -1 {
+			s.Deprecated = true
+		}
+	}
+
+	description := dropMarkedLines(lines)
+
 	if len(s.AllOf) > 0 {
-		s.AllOf[len(s.AllOf)-1].Description = doc
+		s.AllOf[len(s.AllOf)-1].Description = description
 	} else {
-		s.Description = doc
+		s.Description = description
 	}
 }
 
@@ -93,13 +104,13 @@ func (scanner *DefinitionScanner) Def(typeName *types.TypeName) *oas.Schema {
 
 	if doc, fmtName := parseStrfmt(doc); fmtName != "" {
 		s := oas.NewSchema(oas.TypeString, fmtName)
-		s.Description = dropMarkedLines(doc)
+		setMetaFromDoc(s, doc)
 		return scanner.addDef(typeName, s)
 	}
 
 	if doc, typ := parseType(doc); typ != "" {
 		s := oas.NewSchema(oas.Type(typ), "")
-		s.Description = dropMarkedLines(doc)
+		setMetaFromDoc(s, doc)
 		return scanner.addDef(typeName, s)
 	}
 
@@ -127,7 +138,9 @@ func (scanner *DefinitionScanner) Def(typeName *types.TypeName) *oas.Schema {
 	}
 
 	s := scanner.getSchemaByType(typeName.Type().Underlying())
-	setDescription(s, dropMarkedLines(doc))
+
+	setMetaFromDoc(s, doc)
+
 	return scanner.addDef(typeName, s)
 }
 
@@ -356,7 +369,7 @@ func (scanner *DefinitionScanner) propSchemaByField(
 		}
 	}
 
-	propSchema.Description = dropMarkedLines(desc)
+	setMetaFromDoc(propSchema, desc)
 	propSchema.AddExtension(XGoFieldName, fieldName)
 
 	tagKeys := map[string]string{

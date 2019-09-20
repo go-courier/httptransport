@@ -80,11 +80,12 @@ func (req *DownloadFile) Invoke(c github_com_go_courier_courier.Client, metas ..
 
 type FormMultipartWithFile struct {
 	FormData struct {
-		Data   Data                       `name:"data,omitempty"`
-		File   *mime_multipart.FileHeader `name:"file"`
-		Map    map[Protocol]int32         `name:"map,omitempty"`
-		Slice  []string                   `name:"slice,omitempty"`
-		String string                     `name:"string,omitempty"`
+		Data  Data                       `name:"data,omitempty"`
+		File  *mime_multipart.FileHeader `name:"file"`
+		Map   map[Protocol]int32         `name:"map,omitempty"`
+		Slice []string                   `name:"slice,omitempty"`
+		// @deprecated
+		String string `name:"string,omitempty"`
 	} `in:"body" mime:"multipart"`
 }
 

@@ -8,6 +8,14 @@ import (
 	"github.com/go-courier/oas"
 )
 
+func mayPrefixDeprecated(desc string, deprecated bool) []string  {
+	comments := []string{desc}
+	if deprecated {
+		comments = append([]string{"@deprecated"}, comments...)
+	}
+	return comments
+}
+
 func eachOperation(openapi *oas.OpenAPI, mapper func(method string, path string, op *oas.Operation)) {
 	ops := map[string]struct {
 		Method string
