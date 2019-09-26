@@ -8,7 +8,7 @@ import (
 	"github.com/go-courier/oas"
 )
 
-func mayPrefixDeprecated(desc string, deprecated bool) []string  {
+func mayPrefixDeprecated(desc string, deprecated bool) []string {
 	comments := []string{desc}
 	if deprecated {
 		comments = append([]string{"@deprecated"}, comments...)

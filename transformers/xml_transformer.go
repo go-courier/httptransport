@@ -38,12 +38,12 @@ func (t *XMLTransformer) EncodeToWriter(w io.Writer, v interface{}) (string, err
 	if rv, ok := v.(reflect.Value); ok {
 		v = rv.Interface()
 	}
-	if err := xml.NewEncoder(w).Encode(v); err != nil {
-		return "", err
-	}
-	return mime.FormatMediaType(t.String(), map[string]string{
+
+	return superWrite(w, func(w io.Writer) error {
+		return xml.NewEncoder(w).Encode(v)
+	}, mime.FormatMediaType(t.String(), map[string]string{
 		"charset": "utf-8",
-	}), nil
+	}))
 }
 
 func (XMLTransformer) DecodeFromReader(r io.Reader, v interface{}, headers ...textproto.MIMEHeader) error {

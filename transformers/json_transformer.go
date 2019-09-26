@@ -42,12 +42,12 @@ func (transformer *JSONTransformer) EncodeToWriter(w io.Writer, v interface{}) (
 	if rv, ok := v.(reflect.Value); ok {
 		v = rv.Interface()
 	}
-	if err := json.NewEncoder(w).Encode(v); err != nil {
-		return "", err
-	}
-	return mime.FormatMediaType(transformer.String(), map[string]string{
+
+	return superWrite(w, func(w io.Writer) error {
+		return json.NewEncoder(w).Encode(v)
+	}, mime.FormatMediaType(transformer.String(), map[string]string{
 		"charset": "utf-8",
-	}), nil
+	}))
 }
 
 func (JSONTransformer) DecodeFromReader(r io.Reader, v interface{}, headers ...textproto.MIMEHeader) error {

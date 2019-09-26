@@ -124,7 +124,9 @@ Set-Cookie: `+cookie.String()+`
 		ResponseFrom(&Data{
 			ID: "123456",
 		}).WriteTo(rw, req, func(w io.Writer, response *Response) error {
-			response.ContentType = "application/json; charset=utf-8"
+			if rw, ok := w.(interface{ Header() http.Header }); ok {
+				rw.Header().Set(HeaderContentType, "application/json; charset=utf-8")
+			}
 			return json.NewEncoder(w).Encode(response.Value)
 		})
 
@@ -146,7 +148,9 @@ Content-Type: application/json; charset=utf-8
 		ResponseFrom(&Data{
 			ID: "123456",
 		}).WriteTo(rw, req, func(w io.Writer, response *Response) error {
-			response.ContentType = "application/json; charset=utf-8"
+			if rw, ok := w.(interface{ Header() http.Header }); ok {
+				rw.Header().Set(HeaderContentType, "application/json; charset=utf-8")
+			}
 			return json.NewEncoder(w).Encode(response.Value)
 		})
 

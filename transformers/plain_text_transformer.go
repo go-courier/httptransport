@@ -41,26 +41,23 @@ func (t *PlainTextTransformer) EncodeToWriter(w io.Writer, v interface{}) (strin
 		rv = reflect.ValueOf(v)
 	}
 
-	contentType := mime.FormatMediaType(t.String(), map[string]string{
-		"charset": "utf-8",
-	})
-
-	if reflectx.IsBytes(rv.Type()) {
-		_, err := w.Write(rv.Bytes())
-		if err != nil {
-			return "", err
+	return superWrite(w, func(w io.Writer) error {
+		if reflectx.IsBytes(rv.Type()) {
+			_, err := w.Write(rv.Bytes())
+			return err
 		}
-		return contentType, nil
-	}
 
-	data, err := reflectx.MarshalText(rv)
-	if err != nil {
-		return "", err
-	}
-	if _, err := w.Write(data); err != nil {
-		return "", err
-	}
-	return contentType, nil
+		data, err := reflectx.MarshalText(rv)
+		if err != nil {
+			return err
+		}
+		if _, err := w.Write(data); err != nil {
+			return err
+		}
+		return nil
+	}, mime.FormatMediaType(t.String(), map[string]string{
+		"charset": "utf-8",
+	}))
 }
 
 func (PlainTextTransformer) DecodeFromReader(r io.Reader, v interface{}, headers ...textproto.MIMEHeader) error {

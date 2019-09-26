@@ -1,7 +1,6 @@
 package httpx
 
 import (
-	"bytes"
 	"io"
 	"net/http"
 	"net/textproto"
@@ -148,21 +147,18 @@ func (response *Response) WriteTo(rw http.ResponseWriter, r *http.Request, write
 		rw.WriteHeader(response.StatusCode)
 		return nil
 	default:
-		buf := bytes.NewBuffer(nil)
+		rw.Header().Set(HeaderContentType, response.ContentType)
+		rw.WriteHeader(response.StatusCode)
 
 		if reader, ok := response.Value.(io.Reader); ok {
-			if _, err := io.Copy(buf, reader); err != nil {
+			if _, err := io.Copy(rw, reader); err != nil {
 				return err
 			}
 		} else {
-			if err := writeToBody(buf, response); err != nil {
+			if err := writeToBody(rw, response); err != nil {
 				return err
 			}
 		}
-
-		rw.Header().Set(HeaderContentType, response.ContentType)
-		rw.WriteHeader(response.StatusCode)
-		rw.Write(buf.Bytes())
 	}
 	return nil
 }

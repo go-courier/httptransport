@@ -50,9 +50,9 @@ type Cookies struct {
 }
 
 type Data struct {
-	A string
-	B string
-	C string
+	A     string
+	B     string
+	C     string
 	ctype string
 }
 

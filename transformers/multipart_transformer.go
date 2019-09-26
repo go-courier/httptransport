@@ -63,94 +63,93 @@ func (transformer *MultipartTransformer) EncodeToWriter(w io.Writer, v interface
 	}
 
 	multipartWriter := multipart.NewWriter(w)
-	errSet := errors.NewErrorSet("")
 
-	addPart := func(rv reflect.Value, fieldName string, fieldTransformer Transformer, omitempty bool) error {
-		buf := bytes.NewBuffer(nil)
-		contentType, err := fieldTransformer.EncodeToWriter(buf, rv)
-		if err != nil {
-			return err
-		}
+	return superWrite(w, func(w io.Writer) error {
+		errSet := errors.NewErrorSet("")
 
-		if buf.Len() == 0 && omitempty {
+		addPart := func(rv reflect.Value, fieldName string, fieldTransformer Transformer, omitempty bool) error {
+			buf := bytes.NewBuffer(nil)
+			contentType, err := fieldTransformer.EncodeToWriter(buf, rv)
+			if err != nil {
+				return err
+			}
+
+			if buf.Len() == 0 && omitempty {
+				return nil
+			}
+
+			h := make(textproto.MIMEHeader)
+			h.Set(httpx.HeaderContentType, contentType)
+			h.Set(httpx.HeaderContentDisposition, fmt.Sprintf(`form-data; name=%s`, strconv.Quote(fieldName)))
+
+			part, err := multipartWriter.CreatePart(h)
+			if err != nil {
+				return err
+			}
+			if _, err := part.Write(buf.Bytes()); err != nil {
+				return err
+			}
 			return nil
 		}
 
-		h := make(textproto.MIMEHeader)
-		h.Set(httpx.HeaderContentType, contentType)
-		h.Set(httpx.HeaderContentDisposition, fmt.Sprintf(`form-data; name=%s`, strconv.Quote(fieldName)))
+		appendFile := func(fieldName string, fileHeader *multipart.FileHeader) error {
+			if fileHeader == nil {
+				return nil
+			}
 
-		part, err := multipartWriter.CreatePart(h)
-		if err != nil {
-			return err
-		}
-		if _, err := part.Write(buf.Bytes()); err != nil {
-			return err
-		}
-		return nil
-	}
+			filePart, err := multipartWriter.CreateFormFile(fieldName, fileHeader.Filename)
+			if err != nil {
+				return err
+			}
 
-	appendFile := func(fieldName string, fileHeader *multipart.FileHeader) error {
-		if fileHeader == nil {
+			file, err := fileHeader.Open()
+			if err != nil {
+				return err
+			}
+
+			if _, err := io.Copy(filePart, file); err != nil {
+				return err
+			}
+
 			return nil
 		}
 
-		filePart, err := multipartWriter.CreateFormFile(fieldName, fileHeader.Filename)
-		if err != nil {
-			return err
-		}
+		NamedStructFieldValueRange(reflect.Indirect(rv), func(fieldValue reflect.Value, field *reflect.StructField) {
+			fieldOpt := transformer.fieldOpts[field.Name]
+			fieldTransformer := transformer.fieldTransformers[field.Name]
 
-		file, err := fileHeader.Open()
-		if err != nil {
-			return err
-		}
-
-		if _, err := io.Copy(filePart, file); err != nil {
-			return err
-		}
-
-		return nil
-	}
-
-	NamedStructFieldValueRange(reflect.Indirect(rv), func(fieldValue reflect.Value, field *reflect.StructField) {
-		fieldOpt := transformer.fieldOpts[field.Name]
-		fieldTransformer := transformer.fieldTransformers[field.Name]
-
-		if fieldValue.CanInterface() {
-			switch v := fieldValue.Interface().(type) {
-			case []*multipart.FileHeader:
-				for i := range v {
-					appendFile(fieldOpt.FieldName, v[i])
-				}
-				return
-			case *multipart.FileHeader:
-				appendFile(fieldOpt.FieldName, v)
-				return
-			}
-		}
-
-		if fieldOpt.Explode {
-			for i := 0; i < fieldValue.Len(); i++ {
-				if err := addPart(fieldValue.Index(i), fieldOpt.FieldName, fieldTransformer, fieldOpt.Omitempty); err != nil {
-					errSet.AddErr(err, fieldOpt.FieldName, i)
+			if fieldValue.CanInterface() {
+				switch v := fieldValue.Interface().(type) {
+				case []*multipart.FileHeader:
+					for i := range v {
+						appendFile(fieldOpt.FieldName, v[i])
+					}
+					return
+				case *multipart.FileHeader:
+					appendFile(fieldOpt.FieldName, v)
+					return
 				}
 			}
-		} else {
-			if err := addPart(fieldValue, fieldOpt.FieldName, fieldTransformer, fieldOpt.Omitempty); err != nil {
-				errSet.AddErr(err, fieldOpt.FieldName)
+
+			if fieldOpt.Explode {
+				for i := 0; i < fieldValue.Len(); i++ {
+					if err := addPart(fieldValue.Index(i), fieldOpt.FieldName, fieldTransformer, fieldOpt.Omitempty); err != nil {
+						errSet.AddErr(err, fieldOpt.FieldName, i)
+					}
+				}
+			} else {
+				if err := addPart(fieldValue, fieldOpt.FieldName, fieldTransformer, fieldOpt.Omitempty); err != nil {
+					errSet.AddErr(err, fieldOpt.FieldName)
+				}
 			}
+		})
+
+		if err := errSet.Err(); err != nil {
+			return err
 		}
-	})
 
-	if err := errSet.Err(); err != nil {
-		return "", err
-	}
-
-	if err := multipartWriter.Close(); err != nil {
-		return "", err
-	}
-
-	return multipartWriter.FormDataContentType(), nil
+		return multipartWriter.Close()
+	}, multipartWriter.FormDataContentType())
 }
 
 const (

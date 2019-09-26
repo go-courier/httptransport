@@ -127,11 +127,9 @@ func (handler *HttpRouteHandler) writeResp(rw http.ResponseWriter, r *http.Reque
 		if err != nil {
 			return err
 		}
-		mediaType, err := transformer.EncodeToWriter(w, response.Value)
-		if err != nil {
+		if _, err := transformer.EncodeToWriter(w, response.Value); err != nil {
 			return err
 		}
-		response.ContentType = mediaType
 		return nil
 	}); err != nil {
 		handler.writeErr(rw, r, err)

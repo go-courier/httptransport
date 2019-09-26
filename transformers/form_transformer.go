@@ -101,13 +101,12 @@ func (transformer *FormTransformer) EncodeToWriter(w io.Writer, v interface{}) (
 		return "", err
 	}
 
-	if _, err := w.Write([]byte(valueAdder.Encode())); err != nil {
-		return "", err
-	}
-
-	return mime.FormatMediaType(transformer.String(), map[string]string{
+	return superWrite(w, func(w io.Writer) error {
+		_, err := w.Write([]byte(valueAdder.Encode()))
+		return err
+	}, mime.FormatMediaType(transformer.String(), map[string]string{
 		"param": "value",
-	}), nil
+	}))
 }
 
 func (transformer *FormTransformer) DecodeFromReader(r io.Reader, v interface{}, headers ...textproto.MIMEHeader) error {

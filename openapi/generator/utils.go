@@ -68,6 +68,6 @@ func filterMarkedLines(comments []string) []string {
 	return lines
 }
 
-func dropMarkedLines(lines []string) string  {
+func dropMarkedLines(lines []string) string {
 	return strings.Join(filterMarkedLines(lines), "\n")
 }

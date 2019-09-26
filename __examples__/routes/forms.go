@@ -43,12 +43,12 @@ func (req FormURLEncoded) Output(ctx context.Context) (resp interface{}, err err
 type FormMultipartWithFile struct {
 	httpx.MethodPost
 	FormData struct {
-		Map    map[types.Protocol]int `name:"map,omitempty"`
+		Map map[types.Protocol]int `name:"map,omitempty"`
 		// @deprecated
-		String string                 `name:"string,omitempty"`
-		Slice  []string               `name:"slice,omitempty"`
-		Data   Data                   `name:"data,omitempty"`
-		File   *multipart.FileHeader  `name:"file"`
+		String string                `name:"string,omitempty"`
+		Slice  []string              `name:"slice,omitempty"`
+		Data   Data                  `name:"data,omitempty"`
+		File   *multipart.FileHeader `name:"file"`
 	} `in:"body" mime:"multipart"`
 }
 

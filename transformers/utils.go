@@ -3,10 +3,13 @@ package transformers
 import (
 	"go/ast"
 	"go/types"
+	"io"
+	"net/http"
 	"net/textproto"
 	"reflect"
 	"strings"
 
+	"github.com/go-courier/httptransport/httpx"
 	"github.com/go-courier/reflectx"
 	"github.com/go-courier/reflectx/typesutil"
 )
@@ -96,4 +99,11 @@ func TagValueAndFlagsByTagString(tagString string) (string, map[string]bool) {
 		}
 	}
 	return v, tagFlags
+}
+
+func superWrite(w io.Writer, writeTo func(w io.Writer) error, contentType string) (string, error) {
+	if rw, ok := w.(interface{ Header() http.Header }); ok {
+		rw.Header().Set(httpx.HeaderContentType, contentType)
+	}
+	return contentType, writeTo(w)
 }
