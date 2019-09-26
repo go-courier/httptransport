@@ -121,7 +121,7 @@ func (scanner *OperatorScanner) scanReturns(op *Operator, typeName *types.TypeNa
 
 			if scanner.StatusErrScanner.StatusErrType != nil {
 				op.StatusErrors = scanner.StatusErrScanner.StatusErrorsInFunc(method.(*typesutil.TMethod).Func)
-				op.StatusErrorSchema = scanner.DefinitionScanner.getSchemaByType(scanner.StatusErrScanner.StatusErrType)
+				op.StatusErrorSchema = scanner.DefinitionScanner.GetSchemaByType(scanner.StatusErrScanner.StatusErrType)
 			}
 		}
 	}
@@ -170,6 +170,9 @@ func (scanner *OperatorScanner) getResponse(tpe types.Type, expr ast.Expr) (stat
 					switch e := callExpr.Fun.(type) {
 					case *ast.SelectorExpr:
 						switch e.Sel.Name {
+						case "WithSchema":
+							v, _ := scanner.pkg.Eval(callExpr.Args[0])
+							tpe = v.Type
 						case "WithStatusCode":
 							v, _ := scanner.pkg.Eval(callExpr.Args[0])
 							if code, ok := valueOf(v.Value).(int); ok {
@@ -225,7 +228,7 @@ func (scanner *OperatorScanner) getResponse(tpe types.Type, expr ast.Expr) (stat
 		contentType = httpx.MIME_JSON
 	}
 
-	response.AddContent(contentType, oas.NewMediaTypeWithSchema(scanner.DefinitionScanner.getSchemaByType(tpe)))
+	response.AddContent(contentType, oas.NewMediaTypeWithSchema(scanner.DefinitionScanner.GetSchemaByType(tpe)))
 
 	return
 }

@@ -37,6 +37,13 @@ func WithCookies(cookies ...*http.Cookie) ResponseWrapper {
 	}
 }
 
+func WithSchema(s interface{}) ResponseWrapper {
+	return func(v interface{}) *Response {
+		resp := ResponseFrom(v)
+		return resp
+	}
+}
+
 func WithContentType(contentType string) ResponseWrapper {
 	return func(v interface{}) *Response {
 		resp := ResponseFrom(v)
@@ -142,23 +149,57 @@ func (response *Response) WriteTo(rw http.ResponseWriter, r *http.Request, write
 		return nil
 	}
 
-	switch response.StatusCode {
-	case http.StatusNoContent:
-		rw.WriteHeader(response.StatusCode)
-		return nil
-	default:
-		rw.Header().Set(HeaderContentType, response.ContentType)
-		rw.WriteHeader(response.StatusCode)
+	if _, ok := rw.(*responseHeaderDelayWriter); !ok {
+		rw = &responseHeaderDelayWriter{
+			rw: rw,
+		}
+	}
 
-		if reader, ok := response.Value.(io.Reader); ok {
-			if _, err := io.Copy(rw, reader); err != nil {
+	rw.WriteHeader(response.StatusCode)
+
+	if response.StatusCode != http.StatusNoContent {
+		if response.ContentType != "" {
+			rw.Header().Set(HeaderContentType, response.ContentType)
+		}
+
+		switch v := response.Value.(type) {
+		case courier.Result:
+			if _, err := v.Into(rw); err != nil {
 				return err
 			}
-		} else {
+		case io.Reader:
+			if _, err := io.Copy(rw, v); err != nil {
+				return err
+			}
+		default:
 			if err := writeToBody(rw, response); err != nil {
 				return err
 			}
 		}
 	}
+
 	return nil
+}
+
+type responseHeaderDelayWriter struct {
+	rw         http.ResponseWriter
+	statusCode int
+}
+
+func (r *responseHeaderDelayWriter) Header() http.Header {
+	return r.rw.Header()
+}
+
+func (r *responseHeaderDelayWriter) Write(data []byte) (int, error) {
+	if r.statusCode != 0 {
+		r.rw.WriteHeader(r.statusCode)
+	}
+	return r.rw.Write(data)
+}
+
+func (r *responseHeaderDelayWriter) WriteHeader(statusCode int) {
+	r.statusCode = statusCode
+	if statusCode == http.StatusNoContent {
+		r.rw.WriteHeader(r.statusCode)
+	}
 }

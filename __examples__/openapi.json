@@ -261,6 +261,92 @@
         }
       }
     },
+    "/demo/proxy": {
+      "get": {
+        "tags": [
+          "routes"
+        ],
+        "operationId": "Proxy",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IpInfo"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GithubComGoCourierStatuserrorStatusErr"
+                }
+              }
+            },
+            "x-status-errors": [
+              "@StatusErr[RequestTransformFailed][400000001][transform request failed]"
+            ]
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GithubComGoCourierStatuserrorStatusErr"
+                }
+              }
+            },
+            "x-status-errors": [
+              "@StatusErr[RequestFailed][500000001][request failed]"
+            ]
+          }
+        }
+      }
+    },
+    "/demo/proxy/v2": {
+      "get": {
+        "tags": [
+          "routes"
+        ],
+        "operationId": "ProxyWithReader",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IpInfo"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GithubComGoCourierStatuserrorStatusErr"
+                }
+              }
+            },
+            "x-status-errors": [
+              "@StatusErr[RequestTransformFailed][400000001][transform request failed]"
+            ]
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GithubComGoCourierStatuserrorStatusErr"
+                }
+              }
+            },
+            "x-status-errors": [
+              "@StatusErr[RequestFailed][500000001][request failed]"
+            ]
+          }
+        }
+      }
+    },
     "/demo/redirect": {
       "get": {
         "tags": [
@@ -685,6 +771,28 @@
         ],
         "x-go-vendor-type": "github.com/go-courier/statuserror.StatusErr",
         "x-id": "GithubComGoCourierStatuserrorStatusErr"
+      },
+      "IpInfo": {
+        "type": "object",
+        "properties": {
+          "country": {
+            "type": "string",
+            "x-go-field-name": "Country",
+            "x-tag-json": "country",
+            "x-tag-xml": "country"
+          },
+          "countryCode": {
+            "type": "string",
+            "x-go-field-name": "CountryCode",
+            "x-tag-json": "countryCode",
+            "x-tag-xml": "countryCode"
+          }
+        },
+        "required": [
+          "country",
+          "countryCode"
+        ],
+        "x-id": "IpInfo"
       },
       "Protocol": {
         "type": "string",

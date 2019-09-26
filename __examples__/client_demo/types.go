@@ -32,6 +32,11 @@ type GithubComGoCourierStatuserrorErrorFields = github_com_go_courier_statuserro
 
 type GithubComGoCourierStatuserrorStatusErr = github_com_go_courier_statuserror.StatusErr
 
+type IpInfo struct {
+	Country     string `json:"country" xml:"country"`
+	CountryCode string `json:"countryCode" xml:"countryCode"`
+}
+
 type Protocol = DemoProtocol
 
 type SubData struct {

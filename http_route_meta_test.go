@@ -45,6 +45,8 @@ func ExampleHttpRouteMeta() {
 	// POS /demo/forms/multipart routes.FormMultipartWithFile
 	// POS /demo/forms/multipart-with-files routes.FormMultipartWithFiles
 	// POS /demo/forms/urlencoded routes.FormURLEncoded
+	// GET /demo/proxy routes.Proxy
+	// GET /demo/proxy/v2 routes.ProxyWithReader
 	// GET /demo/redirect routes.Redirect
 	// POS /demo/redirect routes.RedirectWhenError
 	// POS /demo/restful routes.Create

@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/textproto"
 	"reflect"
+	"strings"
 	"time"
 
 	"github.com/go-courier/courier"
@@ -173,17 +174,28 @@ func (r *Result) Into(body interface{}) (courier.Metadata, error) {
 		return meta, nil
 	}
 
-	contentType := meta.Get(httpx.HeaderContentType)
-
-	if contentType != "" {
-		contentType, _, _ = mime.ParseMediaType(contentType)
-	}
-
-	if writer, ok := body.(io.Writer); ok {
-		if _, err := io.Copy(writer, r.Body); err != nil {
+	switch v := body.(type) {
+	case error:
+		return meta, v
+	case io.Writer:
+		if respWriter, ok := body.(interface{ Header() http.Header }); ok {
+			header := respWriter.Header()
+			for k, v := range meta {
+				if strings.HasPrefix(k, "Content-") {
+					header[k] = v
+				}
+			}
+		}
+		if _, err := io.Copy(v, r.Body); err != nil {
 			return meta, ReadFailed.StatusErr().WithDesc(err.Error())
 		}
-	} else {
+	default:
+		contentType := meta.Get(httpx.HeaderContentType)
+
+		if contentType != "" {
+			contentType, _, _ = mime.ParseMediaType(contentType)
+		}
+
 		rv := reflect.ValueOf(body)
 		transformer, err := r.NewTransformer(nil, typesutil.FromRType(rv.Type()), transformers.TransformerOption{
 			MIME: contentType,
@@ -196,10 +208,6 @@ func (r *Result) Into(body interface{}) (courier.Metadata, error) {
 		if err := transformer.DecodeFromReader(r.Body, rv, textproto.MIMEHeader(r.Header)); err != nil {
 			return meta, ReadFailed.StatusErr().WithDesc(err.Error())
 		}
-	}
-
-	if err, ok := body.(error); ok {
-		return meta, err
 	}
 
 	return meta, nil

@@ -137,7 +137,7 @@ func (scanner *DefinitionScanner) Def(typeName *types.TypeName) *oas.Schema {
 		return scanner.addDef(typeName, s)
 	}
 
-	s := scanner.getSchemaByType(typeName.Type().Underlying())
+	s := scanner.GetSchemaByType(typeName.Type().Underlying())
 
 	setMetaFromDoc(s, doc)
 
@@ -223,7 +223,7 @@ func (r SchemaRefer) RefString() string {
 	return oas.NewComponentRefer("schemas", s.Extensions[XID].(string)).RefString()
 }
 
-func (scanner *DefinitionScanner) getSchemaByType(typ types.Type) *oas.Schema {
+func (scanner *DefinitionScanner) GetSchemaByType(typ types.Type) *oas.Schema {
 	switch t := typ.(type) {
 	case *types.Named:
 		if t.String() == "mime/multipart.FileHeader" {
@@ -250,20 +250,20 @@ func (scanner *DefinitionScanner) getSchemaByType(typ types.Type) *oas.Schema {
 			}
 		}
 
-		s := scanner.getSchemaByType(elem)
+		s := scanner.GetSchemaByType(elem)
 		markPointer(s, count)
 		return s
 	case *types.Map:
-		keySchema := scanner.getSchemaByType(t.Key())
+		keySchema := scanner.GetSchemaByType(t.Key())
 		if keySchema != nil && len(keySchema.Type) > 0 && keySchema.Type != "string" {
 			panic(fmt.Errorf("only support map[string]interface{}"))
 		}
-		return oas.KeyValueOf(keySchema, scanner.getSchemaByType(t.Elem()))
+		return oas.KeyValueOf(keySchema, scanner.GetSchemaByType(t.Elem()))
 	case *types.Slice:
-		return oas.ItemsOf(scanner.getSchemaByType(t.Elem()))
+		return oas.ItemsOf(scanner.GetSchemaByType(t.Elem()))
 	case *types.Array:
 		length := uint64(t.Len())
-		s := oas.ItemsOf(scanner.getSchemaByType(t.Elem()))
+		s := oas.ItemsOf(scanner.GetSchemaByType(t.Elem()))
 		s.MaxItems = &length
 		s.MinItems = &length
 		return s
@@ -302,7 +302,7 @@ func (scanner *DefinitionScanner) getSchemaByType(typ types.Type) *oas.Schema {
 					structSchema = oas.Binary()
 					break
 				}
-				s := scanner.getSchemaByType(structFieldType)
+				s := scanner.GetSchemaByType(structFieldType)
 				if s != nil {
 					schemas = append(schemas, s)
 				}
@@ -342,7 +342,7 @@ func (scanner *DefinitionScanner) propSchemaByField(
 	flags map[string]bool,
 	desc string,
 ) *oas.Schema {
-	propSchema := scanner.getSchemaByType(fieldType)
+	propSchema := scanner.GetSchemaByType(fieldType)
 
 	refSchema := (*oas.Schema)(nil)
 

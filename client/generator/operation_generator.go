@@ -81,6 +81,25 @@ func (g *OperationGenerator) WriteOperation(method string, path string, operatio
 
 	ctxWithMeta := `ctx = ` + g.File.Use("github.com/go-courier/metax", "ContextWith") + `(ctx, "operationID","` + g.ID(id) + `")`
 
+	g.File.WriteBlock(
+		codegen.Func(
+			codegen.Var(codegen.Type(g.File.Use("context", "Context")), "ctx"),
+			codegen.Var(codegen.Type(g.File.Use("github.com/go-courier/courier", "Client")), "c"),
+			codegen.Var(codegen.Ellipsis(codegen.Type(g.File.Use("github.com/go-courier/courier", "Metadata"))), "metas"),
+		).
+			Return(
+				codegen.Var(codegen.Type(g.File.Use("github.com/go-courier/courier", "Result"))),
+			).
+			Named("Do").
+			MethodOf(codegen.Var(codegen.Star(codegen.Type(id)), "req")).
+			Do(
+				codegen.Expr(`
+` + ctxWithMeta + `
+return c.Do(ctx, req, metas...)
+`),
+			),
+	)
+
 	if respType != nil {
 		g.File.WriteBlock(
 			codegen.Func(
@@ -98,8 +117,7 @@ func (g *OperationGenerator) WriteOperation(method string, path string, operatio
 				Do(
 					codegen.Expr("resp := new(?)", respType),
 					codegen.Expr(`
-`+ctxWithMeta+`
-meta, err := c.Do(ctx, req, metas...).Into(resp)
+meta, err := req.Do(ctx, c, metas...).Into(resp)
 `),
 					codegen.Return(codegen.Id("resp"), codegen.Id("meta"), codegen.Id("err")),
 				),
@@ -138,9 +156,8 @@ meta, err := c.Do(ctx, req, metas...).Into(resp)
 			Named("InvokeContext").
 			MethodOf(codegen.Var(codegen.Star(codegen.Type(id)), "req")).
 			Do(
-				codegen.Expr(ctxWithMeta),
 				codegen.Return(
-					codegen.Expr(`c.Do(ctx, req, metas...).Into(nil)`),
+					codegen.Expr(`req.Do(ctx, c, metas...).Into(nil)`),
 				),
 			),
 	)
