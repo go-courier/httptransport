@@ -147,16 +147,16 @@ func (c *Client) newRequest(ctx context.Context, req interface{}, metas ...couri
 }
 
 type Result struct {
-	*http.Response
-	transformers.TransformerMgr
-	NewError func(resp *http.Response) error
-	Err      error
+	TransformerMgr transformers.TransformerMgr
+	Response       *http.Response
+	NewError       func(resp *http.Response) error
+	Err            error
 }
 
 func (r *Result) Into(body interface{}) (courier.Metadata, error) {
 	defer func() {
-		if r.Response != nil && r.Body != nil {
-			r.Body.Close()
+		if r.Response != nil && r.Response.Body != nil {
+			r.Response.Body.Close()
 		}
 	}()
 
@@ -164,9 +164,9 @@ func (r *Result) Into(body interface{}) (courier.Metadata, error) {
 		return nil, r.Err
 	}
 
-	meta := courier.Metadata(r.Header)
+	meta := courier.Metadata(r.Response.Header)
 
-	if !isOk(r.StatusCode) {
+	if !isOk(r.Response.StatusCode) {
 		body = r.NewError(r.Response)
 	}
 
@@ -186,7 +186,7 @@ func (r *Result) Into(body interface{}) (courier.Metadata, error) {
 				}
 			}
 		}
-		if _, err := io.Copy(v, r.Body); err != nil {
+		if _, err := io.Copy(v, r.Response.Body); err != nil {
 			return meta, ReadFailed.StatusErr().WithDesc(err.Error())
 		}
 	default:
@@ -197,7 +197,7 @@ func (r *Result) Into(body interface{}) (courier.Metadata, error) {
 		}
 
 		rv := reflect.ValueOf(body)
-		transformer, err := r.NewTransformer(nil, typesutil.FromRType(rv.Type()), transformers.TransformerOption{
+		transformer, err := r.TransformerMgr.NewTransformer(nil, typesutil.FromRType(rv.Type()), transformers.TransformerOption{
 			MIME: contentType,
 		})
 
@@ -205,7 +205,7 @@ func (r *Result) Into(body interface{}) (courier.Metadata, error) {
 			return meta, ReadFailed.StatusErr().WithDesc(err.Error())
 		}
 
-		if err := transformer.DecodeFromReader(r.Body, rv, textproto.MIMEHeader(r.Header)); err != nil {
+		if err := transformer.DecodeFromReader(r.Response.Body, rv, textproto.MIMEHeader(r.Response.Header)); err != nil {
 			return meta, ReadFailed.StatusErr().WithDesc(err.Error())
 		}
 	}
