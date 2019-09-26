@@ -5,9 +5,10 @@ import (
 	"time"
 
 	"github.com/go-courier/courier"
-	"github.com/go-courier/httptransport"
 	"github.com/go-courier/httptransport/client"
 	"github.com/go-courier/httptransport/httpx"
+
+	"github.com/go-courier/httptransport"
 )
 
 var ProxyRouter = courier.NewRouter(httptransport.Group("/proxy"))
