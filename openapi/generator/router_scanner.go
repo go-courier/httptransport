@@ -2,6 +2,7 @@ package generator
 
 import (
 	"bytes"
+	"fmt"
 	"go/ast"
 	"go/types"
 	"sort"
@@ -121,7 +122,10 @@ func (operator *OperatorTypeName) SingleStringResultOf(pkg *packagesx.Package, n
 			if n == 1 {
 				for _, v := range results[0] {
 					if v.Value != nil {
-						s, _ := strconv.Unquote(v.Value.String())
+						s, err := strconv.Unquote(v.Value.ExactString())
+						if err != nil {
+							panic(fmt.Errorf("%s: %s", err, v.Value))
+						}
 						return s, true
 					}
 				}
