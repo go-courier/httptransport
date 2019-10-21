@@ -127,7 +127,6 @@ func (operator *OperatorTypeName) SingleStringResultOf(pkg *packagesx.Package, n
 				}
 			}
 		}
-
 	}
 
 	return "", false
@@ -140,6 +139,7 @@ func operatorTypeNamesFromArgs(pkg *packagesx.Package, args ...ast.Expr) operato
 		if opTypeName == nil {
 			continue
 		}
+
 		if callExpr, ok := arg.(*ast.CallExpr); ok {
 			if selectorExpr, ok := callExpr.Fun.(*ast.SelectorExpr); ok {
 				if selectorExpr.Sel.Name == "Group" {
@@ -152,6 +152,22 @@ func operatorTypeNamesFromArgs(pkg *packagesx.Package, args ...ast.Expr) operato
 				}
 			}
 		}
+
+		// handle interface WithMiddleOperators
+		method, ok := typesutil.FromTType(opTypeName.Type()).MethodByName("MiddleOperators")
+		if ok {
+			results, n := pkg.FuncResultsOf(method.(*typesutil.TMethod).Func)
+			if n == 1 {
+				for _, v := range results[0] {
+					if compositeLit, ok := v.Expr.(*ast.CompositeLit); ok {
+						ops := operatorTypeNamesFromArgs(pkg, compositeLit.Elts...)
+						opTypeNames = append(opTypeNames, ops...)
+					}
+
+				}
+			}
+		}
+
 		opTypeNames = append(opTypeNames, opTypeName)
 
 	}

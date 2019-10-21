@@ -20,8 +20,10 @@ type Health struct {
 	httpx.MethodHead
 }
 
-func (*Health) Path() string {
-	return "/health"
+func (Health) MiddleOperators() courier.MiddleOperators {
+	return courier.MiddleOperators{
+		httptransport.Group("/health"),
+	}
 }
 
 func (*Health) Output(ctx context.Context) (result interface{}, err error) {

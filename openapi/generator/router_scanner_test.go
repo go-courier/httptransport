@@ -22,5 +22,5 @@ func ExampleNewRouterScanner() {
 	}
 	// Output:
 	// GET /root/:id httptransport.GroupOperator auth.Auth main.Get
-	// HEAD /root/group/health httptransport.GroupOperator httptransport.GroupOperator group.Health
+	// HEAD /root/group/health httptransport.GroupOperator httptransport.GroupOperator httptransport.GroupOperator group.Health
 }

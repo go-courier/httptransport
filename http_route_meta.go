@@ -104,6 +104,12 @@ type GroupOperator struct {
 	path string
 }
 
+func (g *GroupOperator) OperatorParams() map[string][]string {
+	return map[string][]string{
+		"path": {g.path},
+	}
+}
+
 func (g *GroupOperator) Path() string {
 	return g.path
 }
