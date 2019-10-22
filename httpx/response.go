@@ -182,8 +182,9 @@ func (response *Response) WriteTo(rw http.ResponseWriter, r *http.Request, write
 }
 
 type responseHeaderDelayWriter struct {
-	rw         http.ResponseWriter
-	statusCode int
+	rw            http.ResponseWriter
+	statusCode    int
+	headerWritten bool
 }
 
 func (r *responseHeaderDelayWriter) Header() http.Header {
@@ -191,15 +192,20 @@ func (r *responseHeaderDelayWriter) Header() http.Header {
 }
 
 func (r *responseHeaderDelayWriter) Write(data []byte) (int, error) {
-	if r.statusCode != 0 {
-		r.rw.WriteHeader(r.statusCode)
+	if r.statusCode != 0 && !r.headerWritten {
+		r.writeHeader(r.statusCode)
 	}
 	return r.rw.Write(data)
 }
 
 func (r *responseHeaderDelayWriter) WriteHeader(statusCode int) {
 	r.statusCode = statusCode
-	if statusCode == http.StatusNoContent {
-		r.rw.WriteHeader(r.statusCode)
+
+	if r.statusCode == http.StatusNoContent {
+		r.writeHeader(r.statusCode)
 	}
+}
+func (r *responseHeaderDelayWriter) writeHeader(statusCode int) {
+	r.rw.WriteHeader(statusCode)
+	r.headerWritten = true
 }
