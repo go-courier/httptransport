@@ -2,6 +2,7 @@ package client
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"mime"
@@ -89,6 +90,14 @@ func (c *Client) Do(ctx context.Context, req interface{}, metas ...courier.Metad
 
 	resp, err := httpClient.Do(request)
 	if err != nil {
+		if errors.Unwrap(err) == context.Canceled {
+			return &Result{
+				Err:            ClientClosedRequest.StatusErr().WithDesc(err.Error()),
+				NewError:       c.NewError,
+				TransformerMgr: c.RequestTransformerMgr.TransformerMgr,
+			}
+		}
+
 		return &Result{
 			Err:            RequestFailed.StatusErr().WithDesc(err.Error()),
 			NewError:       c.NewError,

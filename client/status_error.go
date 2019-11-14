@@ -15,6 +15,11 @@ const (
 )
 
 const (
+	// request canceled
+	ClientClosedRequest StatusError = 499*1e6 + iota + 1
+)
+
+const (
 	// transform request failed
 	RequestTransformFailed StatusError = http.StatusBadRequest*1e6 + iota + 1
 )

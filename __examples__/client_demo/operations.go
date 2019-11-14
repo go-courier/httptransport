@@ -262,6 +262,7 @@ func (Proxy) Method() string {
 }
 
 // @StatusErr[RequestTransformFailed][400000001][transform request failed]
+// @StatusErr[ClientClosedRequest][499000001][request canceled]
 // @StatusErr[RequestFailed][500000001][request failed]
 func (req *Proxy) Do(ctx context.Context, c github_com_go_courier_courier.Client, metas ...github_com_go_courier_courier.Metadata) github_com_go_courier_courier.Result {
 
@@ -294,6 +295,7 @@ func (ProxyWithReader) Method() string {
 }
 
 // @StatusErr[RequestTransformFailed][400000001][transform request failed]
+// @StatusErr[ClientClosedRequest][499000001][request canceled]
 // @StatusErr[RequestFailed][500000001][request failed]
 func (req *ProxyWithReader) Do(ctx context.Context, c github_com_go_courier_courier.Client, metas ...github_com_go_courier_courier.Metadata) github_com_go_courier_courier.Result {
 

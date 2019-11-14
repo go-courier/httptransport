@@ -3,6 +3,7 @@ package routes
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/go-courier/courier"
 	"github.com/go-courier/httptransport/__examples__/constants/errors"
@@ -110,6 +111,8 @@ func DataFromContext(ctx context.Context) *Data {
 }
 
 func (req DataProvider) Output(ctx context.Context) (interface{}, error) {
+	time.Sleep(500 * time.Millisecond)
+
 	return &Data{
 		ID: req.ID,
 	}, nil

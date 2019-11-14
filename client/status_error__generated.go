@@ -37,6 +37,8 @@ func (v StatusError) Key() string {
 	switch v {
 	case RequestTransformFailed:
 		return "RequestTransformFailed"
+	case ClientClosedRequest:
+		return "ClientClosedRequest"
 	case RequestFailed:
 		return "RequestFailed"
 	case ReadFailed:
@@ -49,6 +51,8 @@ func (v StatusError) Msg() string {
 	switch v {
 	case RequestTransformFailed:
 		return "transform request failed"
+	case ClientClosedRequest:
+		return "request canceled"
 	case RequestFailed:
 		return "request failed"
 	case ReadFailed:
@@ -60,6 +64,8 @@ func (v StatusError) Msg() string {
 func (v StatusError) CanBeTalkError() bool {
 	switch v {
 	case RequestTransformFailed:
+		return false
+	case ClientClosedRequest:
 		return false
 	case RequestFailed:
 		return false

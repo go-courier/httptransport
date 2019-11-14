@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/go-courier/httptransport/httpx"
+	"github.com/go-courier/statuserror"
 	"github.com/stretchr/testify/require"
 )
 
@@ -80,6 +81,18 @@ func TestClient(t *testing.T) {
 
 		t.Log(ipInfo)
 		t.Log(meta)
+	})
+
+	t.Run("cancel request", func(t *testing.T) {
+		ctx, cancel := context.WithCancel(context.Background())
+		go func() {
+			time.Sleep(1 * time.Millisecond)
+			cancel()
+		}()
+
+		ipInfo := IpInfo{}
+		_, err := ipInfoClient.Do(ctx, &GetByJSON{}).Into(&ipInfo)
+		require.Equal(t, ClientClosedRequest.Key(), err.(*statuserror.StatusErr).Key)
 	})
 
 	t.Run("err request", func(t *testing.T) {
