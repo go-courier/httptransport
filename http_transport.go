@@ -62,7 +62,7 @@ type HttpTransport struct {
 	httpRouter *httprouter.Router
 }
 
-type ServerModifier func(server *http.Server)
+type ServerModifier func(server *http.Server) error
 
 func (t *HttpTransport) SetDefaults() {
 	t.ServiceMeta.SetDefaults()
@@ -103,12 +103,14 @@ func (t *HttpTransport) Serve(router *courier.Router) error {
 
 	srv := &http.Server{}
 
-	for i := range t.ServerModifiers {
-		t.ServerModifiers[i](srv)
-	}
-
 	srv.Addr = fmt.Sprintf(":%d", t.Port)
 	srv.Handler = MiddlewareChain(t.Middlewares...)(t)
+
+	for i := range t.ServerModifiers {
+		if err := t.ServerModifiers[i](srv); err != nil {
+			t.Logger.Fatal(err)
+		}
+	}
 
 	stopCh := make(chan os.Signal, 1)
 	signal.Notify(stopCh, os.Interrupt, syscall.SIGTERM)

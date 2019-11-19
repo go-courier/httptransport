@@ -14,14 +14,14 @@ import (
 	"time"
 
 	"github.com/go-courier/courier"
+	"github.com/go-courier/httptransport"
 	"github.com/go-courier/httptransport/client/roundtrippers"
 	"github.com/go-courier/httptransport/httpx"
 	"github.com/go-courier/httptransport/transformers"
 	"github.com/go-courier/reflectx/typesutil"
 	"github.com/go-courier/statuserror"
 	"github.com/sirupsen/logrus"
-
-	"github.com/go-courier/httptransport"
+	"golang.org/x/net/http2"
 )
 
 type HttpTransport func(rt http.RoundTripper) http.RoundTripper
@@ -227,15 +227,21 @@ func isOk(code int) bool {
 }
 
 func GetShortConnClient(timeout time.Duration, httpTransports ...HttpTransport) *http.Client {
+	t := &http.Transport{
+		DialContext: (&net.Dialer{
+			Timeout:   timeout,
+			KeepAlive: 0,
+		}).DialContext,
+		DisableKeepAlives: true,
+	}
+
+	if err := http2.ConfigureTransport(t); err != nil {
+		panic(err)
+	}
+
 	client := &http.Client{
-		Timeout: timeout,
-		Transport: &http.Transport{
-			DialContext: (&net.Dialer{
-				Timeout:   timeout,
-				KeepAlive: 0,
-			}).DialContext,
-			DisableKeepAlives: true,
-		},
+		Timeout:   timeout,
+		Transport: t,
 	}
 
 	if httpTransports != nil {

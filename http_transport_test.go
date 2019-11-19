@@ -8,19 +8,20 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"os"
+	"sync"
 	"testing"
 	"time"
 
+	"github.com/go-courier/httptransport"
 	"github.com/go-courier/httptransport/__examples__/routes"
 	"github.com/go-courier/httptransport/client"
 	"github.com/stretchr/testify/require"
-
-	"github.com/go-courier/httptransport"
 )
 
 func TestHttpTransport(t *testing.T) {
-	ht := httptransport.NewHttpTransport(func(server *http.Server) {
+	ht := httptransport.NewHttpTransport(func(server *http.Server) error {
 		server.ReadTimeout = 15 * time.Second
+		return nil
 	})
 	ht.SetDefaults()
 	ht.Port = 8080
@@ -44,13 +45,61 @@ func TestHttpTransport(t *testing.T) {
 	p.Signal(os.Interrupt)
 }
 
-func SkipTestHttpTransportWithTLS(t *testing.T) {
-	ht := httptransport.NewHttpTransport(func(server *http.Server) {
+func TestHttpTransportWithHTTP2(t *testing.T) {
+	ht := httptransport.NewHttpTransport(
+		func(server *http.Server) error {
+			server.ReadTimeout = 15 * time.Second
+			return nil
+		},
+	)
+
+	ht.CertFile = "./testdata/rootCA.crt"
+	ht.KeyFile = "./testdata/rootCA.key"
+
+	rootCA, _ := ioutil.ReadFile(ht.CertFile)
+
+	ht.Port = 8080
+
+	go func() {
+		ht.Serve(routes.RootRouter)
+	}()
+
+	time.Sleep(500 * time.Millisecond)
+
+	c := client.GetShortConnClient(10*time.Second, NewInsecureTLSTransport(rootCA))
+
+	wg := sync.WaitGroup{}
+
+	for i := 0; i < 100; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			_, err := c.Get("http://localhost:8080/demo/restful/123123123")
+			require.NoError(t, err)
+		}()
+	}
+
+	wg.Wait()
+
+	resp, err := c.Get("https://localhost:8080/demo/restful/123123123")
+	require.NoError(t, err)
+
+	data, err := httputil.DumpResponse(resp, true)
+	require.NoError(t, err)
+	fmt.Println(string(data))
+
+	p, _ := os.FindProcess(os.Getpid())
+	p.Signal(os.Interrupt)
+}
+
+func TestHttpTransportWithTLS(t *testing.T) {
+	ht := httptransport.NewHttpTransport(func(server *http.Server) error {
 		server.ReadTimeout = 15 * time.Second
+		return nil
 	})
 
-	ht.CertFile = "./testdata/MyCertificate.crt"
-	ht.KeyFile = "./testdata/MyKey.key"
+	ht.CertFile = "./testdata/rootCA.crt"
+	ht.KeyFile = "./testdata/rootCA.key"
 
 	rootCA, _ := ioutil.ReadFile(ht.CertFile)
 
@@ -62,8 +111,6 @@ func SkipTestHttpTransportWithTLS(t *testing.T) {
 	}()
 
 	time.Sleep(200 * time.Millisecond)
-
-	t.Log(rootCA)
 
 	req, err := http.NewRequest("GET", "https://localhost:8081/demo/restful/1", nil)
 	require.NoError(t, err)
