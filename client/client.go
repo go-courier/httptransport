@@ -183,8 +183,36 @@ func (r *Result) Into(body interface{}) (courier.Metadata, error) {
 		return meta, nil
 	}
 
+	decode := func(body interface{}) error {
+		contentType := meta.Get(httpx.HeaderContentType)
+
+		if contentType != "" {
+			contentType, _, _ = mime.ParseMediaType(contentType)
+		}
+
+		rv := reflect.ValueOf(body)
+
+		transformer, err := r.TransformerMgr.NewTransformer(nil, typesutil.FromRType(rv.Type()), transformers.TransformerOption{
+			MIME: contentType,
+		})
+
+		if err != nil {
+			return ReadFailed.StatusErr().WithDesc(err.Error())
+		}
+
+		if e := transformer.DecodeFromReader(r.Response.Body, rv, textproto.MIMEHeader(r.Response.Header)); e != nil {
+			return ReadFailed.StatusErr().WithDesc(e.Error())
+		}
+
+		return nil
+	}
+
 	switch v := body.(type) {
 	case error:
+		// to unmarshal status error
+		if err := decode(v); err != nil {
+			return meta, err
+		}
 		return meta, v
 	case io.Writer:
 		if respWriter, ok := body.(interface{ Header() http.Header }); ok {
@@ -199,23 +227,8 @@ func (r *Result) Into(body interface{}) (courier.Metadata, error) {
 			return meta, ReadFailed.StatusErr().WithDesc(err.Error())
 		}
 	default:
-		contentType := meta.Get(httpx.HeaderContentType)
-
-		if contentType != "" {
-			contentType, _, _ = mime.ParseMediaType(contentType)
-		}
-
-		rv := reflect.ValueOf(body)
-		transformer, err := r.TransformerMgr.NewTransformer(nil, typesutil.FromRType(rv.Type()), transformers.TransformerOption{
-			MIME: contentType,
-		})
-
-		if err != nil {
-			return meta, ReadFailed.StatusErr().WithDesc(err.Error())
-		}
-
-		if err := transformer.DecodeFromReader(r.Response.Body, rv, textproto.MIMEHeader(r.Response.Header)); err != nil {
-			return meta, ReadFailed.StatusErr().WithDesc(err.Error())
+		if err := decode(body); err != nil {
+			return meta, err
 		}
 	}
 
