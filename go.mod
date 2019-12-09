@@ -20,5 +20,5 @@ require (
 	github.com/mattn/go-isatty v0.0.10 // indirect
 	github.com/sirupsen/logrus v1.4.2
 	github.com/stretchr/testify v1.4.0
-	golang.org/x/net v0.0.0-20191118183410-d06c31c94cae
+	golang.org/x/net c0dbc17a3553
 )
