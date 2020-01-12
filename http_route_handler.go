@@ -138,6 +138,7 @@ func (handler *HttpRouteHandler) writeResp(rw http.ResponseWriter, r *http.Reque
 		} else {
 			handler.writeErr(rw, r, &statuserror.StatusErr{
 				Key: "internal error",
+				Code: 500000000,
 				Msg: err.Error(),
 			})
 		}
