@@ -192,7 +192,7 @@ func (r *responseHeaderDelayWriter) Header() http.Header {
 }
 
 func (r *responseHeaderDelayWriter) Write(data []byte) (int, error) {
-	if r.statusCode != 0 && !r.headerWritten {
+	if r.statusCode != 0 {
 		r.writeHeader(r.statusCode)
 	}
 	return r.rw.Write(data)
@@ -206,6 +206,8 @@ func (r *responseHeaderDelayWriter) WriteHeader(statusCode int) {
 	}
 }
 func (r *responseHeaderDelayWriter) writeHeader(statusCode int) {
-	r.rw.WriteHeader(statusCode)
-	r.headerWritten = true
+	if !r.headerWritten {
+		r.rw.WriteHeader(statusCode)
+		r.headerWritten = true
+	}
 }
