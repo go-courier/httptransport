@@ -205,6 +205,7 @@ func (r *responseHeaderDelayWriter) WriteHeader(statusCode int) {
 		r.writeHeader(r.statusCode)
 	}
 }
+
 func (r *responseHeaderDelayWriter) writeHeader(statusCode int) {
 	if !r.headerWritten {
 		r.rw.WriteHeader(statusCode)

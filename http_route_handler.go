@@ -120,7 +120,7 @@ func (handler *HttpRouteHandler) ServeHTTP(rw http.ResponseWriter, r *http.Reque
 }
 
 func (handler *HttpRouteHandler) writeResp(rw http.ResponseWriter, r *http.Request, resp interface{}) {
-	if err := httpx.ResponseFrom(resp).WriteTo(rw, r, func(w io.Writer, response *httpx.Response) error {
+	err := httpx.ResponseFrom(resp).WriteTo(rw, r, func(w io.Writer, response *httpx.Response) error {
 		transformer, err := handler.TransformerMgr.NewTransformer(nil, typesutil.FromRType(reflect.TypeOf(response.Value)), transformers.TransformerOption{
 			MIME: response.ContentType,
 		})
@@ -131,8 +131,16 @@ func (handler *HttpRouteHandler) writeResp(rw http.ResponseWriter, r *http.Reque
 			return err
 		}
 		return nil
-	}); err != nil {
-		handler.writeErr(rw, r, err)
+	})
+	if err != nil {
+		if _, isForErr := resp.(error); !isForErr {
+			handler.writeErr(rw, r, err)
+		} else {
+			handler.writeErr(rw, r, &statuserror.StatusErr{
+				Key: "internal error",
+				Msg: err.Error(),
+			})
+		}
 	}
 }
 
