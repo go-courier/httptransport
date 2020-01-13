@@ -34,9 +34,9 @@ type Proxy struct {
 }
 
 func (Proxy) Output(ctx context.Context) (interface{}, error) {
-	result := c.Do(ctx, &GetByJSON{})
-
-	return httpx.WithSchema(&IpInfo{})(result), nil
+	resp := &IpInfo{}
+	_, err := c.Do(ctx, &GetByJSON{}).Into(resp)
+	return resp, err
 }
 
 type ProxyWithReader struct {
@@ -48,9 +48,9 @@ func (ProxyWithReader) Path() string {
 }
 
 func (ProxyWithReader) Output(ctx context.Context) (interface{}, error) {
-	resp := &IpInfo{}
-	_, err := c.Do(ctx, &GetByJSON{}).Into(resp)
-	return resp, err
+	result := c.Do(ctx, &GetByJSON{})
+
+	return httpx.WithSchema(&IpInfo{})(result), nil
 }
 
 type GetByJSON struct {

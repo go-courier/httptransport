@@ -40,6 +40,36 @@ func BenchmarkHttpTransport(b *testing.B) {
 	p.Signal(os.Interrupt)
 }
 
+func TestHttpTransport(t *testing.T) {
+	ht := httptransport.NewHttpTransport(func(server *http.Server) error {
+		server.ReadTimeout = 15 * time.Second
+		return nil
+	})
+	ht.SetDefaults()
+	ht.Port = 8080
+	go func() {
+		ht.Serve(routes.RootRouter)
+	}()
+
+	time.Sleep(1 * time.Second)
+
+	t.Run("request", func(t *testing.T) {
+		http.Get("http://127.0.0.1:8080/demo/restful/123456")
+	})
+
+	t.Run("proxy", func(t *testing.T) {
+		resp, err := http.Get("http://127.0.0.1:8080/demo/proxy/v2")
+		require.NoError(t, err)
+
+		data, err := httputil.DumpResponse(resp, true)
+		require.NoError(t, err)
+		fmt.Println(string(data))
+	})
+
+	p, _ := os.FindProcess(os.Getpid())
+	p.Signal(os.Interrupt)
+}
+
 func TestHttpTransportWithHTTP2(t *testing.T) {
 	ht := httptransport.NewHttpTransport(
 		func(server *http.Server) error {

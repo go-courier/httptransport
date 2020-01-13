@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"net/textproto"
 	"reflect"
-	"strings"
 	"time"
 
 	"github.com/go-courier/courier"
@@ -170,6 +169,13 @@ func (r *Result) StatusCode() int {
 	return 0
 }
 
+func (r *Result) Meta() courier.Metadata {
+	if r.Response != nil {
+		return courier.Metadata(r.Response.Header)
+	}
+	return courier.Metadata{}
+}
+
 func (r *Result) Into(body interface{}) (courier.Metadata, error) {
 	defer func() {
 		if r.Response != nil && r.Response.Body != nil {
@@ -223,14 +229,6 @@ func (r *Result) Into(body interface{}) (courier.Metadata, error) {
 		}
 		return meta, v
 	case io.Writer:
-		if respWriter, ok := body.(interface{ Header() http.Header }); ok {
-			header := respWriter.Header()
-			for k, v := range meta {
-				if strings.HasPrefix(k, "Content-") {
-					header[k] = v
-				}
-			}
-		}
 		if _, err := io.Copy(v, r.Response.Body); err != nil {
 			return meta, ReadFailed.StatusErr().WithDesc(err.Error())
 		}
