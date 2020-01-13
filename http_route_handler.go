@@ -119,35 +119,37 @@ func (handler *HttpRouteHandler) ServeHTTP(rw http.ResponseWriter, r *http.Reque
 	}
 }
 
-func (handler *HttpRouteHandler) writeResp(rw http.ResponseWriter, r *http.Request, resp interface{}) {
-	err := httpx.ResponseFrom(resp).WriteTo(rw, r, func(w io.Writer, response *httpx.Response) error {
-		transformer, err := handler.TransformerMgr.NewTransformer(nil, typesutil.FromRType(reflect.TypeOf(response.Value)), transformers.TransformerOption{
-			MIME: response.ContentType,
-		})
-		if err != nil {
-			return err
-		}
-		if _, err := transformer.EncodeToWriter(w, response.Value); err != nil {
-			return err
-		}
-		return nil
+func (handler *HttpRouteHandler) writeToBody(w io.Writer, response *httpx.Response) error {
+	transformer, err := handler.TransformerMgr.NewTransformer(nil, typesutil.FromRType(reflect.TypeOf(response.Value)), transformers.TransformerOption{
+		MIME: response.ContentType,
 	})
 	if err != nil {
-		if _, isForErr := resp.(error); !isForErr {
-			handler.writeErr(rw, r, err)
-		} else {
-			handler.writeErr(rw, r, &statuserror.StatusErr{
-				Key: "internal error",
-				Code: 500000000,
-				Msg: err.Error(),
-			})
-		}
+		return err
+	}
+	if _, err := transformer.EncodeToWriter(w, response.Value); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (handler *HttpRouteHandler) writeResp(rw http.ResponseWriter, r *http.Request, resp interface{}) {
+	err := httpx.ResponseFrom(resp).WriteTo(rw, r, handler.writeToBody)
+	if err != nil {
+		handler.writeErr(rw, r, err)
 	}
 }
 
 func (handler *HttpRouteHandler) writeErr(rw http.ResponseWriter, r *http.Request, err error) {
-	if _, ok := err.(httpx.RedirectDescriber); !ok {
-		err = statuserror.FromErr(err).AppendSource(handler.serviceMeta.String())
+	if redirect, ok := err.(httpx.RedirectDescriber); ok {
+		errForWrite := httpx.ResponseFrom(redirect).WriteTo(rw, r, handler.writeToBody)
+		if errForWrite != nil {
+			handler.writeErr(rw, r, statuserror.NewUnknownErr().WithMsg(errForWrite.Error()).AppendSource(handler.serviceMeta.String()))
+		}
+		return
 	}
-	handler.writeResp(rw, r, err)
+
+	errForWrite := httpx.ResponseFrom(statuserror.FromErr(err).AppendSource(handler.serviceMeta.String())).WriteTo(rw, r, handler.writeToBody)
+	if errForWrite != nil {
+		handler.writeErr(rw, r, statuserror.NewUnknownErr().WithMsg(errForWrite.Error()).AppendSource(handler.serviceMeta.String()))
+	}
 }
