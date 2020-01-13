@@ -112,6 +112,10 @@ type Response struct {
 }
 
 func (response *Response) WriteTo(rw http.ResponseWriter, r *http.Request, writeToBody func(w io.Writer, response *Response) error) error {
+	defer func() {
+		response.Value = nil
+	}()
+
 	if upgrader, ok := response.Value.(Upgrader); ok {
 		return upgrader.Upgrade(rw, r)
 	}

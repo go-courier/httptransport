@@ -152,4 +152,5 @@ func (handler *HttpRouteHandler) writeErr(rw http.ResponseWriter, r *http.Reques
 	if errForWrite != nil {
 		handler.writeErr(rw, r, statuserror.NewUnknownErr().WithMsg(errForWrite.Error()).AppendSource(handler.serviceMeta.String()))
 	}
+	return
 }

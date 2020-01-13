@@ -18,30 +18,24 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestHttpTransport(t *testing.T) {
+func BenchmarkHttpTransport(b *testing.B) {
 	ht := httptransport.NewHttpTransport(func(server *http.Server) error {
 		server.ReadTimeout = 15 * time.Second
 		return nil
 	})
 	ht.SetDefaults()
 	ht.Port = 8080
-
 	go func() {
 		ht.Serve(routes.RootRouter)
 	}()
 
-	time.Sleep(200 * time.Millisecond)
+	b.Run("request", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			http.Get("http://127.0.0.1:8080/demo/restful/123456")
+		}
+	})
 
-	resp, err := http.Get("http://127.0.0.1:8080/demo/restful/1")
-	require.NoError(t, err)
-
-	data, err := httputil.DumpResponse(resp, true)
-	require.NoError(t, err)
-	fmt.Println(string(data))
-
-	time.Sleep(1 * time.Second)
 	p, _ := os.FindProcess(os.Getpid())
-
 	p.Signal(os.Interrupt)
 }
 
