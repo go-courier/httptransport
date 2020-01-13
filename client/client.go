@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/go-courier/courier"
-	"github.com/go-courier/httptransport"
 	"github.com/go-courier/httptransport/client/roundtrippers"
 	"github.com/go-courier/httptransport/httpx"
 	"github.com/go-courier/httptransport/transformers"
@@ -22,6 +21,8 @@ import (
 	"github.com/go-courier/statuserror"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/net/http2"
+
+	"github.com/go-courier/httptransport"
 )
 
 type HttpTransport func(rt http.RoundTripper) http.RoundTripper
@@ -160,6 +161,13 @@ type Result struct {
 	Response       *http.Response
 	NewError       func(resp *http.Response) error
 	Err            error
+}
+
+func (r *Result) StatusCode() int {
+	if r.Response != nil {
+		return r.Response.StatusCode
+	}
+	return 0
 }
 
 func (r *Result) Into(body interface{}) (courier.Metadata, error) {

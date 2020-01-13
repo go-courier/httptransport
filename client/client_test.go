@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/go-courier/httptransport/httpx"
+	"github.com/go-courier/httptransport/testify"
 	"github.com/go-courier/statuserror"
 	"github.com/stretchr/testify/require"
 )
@@ -107,5 +108,17 @@ func TestClient(t *testing.T) {
 			_, err := errClient.Do(ContextWithClient(context.Background(), GetShortConnClient(10*time.Second)), &GetByJSON{}).Into(&ipInfo)
 			require.Error(t, err)
 		}
+	})
+
+	t.Run("result pass", func(t *testing.T) {
+		request, _ := http.NewRequest("GET", "http://ip-api.com/json", nil)
+		result := ipInfoClient.Do(nil, request)
+
+		req, _ := http.NewRequest(http.MethodGet, "/", nil)
+		rw := testify.NewMockResponseWriter()
+
+		httpx.ResponseFrom(result).WriteTo(rw, req, nil)
+
+		require.Equal(t, 200, rw.StatusCode)
 	})
 }

@@ -12,10 +12,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-courier/httptransport"
 	"github.com/go-courier/httptransport/__examples__/routes"
 	"github.com/go-courier/httptransport/client"
 	"github.com/stretchr/testify/require"
+
+	"github.com/go-courier/httptransport"
 )
 
 func BenchmarkHttpTransport(b *testing.B) {

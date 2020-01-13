@@ -64,7 +64,6 @@ func TestResponseFrom(t *testing.T) {
 }
 
 func TestResponse_WriteTo(t *testing.T) {
-
 	t.Run("redirect", func(t *testing.T) {
 		req, _ := http.NewRequest(http.MethodPost, "/", nil)
 		rw := testify.NewMockResponseWriter()
