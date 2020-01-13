@@ -294,9 +294,9 @@ func (ProxyWithReader) Method() string {
 	return "GET"
 }
 
+// @StatusErr[ClientClosedRequest][499000001][request canceled]
 // @StatusErr[RequestFailed][500000001][request failed]
 // @StatusErr[RequestTransformFailed][400000001][transform request failed]
-// @StatusErr[ClientClosedRequest][499000001][request canceled]
 func (req *ProxyWithReader) Do(ctx context.Context, c github_com_go_courier_courier.Client, metas ...github_com_go_courier_courier.Metadata) github_com_go_courier_courier.Result {
 
 	ctx = github_com_go_courier_metax.ContextWith(ctx, "operationID", "demo.ProxyWithReader")
