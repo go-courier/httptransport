@@ -143,14 +143,16 @@ func (handler *HttpRouteHandler) writeErr(rw http.ResponseWriter, r *http.Reques
 	if redirect, ok := err.(httpx.RedirectDescriber); ok {
 		errForWrite := httpx.ResponseFrom(redirect).WriteTo(rw, r, handler.writeToBody)
 		if errForWrite != nil {
-			handler.writeErr(rw, r, statuserror.NewUnknownErr().WithMsg(errForWrite.Error()).AppendSource(handler.serviceMeta.String()))
+			rw.WriteHeader(500)
+			rw.Write([]byte(errForWrite.Error()))
 		}
 		return
 	}
 
 	errForWrite := httpx.ResponseFrom(statuserror.FromErr(err).AppendSource(handler.serviceMeta.String())).WriteTo(rw, r, handler.writeToBody)
 	if errForWrite != nil {
-		handler.writeErr(rw, r, statuserror.NewUnknownErr().WithMsg(errForWrite.Error()).AppendSource(handler.serviceMeta.String()))
+		rw.WriteHeader(500)
+		rw.Write([]byte(errForWrite.Error()))
 	}
 	return
 }
