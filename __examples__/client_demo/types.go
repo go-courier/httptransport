@@ -5,7 +5,6 @@ import (
 	database_sql_driver "database/sql/driver"
 	errors "errors"
 
-	github_com_go_courier_courier "github.com/go-courier/courier"
 	github_com_go_courier_enumeration "github.com/go-courier/enumeration"
 	github_com_go_courier_httptransport_httpx "github.com/go-courier/httptransport/httpx"
 	github_com_go_courier_statuserror "github.com/go-courier/statuserror"
@@ -20,8 +19,6 @@ type Data struct {
 	PtrString *string  `json:"ptrString,omitempty"`
 	SubData   *SubData `json:"subData,omitempty"`
 }
-
-type GithubComGoCourierCourierResult = github_com_go_courier_courier.Result
 
 type GithubComGoCourierHttptransportHttpxAttachment = github_com_go_courier_httptransport_httpx.Attachment
 

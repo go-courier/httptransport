@@ -18,7 +18,7 @@ type ClientDemo interface {
 	GetByID(req *GetByID, metas ...github_com_go_courier_courier.Metadata) (*Data, github_com_go_courier_courier.Metadata, error)
 	HealthCheck(metas ...github_com_go_courier_courier.Metadata) (github_com_go_courier_courier.Metadata, error)
 	Proxy(metas ...github_com_go_courier_courier.Metadata) (*IpInfo, github_com_go_courier_courier.Metadata, error)
-	ProxyWithReader(metas ...github_com_go_courier_courier.Metadata) (*GithubComGoCourierCourierResult, github_com_go_courier_courier.Metadata, error)
+	ProxyWithReader(metas ...github_com_go_courier_courier.Metadata) (*IpInfo, github_com_go_courier_courier.Metadata, error)
 	Redirect(metas ...github_com_go_courier_courier.Metadata) (github_com_go_courier_courier.Metadata, error)
 	RedirectWhenError(metas ...github_com_go_courier_courier.Metadata) (github_com_go_courier_courier.Metadata, error)
 	RemoveByID(req *RemoveByID, metas ...github_com_go_courier_courier.Metadata) (github_com_go_courier_courier.Metadata, error)
@@ -87,7 +87,7 @@ func (c *ClientDemoStruct) Proxy(metas ...github_com_go_courier_courier.Metadata
 	return (&Proxy{}).InvokeContext(c.Context(), c.Client, metas...)
 }
 
-func (c *ClientDemoStruct) ProxyWithReader(metas ...github_com_go_courier_courier.Metadata) (*GithubComGoCourierCourierResult, github_com_go_courier_courier.Metadata, error) {
+func (c *ClientDemoStruct) ProxyWithReader(metas ...github_com_go_courier_courier.Metadata) (*IpInfo, github_com_go_courier_courier.Metadata, error) {
 	return (&ProxyWithReader{}).InvokeContext(c.Context(), c.Client, metas...)
 }
 

@@ -153,13 +153,13 @@ func (response *Response) WriteTo(rw http.ResponseWriter, r *http.Request, write
 		return nil
 	}
 
+	if response.StatusCode != http.StatusNoContent && response.ContentType != "" {
+		rw.Header().Set(HeaderContentType, response.ContentType)
+	}
+
 	rw.WriteHeader(response.StatusCode)
 
 	if response.StatusCode != http.StatusNoContent {
-		if response.ContentType != "" {
-			rw.Header().Set(HeaderContentType, response.ContentType)
-		}
-
 		switch v := response.Value.(type) {
 		case courier.Result:
 			if _, err := v.Into(rw); err != nil {

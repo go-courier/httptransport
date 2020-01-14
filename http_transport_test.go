@@ -57,6 +57,16 @@ func TestHttpTransport(t *testing.T) {
 		http.Get("http://127.0.0.1:8080/demo/restful/123456")
 	})
 
+	t.Run("openapi", func(t *testing.T) {
+		resp, err := http.Get("http://127.0.0.1:8080/demo")
+
+		require.NoError(t, err)
+
+		data, err := httputil.DumpResponse(resp, true)
+		require.NoError(t, err)
+		fmt.Println(string(data))
+	})
+
 	t.Run("proxy", func(t *testing.T) {
 		resp, err := http.Get("http://127.0.0.1:8080/demo/proxy/v2")
 		require.NoError(t, err)

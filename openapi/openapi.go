@@ -15,6 +15,8 @@ func init() {
 	data, err := ioutil.ReadFile("./openapi.json")
 	if err == nil {
 		openAPIJSONData.Write(data)
+	} else {
+		openAPIJSONData.Write([]byte("{}"))
 	}
 }
 

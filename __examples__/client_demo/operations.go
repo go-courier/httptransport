@@ -261,9 +261,9 @@ func (Proxy) Method() string {
 	return "GET"
 }
 
-// @StatusErr[RequestTransformFailed][400000001][transform request failed]
 // @StatusErr[ClientClosedRequest][499000001][request canceled]
 // @StatusErr[RequestFailed][500000001][request failed]
+// @StatusErr[RequestTransformFailed][400000001][transform request failed]
 func (req *Proxy) Do(ctx context.Context, c github_com_go_courier_courier.Client, metas ...github_com_go_courier_courier.Metadata) github_com_go_courier_courier.Result {
 
 	ctx = github_com_go_courier_metax.ContextWith(ctx, "operationID", "demo.Proxy")
@@ -294,9 +294,9 @@ func (ProxyWithReader) Method() string {
 	return "GET"
 }
 
-// @StatusErr[RequestTransformFailed][400000001][transform request failed]
 // @StatusErr[ClientClosedRequest][499000001][request canceled]
 // @StatusErr[RequestFailed][500000001][request failed]
+// @StatusErr[RequestTransformFailed][400000001][transform request failed]
 func (req *ProxyWithReader) Do(ctx context.Context, c github_com_go_courier_courier.Client, metas ...github_com_go_courier_courier.Metadata) github_com_go_courier_courier.Result {
 
 	ctx = github_com_go_courier_metax.ContextWith(ctx, "operationID", "demo.ProxyWithReader")
@@ -304,15 +304,15 @@ func (req *ProxyWithReader) Do(ctx context.Context, c github_com_go_courier_cour
 
 }
 
-func (req *ProxyWithReader) InvokeContext(ctx context.Context, c github_com_go_courier_courier.Client, metas ...github_com_go_courier_courier.Metadata) (*GithubComGoCourierCourierResult, github_com_go_courier_courier.Metadata, error) {
-	resp := new(GithubComGoCourierCourierResult)
+func (req *ProxyWithReader) InvokeContext(ctx context.Context, c github_com_go_courier_courier.Client, metas ...github_com_go_courier_courier.Metadata) (*IpInfo, github_com_go_courier_courier.Metadata, error) {
+	resp := new(IpInfo)
 
 	meta, err := req.Do(ctx, c, metas...).Into(resp)
 
 	return resp, meta, err
 }
 
-func (req *ProxyWithReader) Invoke(c github_com_go_courier_courier.Client, metas ...github_com_go_courier_courier.Metadata) (*GithubComGoCourierCourierResult, github_com_go_courier_courier.Metadata, error) {
+func (req *ProxyWithReader) Invoke(c github_com_go_courier_courier.Client, metas ...github_com_go_courier_courier.Metadata) (*IpInfo, github_com_go_courier_courier.Metadata, error) {
 	return req.InvokeContext(context.Background(), c, metas...)
 }
 
