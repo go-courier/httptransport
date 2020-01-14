@@ -1,12 +1,15 @@
 package httpx
 
 import (
+	"context"
 	"io"
+	"mime"
 	"net/http"
 	"net/textproto"
 	"net/url"
 
 	"github.com/go-courier/courier"
+	"github.com/go-courier/reflectx/typesutil"
 )
 
 type ResponseWrapper func(v interface{}) *Response
@@ -111,7 +114,29 @@ type Response struct {
 	StatusCode  int
 }
 
-func (response *Response) WriteTo(rw http.ResponseWriter, r *http.Request, writeToBody func(w io.Writer, response *Response) error) error {
+type Transformer interface {
+	// name or alias of transformer
+	// prefer using some keyword about content-type
+	Names() []string
+	// create transformer new transformer instance by type
+	// in this step will to check transformer is valid for type
+	New(context.Context, typesutil.Type) (Transformer, error)
+
+	// named by tag
+	NamedByTag() string
+
+	// encode to writer
+	EncodeToWriter(w io.Writer, v interface{}) (mediaType string, err error)
+	// decode from reader
+	DecodeFromReader(r io.Reader, v interface{}, headers ...textproto.MIMEHeader) error
+
+	// Content-Type
+	String() string
+}
+
+type Encode func(w io.Writer, v interface{}) error
+
+func (response *Response) WriteTo(rw http.ResponseWriter, r *http.Request, resolveEncode func(response *Response) (string, Encode, error)) error {
 	defer func() {
 		response.Value = nil
 	}()
@@ -153,26 +178,44 @@ func (response *Response) WriteTo(rw http.ResponseWriter, r *http.Request, write
 		return nil
 	}
 
-	if response.StatusCode != http.StatusNoContent && response.ContentType != "" {
+	if response.StatusCode == http.StatusNoContent {
+		rw.WriteHeader(response.StatusCode)
+		return nil
+	}
+
+	if response.ContentType != "" {
 		rw.Header().Set(HeaderContentType, response.ContentType)
 	}
 
-	rw.WriteHeader(response.StatusCode)
+	switch v := response.Value.(type) {
+	case courier.Result:
+		rw.WriteHeader(response.StatusCode)
 
-	if response.StatusCode != http.StatusNoContent {
-		switch v := response.Value.(type) {
-		case courier.Result:
-			if _, err := v.Into(rw); err != nil {
-				return err
-			}
-		case io.Reader:
-			if _, err := io.Copy(rw, v); err != nil {
-				return err
-			}
-		default:
-			if err := writeToBody(rw, response); err != nil {
-				return err
-			}
+		if _, err := v.Into(rw); err != nil {
+			return err
+		}
+	case io.Reader:
+		rw.WriteHeader(response.StatusCode)
+
+		if _, err := io.Copy(rw, v); err != nil {
+			return err
+		}
+	default:
+		contentType, encode, err := resolveEncode(response)
+		if err != nil {
+			return err
+		}
+
+		if response.ContentType == "" {
+			rw.Header().Set(HeaderContentType, mime.FormatMediaType(contentType, map[string]string{
+				"charset": "utf-8",
+			}))
+		}
+
+		rw.WriteHeader(response.StatusCode)
+
+		if err := encode(rw, response.Value); err != nil {
+			return err
 		}
 	}
 

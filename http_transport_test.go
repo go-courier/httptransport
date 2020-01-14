@@ -54,7 +54,12 @@ func TestHttpTransport(t *testing.T) {
 	time.Sleep(1 * time.Second)
 
 	t.Run("request", func(t *testing.T) {
-		http.Get("http://127.0.0.1:8080/demo/restful/123456")
+		resp, err := http.Get("http://127.0.0.1:8080/demo/restful/123456")
+		require.NoError(t, err)
+
+		data, err := httputil.DumpResponse(resp, true)
+		require.NoError(t, err)
+		fmt.Println(string(data))
 	})
 
 	t.Run("openapi", func(t *testing.T) {

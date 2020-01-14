@@ -119,21 +119,22 @@ func (handler *HttpRouteHandler) ServeHTTP(rw http.ResponseWriter, r *http.Reque
 	}
 }
 
-func (handler *HttpRouteHandler) writeToBody(w io.Writer, response *httpx.Response) error {
+func (handler *HttpRouteHandler) resolveTransformer(response *httpx.Response) (string, httpx.Encode, error) {
 	transformer, err := handler.TransformerMgr.NewTransformer(nil, typesutil.FromRType(reflect.TypeOf(response.Value)), transformers.TransformerOption{
 		MIME: response.ContentType,
 	})
 	if err != nil {
-		return err
+		return "", nil, err
 	}
-	if _, err := transformer.EncodeToWriter(w, response.Value); err != nil {
+
+	return transformer.String(), func(w io.Writer, v interface{}) error {
+		_, err := transformer.EncodeToWriter(w, v)
 		return err
-	}
-	return nil
+	}, nil
 }
 
 func (handler *HttpRouteHandler) writeResp(rw http.ResponseWriter, r *http.Request, resp interface{}) {
-	err := httpx.ResponseFrom(resp).WriteTo(rw, r, handler.writeToBody)
+	err := httpx.ResponseFrom(resp).WriteTo(rw, r, handler.resolveTransformer)
 	if err != nil {
 		handler.writeErr(rw, r, err)
 	}
@@ -141,7 +142,7 @@ func (handler *HttpRouteHandler) writeResp(rw http.ResponseWriter, r *http.Reque
 
 func (handler *HttpRouteHandler) writeErr(rw http.ResponseWriter, r *http.Request, err error) {
 	if redirect, ok := err.(httpx.RedirectDescriber); ok {
-		errForWrite := httpx.ResponseFrom(redirect).WriteTo(rw, r, handler.writeToBody)
+		errForWrite := httpx.ResponseFrom(redirect).WriteTo(rw, r, handler.resolveTransformer)
 		if errForWrite != nil {
 			rw.WriteHeader(http.StatusInternalServerError)
 			rw.Write([]byte("courier write err failed:" + errForWrite.Error()))
@@ -149,7 +150,7 @@ func (handler *HttpRouteHandler) writeErr(rw http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	errForWrite := httpx.ResponseFrom(statuserror.FromErr(err).AppendSource(handler.serviceMeta.String())).WriteTo(rw, r, handler.writeToBody)
+	errForWrite := httpx.ResponseFrom(statuserror.FromErr(err).AppendSource(handler.serviceMeta.String())).WriteTo(rw, r, handler.resolveTransformer)
 	if errForWrite != nil {
 		rw.WriteHeader(http.StatusInternalServerError)
 		rw.Write([]byte("courier write err failed:" + errForWrite.Error()))

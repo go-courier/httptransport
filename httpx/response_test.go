@@ -122,11 +122,10 @@ Set-Cookie: `+cookie.String()+`
 
 		ResponseFrom(&Data{
 			ID: "123456",
-		}).WriteTo(rw, req, func(w io.Writer, response *Response) error {
-			if rw, ok := w.(interface{ Header() http.Header }); ok {
-				rw.Header().Set(HeaderContentType, "application/json; charset=utf-8")
-			}
-			return json.NewEncoder(w).Encode(response.Value)
+		}).WriteTo(rw, req, func(response *Response) (string, Encode, error) {
+			return "application/json", func(w io.Writer, v interface{}) error {
+				return json.NewEncoder(w).Encode(v)
+			}, nil
 		})
 
 		require.Equal(t, `HTTP/0.0 200 OK
@@ -146,11 +145,10 @@ Content-Type: application/json; charset=utf-8
 
 		ResponseFrom(&Data{
 			ID: "123456",
-		}).WriteTo(rw, req, func(w io.Writer, response *Response) error {
-			if rw, ok := w.(interface{ Header() http.Header }); ok {
-				rw.Header().Set(HeaderContentType, "application/json; charset=utf-8")
-			}
-			return json.NewEncoder(w).Encode(response.Value)
+		}).WriteTo(rw, req, func(response *Response) (string, Encode, error) {
+			return "application/json", func(w io.Writer, v interface{}) error {
+				return json.NewEncoder(w).Encode(v)
+			}, nil
 		})
 
 		require.Equal(t, `HTTP/0.0 201 Created
