@@ -22,7 +22,17 @@ type MockResponseWriter struct {
 var _ http.ResponseWriter = (*MockResponseWriter)(nil)
 
 func (w *MockResponseWriter) Header() http.Header {
-	return w.header
+	if w.StatusCode == 0 {
+		return w.header
+	}
+
+	header := http.Header{}
+
+	for k, v := range w.header {
+		header[k] = v
+	}
+
+	return header
 }
 
 func (w *MockResponseWriter) WriteHeader(statusCode int) {
