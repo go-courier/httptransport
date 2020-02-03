@@ -2,6 +2,7 @@ package httptransport
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -141,6 +142,10 @@ func (handler *HttpRouteHandler) writeResp(rw http.ResponseWriter, r *http.Reque
 }
 
 func (handler *HttpRouteHandler) writeErr(rw http.ResponseWriter, r *http.Request, err error) {
+	if e := errors.Unwrap(err); e != nil {
+		err = e
+	}
+
 	if redirect, ok := err.(httpx.RedirectDescriber); ok {
 		errForWrite := httpx.ResponseFrom(redirect).WriteTo(rw, r, handler.resolveTransformer)
 		if errForWrite != nil {
@@ -150,7 +155,9 @@ func (handler *HttpRouteHandler) writeErr(rw http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	errForWrite := httpx.ResponseFrom(statuserror.FromErr(err).AppendSource(handler.serviceMeta.String())).WriteTo(rw, r, handler.resolveTransformer)
+	errForWrite := httpx.ResponseFrom(
+		statuserror.FromErr(err).AppendSource(handler.serviceMeta.String()),
+	).WriteTo(rw, r, handler.resolveTransformer)
 	if errForWrite != nil {
 		rw.WriteHeader(http.StatusInternalServerError)
 		rw.Write([]byte("courier write err failed:" + errForWrite.Error()))

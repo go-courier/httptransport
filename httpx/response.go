@@ -114,6 +114,20 @@ type Response struct {
 	StatusCode  int
 }
 
+func (response *Response) Unwrap() error {
+	if err, ok := response.Value.(error); ok {
+		return err
+	}
+	return nil
+}
+
+func (response *Response) Error() string {
+	if err, ok := response.Value.(error); ok {
+		return err.Error()
+	}
+	return "response error"
+}
+
 type Transformer interface {
 	// name or alias of transformer
 	// prefer using some keyword about content-type
