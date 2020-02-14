@@ -1,6 +1,8 @@
 package main
 
 import (
+	"sort"
+
 	"github.com/go-courier/codegen"
 )
 
@@ -34,7 +36,17 @@ func main() {
 	{
 		file := codegen.NewFile("httpx", codegen.GeneratedFileSuffix("./mines.go"))
 
-		for mineType, mineName := range mineTypes {
+		keys := make([]string, 0)
+
+		for mineType := range mineTypes {
+			keys = append(keys, mineType)
+		}
+
+		sort.Strings(keys)
+
+		for _, mineType := range keys {
+			mineName := mineTypes[mineType]
+
 			typ := codegen.Type(mineName)
 
 			file.WriteBlock(

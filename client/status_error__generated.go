@@ -8,6 +8,10 @@ var _ interface {
 	github_com_go_courier_statuserror.StatusError
 } = (*StatusError)(nil)
 
+func (v StatusError) Unwrap() error {
+	return v.StatusErr()
+}
+
 func (v StatusError) StatusErr() *github_com_go_courier_statuserror.StatusErr {
 	return &github_com_go_courier_statuserror.StatusErr{
 		Key:            v.Key(),

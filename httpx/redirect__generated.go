@@ -7,128 +7,160 @@ import (
 
 func RedirectWithStatusMultipleChoices(u *net_url.URL) *StatusMultipleChoices {
 	return &StatusMultipleChoices{
-		redirect: &redirect{
-			URL: u,
+		Response: &Response{
+			Location: u,
 		},
 	}
 }
 
 type StatusMultipleChoices struct {
-	*redirect
+	*Response
 }
 
 func (StatusMultipleChoices) StatusCode() int {
 	return net_http.StatusMultipleChoices
 }
 
+func (r StatusMultipleChoices) Location() *net_url.URL {
+	return r.Response.Location
+}
+
 func RedirectWithStatusMovedPermanently(u *net_url.URL) *StatusMovedPermanently {
 	return &StatusMovedPermanently{
-		redirect: &redirect{
-			URL: u,
+		Response: &Response{
+			Location: u,
 		},
 	}
 }
 
 type StatusMovedPermanently struct {
-	*redirect
+	*Response
 }
 
 func (StatusMovedPermanently) StatusCode() int {
 	return net_http.StatusMovedPermanently
 }
 
+func (r StatusMovedPermanently) Location() *net_url.URL {
+	return r.Response.Location
+}
+
 func RedirectWithStatusFound(u *net_url.URL) *StatusFound {
 	return &StatusFound{
-		redirect: &redirect{
-			URL: u,
+		Response: &Response{
+			Location: u,
 		},
 	}
 }
 
 type StatusFound struct {
-	*redirect
+	*Response
 }
 
 func (StatusFound) StatusCode() int {
 	return net_http.StatusFound
 }
 
+func (r StatusFound) Location() *net_url.URL {
+	return r.Response.Location
+}
+
 func RedirectWithStatusSeeOther(u *net_url.URL) *StatusSeeOther {
 	return &StatusSeeOther{
-		redirect: &redirect{
-			URL: u,
+		Response: &Response{
+			Location: u,
 		},
 	}
 }
 
 type StatusSeeOther struct {
-	*redirect
+	*Response
 }
 
 func (StatusSeeOther) StatusCode() int {
 	return net_http.StatusSeeOther
 }
 
+func (r StatusSeeOther) Location() *net_url.URL {
+	return r.Response.Location
+}
+
 func RedirectWithStatusNotModified(u *net_url.URL) *StatusNotModified {
 	return &StatusNotModified{
-		redirect: &redirect{
-			URL: u,
+		Response: &Response{
+			Location: u,
 		},
 	}
 }
 
 type StatusNotModified struct {
-	*redirect
+	*Response
 }
 
 func (StatusNotModified) StatusCode() int {
 	return net_http.StatusNotModified
 }
 
+func (r StatusNotModified) Location() *net_url.URL {
+	return r.Response.Location
+}
+
 func RedirectWithStatusUseProxy(u *net_url.URL) *StatusUseProxy {
 	return &StatusUseProxy{
-		redirect: &redirect{
-			URL: u,
+		Response: &Response{
+			Location: u,
 		},
 	}
 }
 
 type StatusUseProxy struct {
-	*redirect
+	*Response
 }
 
 func (StatusUseProxy) StatusCode() int {
 	return net_http.StatusUseProxy
 }
 
+func (r StatusUseProxy) Location() *net_url.URL {
+	return r.Response.Location
+}
+
 func RedirectWithStatusTemporaryRedirect(u *net_url.URL) *StatusTemporaryRedirect {
 	return &StatusTemporaryRedirect{
-		redirect: &redirect{
-			URL: u,
+		Response: &Response{
+			Location: u,
 		},
 	}
 }
 
 type StatusTemporaryRedirect struct {
-	*redirect
+	*Response
 }
 
 func (StatusTemporaryRedirect) StatusCode() int {
 	return net_http.StatusTemporaryRedirect
 }
 
+func (r StatusTemporaryRedirect) Location() *net_url.URL {
+	return r.Response.Location
+}
+
 func RedirectWithStatusPermanentRedirect(u *net_url.URL) *StatusPermanentRedirect {
 	return &StatusPermanentRedirect{
-		redirect: &redirect{
-			URL: u,
+		Response: &Response{
+			Location: u,
 		},
 	}
 }
 
 type StatusPermanentRedirect struct {
-	*redirect
+	*Response
 }
 
 func (StatusPermanentRedirect) StatusCode() int {
 	return net_http.StatusPermanentRedirect
+}
+
+func (r StatusPermanentRedirect) Location() *net_url.URL {
+	return r.Response.Location
 }

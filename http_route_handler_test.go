@@ -193,6 +193,7 @@ X-Meta: operator=service-test%401.0.0%23Create
 		require.Equal(t, `HTTP/0.0 500 Internal Server Error
 Content-Type: application/json; charset=utf-8
 X-Meta: operator=service-test%401.0.0%23RemoveByID
+X-Num: 1
 
 {"key":"InternalServerError","code":500999001,"msg":"InternalServerError","desc":"","canBeTalkError":false,"id":"","sources":["service-test@1.0.0"],"errorFields":null}
 `, string(rw.MustDumpResponse()))

@@ -1,55 +1,103 @@
 package httpx
 
 import (
-	"bytes"
+	bytes "bytes"
 )
 
-func NewCSS() *CSS {
-	return &CSS{}
+func NewApplicationOgg() *ApplicationOgg {
+	return &ApplicationOgg{}
 }
 
-type CSS struct {
+type ApplicationOgg struct {
 	bytes.Buffer
 }
 
-func (CSS) ContentType() string {
-	return "text/css"
+func (ApplicationOgg) ContentType() string {
+	return "application/ogg"
 }
 
-func NewHTML() *HTML {
-	return &HTML{}
+func NewAudioMidi() *AudioMidi {
+	return &AudioMidi{}
 }
 
-type HTML struct {
+type AudioMidi struct {
 	bytes.Buffer
 }
 
-func (HTML) ContentType() string {
-	return "text/html"
+func (AudioMidi) ContentType() string {
+	return "audio/midi"
 }
 
-func NewImageWebp() *ImageWebp {
-	return &ImageWebp{}
+func NewAudioMp3() *AudioMp3 {
+	return &AudioMp3{}
 }
 
-type ImageWebp struct {
+type AudioMp3 struct {
 	bytes.Buffer
 }
 
-func (ImageWebp) ContentType() string {
-	return "image/webp"
+func (AudioMp3) ContentType() string {
+	return "audio/mpeg"
 }
 
-func NewVideoOgg() *VideoOgg {
-	return &VideoOgg{}
+func NewAudioOgg() *AudioOgg {
+	return &AudioOgg{}
 }
 
-type VideoOgg struct {
+type AudioOgg struct {
 	bytes.Buffer
 }
 
-func (VideoOgg) ContentType() string {
-	return "video/ogg"
+func (AudioOgg) ContentType() string {
+	return "audio/ogg"
+}
+
+func NewAudioWave() *AudioWave {
+	return &AudioWave{}
+}
+
+type AudioWave struct {
+	bytes.Buffer
+}
+
+func (AudioWave) ContentType() string {
+	return "audio/wav"
+}
+
+func NewAudioWebm() *AudioWebm {
+	return &AudioWebm{}
+}
+
+type AudioWebm struct {
+	bytes.Buffer
+}
+
+func (AudioWebm) ContentType() string {
+	return "audio/webm"
+}
+
+func NewImageBmp() *ImageBmp {
+	return &ImageBmp{}
+}
+
+type ImageBmp struct {
+	bytes.Buffer
+}
+
+func (ImageBmp) ContentType() string {
+	return "image/bmp"
+}
+
+func NewImageGIF() *ImageGIF {
+	return &ImageGIF{}
+}
+
+type ImageGIF struct {
+	bytes.Buffer
+}
+
+func (ImageGIF) ContentType() string {
+	return "image/gif"
 }
 
 func NewImageJPEG() *ImageJPEG {
@@ -76,40 +124,52 @@ func (ImagePNG) ContentType() string {
 	return "image/png"
 }
 
-func NewImageBmp() *ImageBmp {
-	return &ImageBmp{}
+func NewImageSVG() *ImageSVG {
+	return &ImageSVG{}
 }
 
-type ImageBmp struct {
+type ImageSVG struct {
 	bytes.Buffer
 }
 
-func (ImageBmp) ContentType() string {
-	return "image/bmp"
+func (ImageSVG) ContentType() string {
+	return "image/svg+xml"
 }
 
-func NewAudioOgg() *AudioOgg {
-	return &AudioOgg{}
+func NewImageWebp() *ImageWebp {
+	return &ImageWebp{}
 }
 
-type AudioOgg struct {
+type ImageWebp struct {
 	bytes.Buffer
 }
 
-func (AudioOgg) ContentType() string {
-	return "audio/ogg"
+func (ImageWebp) ContentType() string {
+	return "image/webp"
 }
 
-func NewApplicationOgg() *ApplicationOgg {
-	return &ApplicationOgg{}
+func NewCSS() *CSS {
+	return &CSS{}
 }
 
-type ApplicationOgg struct {
+type CSS struct {
 	bytes.Buffer
 }
 
-func (ApplicationOgg) ContentType() string {
-	return "application/ogg"
+func (CSS) ContentType() string {
+	return "text/css"
+}
+
+func NewHTML() *HTML {
+	return &HTML{}
+}
+
+type HTML struct {
+	bytes.Buffer
+}
+
+func (HTML) ContentType() string {
+	return "text/html"
 }
 
 func NewPlain() *Plain {
@@ -124,28 +184,16 @@ func (Plain) ContentType() string {
 	return "text/plain"
 }
 
-func NewAudioWave() *AudioWave {
-	return &AudioWave{}
+func NewVideoOgg() *VideoOgg {
+	return &VideoOgg{}
 }
 
-type AudioWave struct {
+type VideoOgg struct {
 	bytes.Buffer
 }
 
-func (AudioWave) ContentType() string {
-	return "audio/wav"
-}
-
-func NewAudioMidi() *AudioMidi {
-	return &AudioMidi{}
-}
-
-type AudioMidi struct {
-	bytes.Buffer
-}
-
-func (AudioMidi) ContentType() string {
-	return "audio/midi"
+func (VideoOgg) ContentType() string {
+	return "video/ogg"
 }
 
 func NewVideoWebm() *VideoWebm {
@@ -158,52 +206,4 @@ type VideoWebm struct {
 
 func (VideoWebm) ContentType() string {
 	return "video/webm"
-}
-
-func NewImageGIF() *ImageGIF {
-	return &ImageGIF{}
-}
-
-type ImageGIF struct {
-	bytes.Buffer
-}
-
-func (ImageGIF) ContentType() string {
-	return "image/gif"
-}
-
-func NewImageSVG() *ImageSVG {
-	return &ImageSVG{}
-}
-
-type ImageSVG struct {
-	bytes.Buffer
-}
-
-func (ImageSVG) ContentType() string {
-	return "image/svg+xml"
-}
-
-func NewAudioWebm() *AudioWebm {
-	return &AudioWebm{}
-}
-
-type AudioWebm struct {
-	bytes.Buffer
-}
-
-func (AudioWebm) ContentType() string {
-	return "audio/webm"
-}
-
-func NewAudioMp3() *AudioMp3 {
-	return &AudioMp3{}
-}
-
-type AudioMp3 struct {
-	bytes.Buffer
-}
-
-func (AudioMp3) ContentType() string {
-	return "audio/mpeg"
 }

@@ -1,40 +1,8 @@
 package httpx
 
 import (
-	"fmt"
+	fmt "fmt"
 )
-
-func ExampleImageGIF() {
-	m := NewImageGIF()
-
-	fmt.Println(m.ContentType())
-	// Output:
-	// image/gif
-}
-
-func ExampleImageSVG() {
-	m := NewImageSVG()
-
-	fmt.Println(m.ContentType())
-	// Output:
-	// image/svg+xml
-}
-
-func ExampleAudioWebm() {
-	m := NewAudioWebm()
-
-	fmt.Println(m.ContentType())
-	// Output:
-	// audio/webm
-}
-
-func ExampleAudioMp3() {
-	m := NewAudioMp3()
-
-	fmt.Println(m.ContentType())
-	// Output:
-	// audio/mpeg
-}
 
 func ExampleCSS() {
 	m := NewCSS()
@@ -42,14 +10,6 @@ func ExampleCSS() {
 	fmt.Println(m.ContentType())
 	// Output:
 	// text/css
-}
-
-func ExampleHTML() {
-	m := NewHTML()
-
-	fmt.Println(m.ContentType())
-	// Output:
-	// text/html
 }
 
 func ExampleImageWebp() {
@@ -60,12 +20,28 @@ func ExampleImageWebp() {
 	// image/webp
 }
 
-func ExampleVideoOgg() {
-	m := NewVideoOgg()
+func ExampleVideoWebm() {
+	m := NewVideoWebm()
 
 	fmt.Println(m.ContentType())
 	// Output:
-	// video/ogg
+	// video/webm
+}
+
+func ExampleApplicationOgg() {
+	m := NewApplicationOgg()
+
+	fmt.Println(m.ContentType())
+	// Output:
+	// application/ogg
+}
+
+func ExampleAudioMp3() {
+	m := NewAudioMp3()
+
+	fmt.Println(m.ContentType())
+	// Output:
+	// audio/mpeg
 }
 
 func ExampleImageJPEG() {
@@ -92,20 +68,20 @@ func ExampleImageBmp() {
 	// image/bmp
 }
 
-func ExampleAudioOgg() {
-	m := NewAudioOgg()
+func ExampleAudioMidi() {
+	m := NewAudioMidi()
 
 	fmt.Println(m.ContentType())
 	// Output:
-	// audio/ogg
+	// audio/midi
 }
 
-func ExampleApplicationOgg() {
-	m := NewApplicationOgg()
+func ExampleVideoOgg() {
+	m := NewVideoOgg()
 
 	fmt.Println(m.ContentType())
 	// Output:
-	// application/ogg
+	// video/ogg
 }
 
 func ExamplePlain() {
@@ -116,6 +92,30 @@ func ExamplePlain() {
 	// text/plain
 }
 
+func ExampleHTML() {
+	m := NewHTML()
+
+	fmt.Println(m.ContentType())
+	// Output:
+	// text/html
+}
+
+func ExampleImageSVG() {
+	m := NewImageSVG()
+
+	fmt.Println(m.ContentType())
+	// Output:
+	// image/svg+xml
+}
+
+func ExampleImageGIF() {
+	m := NewImageGIF()
+
+	fmt.Println(m.ContentType())
+	// Output:
+	// image/gif
+}
+
 func ExampleAudioWave() {
 	m := NewAudioWave()
 
@@ -124,18 +124,18 @@ func ExampleAudioWave() {
 	// audio/wav
 }
 
-func ExampleAudioMidi() {
-	m := NewAudioMidi()
+func ExampleAudioWebm() {
+	m := NewAudioWebm()
 
 	fmt.Println(m.ContentType())
 	// Output:
-	// audio/midi
+	// audio/webm
 }
 
-func ExampleVideoWebm() {
-	m := NewVideoWebm()
+func ExampleAudioOgg() {
+	m := NewAudioOgg()
 
 	fmt.Println(m.ContentType())
 	// Output:
-	// video/webm
+	// audio/ogg
 }

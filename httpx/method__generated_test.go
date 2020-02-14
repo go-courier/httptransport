@@ -1,7 +1,7 @@
 package httpx
 
 import (
-	"fmt"
+	fmt "fmt"
 )
 
 func ExampleMethodGet() {

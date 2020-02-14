@@ -24,7 +24,11 @@ type GithubComGoCourierHttptransportHttpxAttachment = github_com_go_courier_http
 
 type GithubComGoCourierHttptransportHttpxImagePNG = github_com_go_courier_httptransport_httpx.ImagePNG
 
-type GithubComGoCourierHttptransportHttpxStatusFound = github_com_go_courier_httptransport_httpx.StatusFound
+type GithubComGoCourierHttptransportHttpxResponse = github_com_go_courier_httptransport_httpx.Response
+
+type GithubComGoCourierHttptransportHttpxStatusFound struct {
+	GithubComGoCourierHttptransportHttpxResponse
+}
 
 type GithubComGoCourierStatuserrorErrorField = github_com_go_courier_statuserror.ErrorField
 

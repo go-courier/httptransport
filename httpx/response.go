@@ -10,6 +10,7 @@ import (
 
 	"github.com/go-courier/courier"
 	"github.com/go-courier/reflectx/typesutil"
+	"github.com/go-courier/statuserror"
 )
 
 type ResponseWrapper func(v interface{}) *Response
@@ -75,11 +76,24 @@ func ResponseFrom(v interface{}) *Response {
 	}
 
 	response := &Response{}
-	response.Value = v
 
 	if redirectDescriber, ok := v.(RedirectDescriber); ok {
 		response.Location = redirectDescriber.Location()
+		response.StatusCode = redirectDescriber.StatusCode()
+		return response
 	}
+
+	if e, ok := v.(error); ok {
+		if e != nil {
+			statusErr, ok := statuserror.IsStatusErr(e)
+			if !ok {
+				statusErr = statuserror.NewUnknownErr().WithDesc(e.Error())
+			}
+			v = statusErr
+		}
+	}
+
+	response.Value = v
 
 	if metadataCarrier, ok := v.(courier.MetadataCarrier); ok {
 		response.Metadata = metadataCarrier.Meta()
@@ -106,12 +120,12 @@ type Upgrader interface {
 
 type Response struct {
 	// value of Body
-	Value       interface{}
-	Metadata    courier.Metadata
-	Cookies     []*http.Cookie
-	Location    *url.URL
-	ContentType string
-	StatusCode  int
+	Value       interface{}      `json:"-"`
+	Metadata    courier.Metadata `json:"-"`
+	Cookies     []*http.Cookie   `json:"-"`
+	Location    *url.URL         `json:"-"`
+	ContentType string           `json:"-"`
+	StatusCode  int              `json:"-"`
 }
 
 func (response *Response) Unwrap() error {

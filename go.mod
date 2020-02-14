@@ -13,7 +13,7 @@ require (
 	github.com/go-courier/packagesx v1.0.1
 	github.com/go-courier/ptr v1.0.0
 	github.com/go-courier/reflectx v1.3.3
-	github.com/go-courier/statuserror v1.0.1
+	github.com/go-courier/statuserror v1.1.1
 	github.com/go-courier/validator v1.5.0
 	github.com/google/uuid v1.1.1
 	github.com/julienschmidt/httprouter v1.3.0
@@ -22,4 +22,5 @@ require (
 	github.com/sirupsen/logrus v1.4.2
 	github.com/stretchr/testify v1.4.0
 	golang.org/x/net v0.0.0-20191209160850-c0dbc17a3553
+	golang.org/x/tools v0.0.0-20180917221912-90fa682c2a6e
 )

@@ -667,10 +667,22 @@
         "x-go-vendor-type": "github.com/go-courier/httptransport/httpx.ImagePNG",
         "x-id": "GithubComGoCourierHttptransportHttpxImagePNG"
       },
-      "GithubComGoCourierHttptransportHttpxStatusFound": {
+      "GithubComGoCourierHttptransportHttpxResponse": {
         "type": "object",
-        "x-go-vendor-type": "github.com/go-courier/httptransport/httpx.StatusFound",
-        "x-id": "GithubComGoCourierHttptransportHttpxStatusFound"
+        "x-go-vendor-type": "github.com/go-courier/httptransport/httpx.Response",
+        "x-id": "GithubComGoCourierHttptransportHttpxResponse"
+      },
+      "GithubComGoCourierHttptransportHttpxStatusFound": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/GithubComGoCourierHttptransportHttpxResponse"
+          },
+          {
+            "type": "object",
+            "x-go-vendor-type": "github.com/go-courier/httptransport/httpx.StatusFound",
+            "x-id": "GithubComGoCourierHttptransportHttpxStatusFound"
+          }
+        ]
       },
       "GithubComGoCourierStatuserrorErrorField": {
         "type": "object",

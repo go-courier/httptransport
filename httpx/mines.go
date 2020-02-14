@@ -1,7 +1,6 @@
 package httpx
 
-//go:generate go run __codegen__/redirect/main.go
-
+//go:generate go run __codegen__/mimes/main.go
 const (
 	MIME_OCTET_STREAM      = "application/octet-stream"
 	MIME_JSON              = "application/json"

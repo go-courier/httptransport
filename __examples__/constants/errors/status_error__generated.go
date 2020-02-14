@@ -21,6 +21,10 @@ func (v StatusError) Error() string {
 	return v.StatusErr().Error()
 }
 
+func (v StatusError) Unwrap() error {
+	return v.StatusErr()
+}
+
 func (v StatusError) StatusCode() int {
 	return github_com_go_courier_statuserror.StatusCodeFromCode(int(v))
 }

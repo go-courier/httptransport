@@ -80,7 +80,7 @@ func (RemoveByID) Output(ctx context.Context) (interface{}, error) {
 	if false {
 		return nil, callWithErr()
 	}
-	return nil, errors.InternalServerError
+	return nil, httpx.WithMetadata(httpx.Metadata("X-Num", "1"))(errors.InternalServerError)
 }
 
 // update by id

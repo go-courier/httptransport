@@ -1,7 +1,7 @@
 package httpx
 
 import (
-	"fmt"
+	fmt "fmt"
 	net_url "net/url"
 )
 
@@ -12,11 +12,9 @@ func ExampleStatusMultipleChoices() {
 
 	fmt.Println(m.StatusCode())
 	fmt.Println(m.Location())
-	fmt.Println(m.Error())
 	// Output:
 	// 300
 	// /test
-	// Location: /test
 }
 
 func ExampleStatusMovedPermanently() {
@@ -26,11 +24,9 @@ func ExampleStatusMovedPermanently() {
 
 	fmt.Println(m.StatusCode())
 	fmt.Println(m.Location())
-	fmt.Println(m.Error())
 	// Output:
 	// 301
 	// /test
-	// Location: /test
 }
 
 func ExampleStatusFound() {
@@ -40,11 +36,9 @@ func ExampleStatusFound() {
 
 	fmt.Println(m.StatusCode())
 	fmt.Println(m.Location())
-	fmt.Println(m.Error())
 	// Output:
 	// 302
 	// /test
-	// Location: /test
 }
 
 func ExampleStatusSeeOther() {
@@ -54,11 +48,9 @@ func ExampleStatusSeeOther() {
 
 	fmt.Println(m.StatusCode())
 	fmt.Println(m.Location())
-	fmt.Println(m.Error())
 	// Output:
 	// 303
 	// /test
-	// Location: /test
 }
 
 func ExampleStatusNotModified() {
@@ -68,11 +60,9 @@ func ExampleStatusNotModified() {
 
 	fmt.Println(m.StatusCode())
 	fmt.Println(m.Location())
-	fmt.Println(m.Error())
 	// Output:
 	// 304
 	// /test
-	// Location: /test
 }
 
 func ExampleStatusUseProxy() {
@@ -82,11 +72,9 @@ func ExampleStatusUseProxy() {
 
 	fmt.Println(m.StatusCode())
 	fmt.Println(m.Location())
-	fmt.Println(m.Error())
 	// Output:
 	// 305
 	// /test
-	// Location: /test
 }
 
 func ExampleStatusTemporaryRedirect() {
@@ -96,11 +84,9 @@ func ExampleStatusTemporaryRedirect() {
 
 	fmt.Println(m.StatusCode())
 	fmt.Println(m.Location())
-	fmt.Println(m.Error())
 	// Output:
 	// 307
 	// /test
-	// Location: /test
 }
 
 func ExampleStatusPermanentRedirect() {
@@ -110,9 +96,7 @@ func ExampleStatusPermanentRedirect() {
 
 	fmt.Println(m.StatusCode())
 	fmt.Println(m.Location())
-	fmt.Println(m.Error())
 	// Output:
 	// 308
 	// /test
-	// Location: /test
 }

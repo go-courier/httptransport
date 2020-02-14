@@ -54,21 +54,27 @@ func writeFuncs(redirectStatuses []string, redirectStatusCodes []int) {
 			file.Expr(`
 func RedirectWith`+statusKey+`(u *?) *`+statusKey+` {
 	return &`+statusKey+`{
-		redirect: &redirect{
-			URL: u,
+		Response: &Response{
+			Location: u,
 		},
 	}
 }
 
 type `+statusKey+` struct {
-	*redirect
+	*Response
 }
 
 func (`+statusKey+`) StatusCode() int {
 	return ?
-}`,
+}
+
+func (r `+statusKey+`) Location() *? {
+	return r.Response.Location
+}
+`,
 				codegen.Id(file.Use("net/url", "URL")),
 				codegen.Id(file.Use("net/http", statusKey)),
+				codegen.Id(file.Use("net/url", "URL")),
 			),
 		)
 	}
@@ -84,11 +90,9 @@ func (`+statusKey+`) StatusCode() int {
 
 	`+testFile.Use("fmt", "Println")+`(m.StatusCode())
 	`+testFile.Use("fmt", "Println")+`(m.Location())
-	`+testFile.Use("fmt", "Println")+`(m.Error())
 	// Output:
 	// ?
 	// /test
-	// Location: /test
 }`, &url.URL{
 				Path: "/test",
 			}, redirectStatusCodes[i]),
