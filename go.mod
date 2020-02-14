@@ -13,7 +13,7 @@ require (
 	github.com/go-courier/packagesx v1.0.1
 	github.com/go-courier/ptr v1.0.0
 	github.com/go-courier/reflectx v1.3.3
-	github.com/go-courier/statuserror v1.0.1
+	github.com/go-courier/statuserror v1.1.1
 	github.com/go-courier/validator v1.5.0
 	github.com/google/uuid v1.1.1
 	github.com/julienschmidt/httprouter v1.3.0
