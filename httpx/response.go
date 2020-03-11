@@ -87,7 +87,12 @@ func ResponseFrom(v interface{}) *Response {
 		if e != nil {
 			statusErr, ok := statuserror.IsStatusErr(e)
 			if !ok {
-				statusErr = statuserror.NewUnknownErr().WithDesc(e.Error())
+				if e == context.Canceled {
+					// https://httpstatuses.com/499
+					statusErr = statuserror.NewStatusErr("ContextCanceled", 499*1e6, e.Error())
+				} else {
+					statusErr = statuserror.NewUnknownErr().WithDesc(e.Error())
+				}
 			}
 			v = statusErr
 		}
