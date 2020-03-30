@@ -49,6 +49,8 @@ func (scanner *OperatorScanner) Operator(typeName *types.TypeName) *Operator {
 		return operator
 	}
 
+	logrus.Debugf("scanning Operator `%s.%s`", typeName.Pkg().Path(), typeName.Name())
+
 	defer func() {
 		if e := recover(); e != nil {
 			panic(fmt.Errorf("scan Operator `%s` failed, panic: %s; calltrace: %s", fullTypeName(typeName), fmt.Sprint(e), string(debug.Stack())))
@@ -215,7 +217,6 @@ func (scanner *OperatorScanner) getResponse(tpe types.Type, expr ast.Expr) (stat
 			if contentType == "" {
 				contentType = "*"
 			}
-			fmt.Println(contentType)
 		}
 		if v, ok := scanner.firstValueOfFunc(named, "StatusCode"); ok {
 			if i, ok := v.(int64); ok {

@@ -13,6 +13,7 @@ import (
 	"github.com/go-courier/oas"
 	"github.com/go-courier/packagesx"
 	"github.com/go-courier/reflectx/typesutil"
+	"github.com/sirupsen/logrus"
 )
 
 func NewDefinitionScanner(pkg *packagesx.Package) *DefinitionScanner {
@@ -95,6 +96,8 @@ func (scanner *DefinitionScanner) Def(typeName *types.TypeName) *oas.Schema {
 	if s, ok := scanner.definitions[typeName]; ok {
 		return s
 	}
+
+	logrus.Debugf("scanning Type `%s.%s`", typeName.Pkg().Path(), typeName.Name())
 
 	if typeName.IsAlias() {
 		typeName = typeName.Type().(*types.Named).Obj()
