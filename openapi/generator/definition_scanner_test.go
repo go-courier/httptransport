@@ -23,6 +23,31 @@ func TestDefinitionScanner(t *testing.T) {
 
 	cases := [][2]string{
 		{
+			"Node", // language=JSON
+			`{
+  "type": "object",
+  "properties": {
+    "children": {
+      "type": "array",
+      "items": {
+        "$ref": "#/components/schemas/Node"
+      },
+      "x-go-field-name": "Children",
+      "x-tag-json": "children"
+    },
+    "type": {
+      "type": "string",
+      "x-go-field-name": "Type",
+      "x-tag-json": "type"
+    }
+  },
+  "required": [
+    "type",
+    "children"
+  ],
+  "x-id": "Node"
+}`},
+		{
 			"Interface", // language=JSON
 			`{
   "x-id": "Interface"

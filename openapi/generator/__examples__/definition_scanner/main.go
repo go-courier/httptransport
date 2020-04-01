@@ -67,3 +67,8 @@ type InvalidComposed struct {
 	Part
 	PartConflict
 }
+
+type Node struct {
+	Type     string  `json:"type"`
+	Children []*Node `json:"children"`
+}

@@ -105,25 +105,29 @@ func (scanner *DefinitionScanner) Def(typeName *types.TypeName) *oas.Schema {
 
 	doc := scanner.pkg.CommentsOf(scanner.pkg.IdentOf(typeName.Type().(*types.Named).Obj()))
 
+	// register empty before scan
+	// to avoid cycle
+	scanner.setDef(typeName, &oas.Schema{})
+
 	if doc, fmtName := parseStrfmt(doc); fmtName != "" {
 		s := oas.NewSchema(oas.TypeString, fmtName)
 		setMetaFromDoc(s, doc)
-		return scanner.addDef(typeName, s)
+		return scanner.setDef(typeName, s)
 	}
 
 	if doc, typ := parseType(doc); typ != "" {
 		s := oas.NewSchema(oas.Type(typ), "")
 		setMetaFromDoc(s, doc)
-		return scanner.addDef(typeName, s)
+		return scanner.setDef(typeName, s)
 	}
 
 	if typesutil.FromTType(types.NewPointer(typeName.Type())).Implements(typesutil.FromTType(scanner.ioWriterInterface)) {
-		return scanner.addDef(typeName, oas.Binary())
+		return scanner.setDef(typeName, oas.Binary())
 	}
 
 	if typeName.Pkg() != nil {
 		if typeName.Pkg().Path() == "time" && typeName.Name() == "Time" {
-			return scanner.addDef(typeName, oas.DateTime())
+			return scanner.setDef(typeName, oas.DateTime())
 		}
 	}
 
@@ -137,14 +141,14 @@ func (scanner *DefinitionScanner) Def(typeName *types.TypeName) *oas.Schema {
 			s.Enum = append(s.Enum, e.Value)
 		}
 		s.AddExtension(XEnumOptions, enumOptions)
-		return scanner.addDef(typeName, s)
+		return scanner.setDef(typeName, s)
 	}
 
 	s := scanner.GetSchemaByType(typeName.Type().Underlying())
 
 	setMetaFromDoc(s, doc)
 
-	return scanner.addDef(typeName, s)
+	return scanner.setDef(typeName, s)
 }
 
 func (scanner *DefinitionScanner) isInternal(typeName *types.TypeName) bool {
@@ -199,7 +203,7 @@ func (scanner *DefinitionScanner) reformatSchemas() {
 	scanner.schemas = schemas
 }
 
-func (scanner *DefinitionScanner) addDef(typeName *types.TypeName, schema *oas.Schema) *oas.Schema {
+func (scanner *DefinitionScanner) setDef(typeName *types.TypeName, schema *oas.Schema) *oas.Schema {
 	if scanner.definitions == nil {
 		scanner.definitions = map[*types.TypeName]*oas.Schema{}
 	}
