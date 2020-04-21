@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-func ExampleNewAttachmentWithDefaultContentType() {
+func ExampleNewAttachment_withDefaultContentType() {
 	a := NewAttachment("test.txt", "")
 	a.WriteString("text")
 

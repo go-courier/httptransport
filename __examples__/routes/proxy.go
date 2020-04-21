@@ -26,7 +26,7 @@ func init() {
 	RootRouter.Register(ProxyRouter)
 
 	ProxyRouter.Register(courier.NewRouter(&Proxy{}))
-	ProxyRouter.Register(courier.NewRouter(&ProxyWithReader{}))
+	ProxyRouter.Register(courier.NewRouter(&ProxyV2{}))
 }
 
 type Proxy struct {
@@ -39,15 +39,15 @@ func (Proxy) Output(ctx context.Context) (interface{}, error) {
 	return resp, err
 }
 
-type ProxyWithReader struct {
+type ProxyV2 struct {
 	httpx.MethodGet
 }
 
-func (ProxyWithReader) Path() string {
-	return "/v2"
+func (ProxyV2) BasePath() string {
+	return "/demo/v2"
 }
 
-func (ProxyWithReader) Output(ctx context.Context) (interface{}, error) {
+func (ProxyV2) Output(ctx context.Context) (interface{}, error) {
 	result := c.Do(ctx, &GetByJSON{})
 
 	return httpx.WithSchema(&IpInfo{})(result), nil

@@ -29,21 +29,21 @@ const (
 )
 
 var (
-	pkgImportPathHttpTransport = packagesx.ImportGoPath(reflect.TypeOf(httptransport.GroupOperator{}).PkgPath())
+	pkgImportPathHttpTransport = packagesx.ImportGoPath(reflect.TypeOf(httptransport.HttpRouteMeta{}).PkgPath())
 	pkgImportPathHttpx         = packagesx.ImportGoPath(reflect.TypeOf(httpx.Response{}).PkgPath())
 	pkgImportPathCourier       = packagesx.ImportGoPath(reflect.TypeOf(courier.Router{}).PkgPath())
 )
+
+func isRouterType(typ types.Type) bool {
+	return strings.HasSuffix(typ.String(), pkgImportPathCourier+".Router")
+}
 
 func isHttpxResponse(typ types.Type) bool {
 	return strings.HasSuffix(typ.String(), pkgImportPathHttpx+".Response")
 }
 
-func isGroupFunc(typ types.Type) bool {
-	return typ.String() == "func(path string) *"+pkgImportPathHttpTransport+".GroupOperator"
-}
-
-func isRouterType(typ types.Type) bool {
-	return strings.HasSuffix(typ.String(), pkgImportPathCourier+".Router")
+func isFromHttpTransport(typ types.Type) bool {
+	return strings.Contains(typ.String(), pkgImportPathHttpTransport+".")
 }
 
 func tagValueAndFlagsByTagString(tagString string) (string, map[string]bool) {

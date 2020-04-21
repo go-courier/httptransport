@@ -107,14 +107,24 @@ func (scanner *RouterScanner) Router(typeName *types.Var) *Router {
 }
 
 type OperatorTypeName struct {
-	Path string
-	*types.TypeName
+	ID       string
+	BasePath string
+	Path     string
+	TypeName *types.TypeName
+}
+
+func (operator *OperatorTypeName) String() string {
+	return operator.ID
 }
 
 func (operator *OperatorTypeName) SingleStringResultOf(pkg *packagesx.Package, name string) (string, bool) {
+	if operator.TypeName == nil {
+		return "", false
+	}
+
 	for _, typ := range []types.Type{
-		operator.Type(),
-		types.NewPointer(operator.Type()),
+		operator.TypeName.Type(),
+		types.NewPointer(operator.TypeName.Type()),
 	} {
 		method, ok := typesutil.FromTType(typ).MethodByName(name)
 		if ok {
@@ -146,8 +156,14 @@ func operatorTypeNamesFromArgs(pkg *packagesx.Package, args ...ast.Expr) operato
 
 		if callExpr, ok := arg.(*ast.CallExpr); ok {
 			if selectorExpr, ok := callExpr.Fun.(*ast.SelectorExpr); ok {
-				if selectorExpr.Sel.Name == "Group" {
-					if isGroupFunc(pkg.TypesInfo.ObjectOf(selectorExpr.Sel).Type()) {
+				if isFromHttpTransport(pkg.TypesInfo.ObjectOf(selectorExpr.Sel).Type()) {
+					switch selectorExpr.Sel.Name {
+					case "BasePath":
+						switch v := callExpr.Args[0].(type) {
+						case *ast.BasicLit:
+							opTypeName.BasePath, _ = strconv.Unquote(v.Value)
+						}
+					case "Group":
 						switch v := callExpr.Args[0].(type) {
 						case *ast.BasicLit:
 							opTypeName.Path, _ = strconv.Unquote(v.Value)
@@ -157,17 +173,19 @@ func operatorTypeNamesFromArgs(pkg *packagesx.Package, args ...ast.Expr) operato
 			}
 		}
 
-		// handle interface WithMiddleOperators
-		method, ok := typesutil.FromTType(opTypeName.Type()).MethodByName("MiddleOperators")
-		if ok {
-			results, n := pkg.FuncResultsOf(method.(*typesutil.TMethod).Func)
-			if n == 1 {
-				for _, v := range results[0] {
-					if compositeLit, ok := v.Expr.(*ast.CompositeLit); ok {
-						ops := operatorTypeNamesFromArgs(pkg, compositeLit.Elts...)
-						opTypeNames = append(opTypeNames, ops...)
-					}
+		if opTypeName.TypeName != nil {
+			// handle interface WithMiddleOperators
+			method, ok := typesutil.FromTType(opTypeName.TypeName.Type()).MethodByName("MiddleOperators")
+			if ok {
+				results, n := pkg.FuncResultsOf(method.(*typesutil.TMethod).Func)
+				if n == 1 {
+					for _, v := range results[0] {
+						if compositeLit, ok := v.Expr.(*ast.CompositeLit); ok {
+							ops := operatorTypeNamesFromArgs(pkg, compositeLit.Elts...)
+							opTypeNames = append(opTypeNames, ops...)
+						}
 
+					}
 				}
 			}
 		}
@@ -186,18 +204,19 @@ func (names operatorTypeNames) String() string {
 		if i > 0 {
 			buf.WriteRune(' ')
 		}
-		buf.WriteString(name.Pkg().Name() + "." + name.Name())
+		buf.WriteString(name.String())
 	}
 	return buf.String()
 }
 
 func operatorTypeNameFromType(typ types.Type) *OperatorTypeName {
-	switch typ.(type) {
+	switch t := typ.(type) {
 	case *types.Pointer:
 		return operatorTypeNameFromType(typ.(*types.Pointer).Elem())
 	case *types.Named:
 		return &OperatorTypeName{
-			TypeName: typ.(*types.Named).Obj(),
+			ID:       t.Obj().Pkg().Name() + "." + t.Obj().Name(),
+			TypeName: t.Obj(),
 		}
 	default:
 		return nil
@@ -282,18 +301,27 @@ func (route *Route) String() string {
 }
 
 func (route *Route) SetPath(pkg *packagesx.Package) {
-	fullPath := "/"
+	basePath := "/"
+	fullPath := ""
 	for _, operator := range route.Operators {
-		if operator.Path != "" {
-			fullPath += operator.Path
-			continue
+		if operator.BasePath != "" {
+			basePath = operator.BasePath
+		} else {
+			if basePathPart, ok := operator.SingleStringResultOf(pkg, "BasePath"); ok && basePathPart != "" {
+				basePath = basePathPart
+			}
 		}
 
-		if pathPart, ok := operator.SingleStringResultOf(pkg, "Path"); ok {
-			fullPath += pathPart
+		if operator.Path != "" {
+			fullPath += operator.Path
+		} else {
+			if pathPart, ok := operator.SingleStringResultOf(pkg, "Path"); ok {
+				fullPath += pathPart
+			}
 		}
 	}
-	route.Path = httprouter.CleanPath(fullPath)
+
+	route.Path = httprouter.CleanPath(basePath + fullPath)
 }
 
 func (route *Route) SetMethod(pkg *packagesx.Package) {

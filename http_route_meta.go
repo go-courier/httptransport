@@ -20,6 +20,10 @@ type PathDescriber interface {
 	Path() string
 }
 
+type BasePathDescriber interface {
+	BasePath() string
+}
+
 func NewHttpRouteMeta(route *courier.Route) *HttpRouteMeta {
 	return &HttpRouteMeta{
 		Route: route,
@@ -50,7 +54,7 @@ func (route *HttpRouteMeta) Key() string {
 		}
 	}
 
-	return RxHttpRouterPath.ReplaceAllString(route.Path(), "/{$1}") + " " + strings.Join(operatorTypeNames, " ")
+	return reHttpRouterPath.ReplaceAllString(route.Path(), "/{$1}") + " " + strings.Join(operatorTypeNames, " ")
 }
 
 func (route *HttpRouteMeta) String() string {
@@ -58,7 +62,7 @@ func (route *HttpRouteMeta) String() string {
 	return methodColor(method)("%s %s", method[0:3], route.Key())
 }
 
-var RxHttpRouterPath = regexp.MustCompile("/:([^/]+)")
+var reHttpRouterPath = regexp.MustCompile("/:([^/]+)")
 
 func methodColor(method string) func(f string, args ...interface{}) string {
 	switch method {
@@ -77,39 +81,53 @@ func methodColor(method string) func(f string, args ...interface{}) string {
 
 func (route *HttpRouteMeta) Method() string {
 	lastOp := route.Operators[len(route.Operators)-1]
-	if methodDescriber, ok := route.Operators[len(route.Operators)-1].(MethodDescriber); ok {
+	if methodDescriber, ok := lastOp.(MethodDescriber); ok {
 		return methodDescriber.Method()
 	}
 	panic(fmt.Errorf("missing `Method() string` of %s", reflect.TypeOf(lastOp).Name()))
 }
 
 func (route *HttpRouteMeta) Path() string {
-	p := "/"
+	basePath := "/"
+	p := ""
+
 	for _, operator := range route.Operators {
+
+		if basePathOperator, ok := operator.(BasePathDescriber); ok {
+			b := basePathOperator.BasePath()
+			if b != "" {
+				basePath = b
+			}
+		}
+
 		if pathDescriber, ok := operator.(PathDescriber); ok {
 			p += pathDescriber.Path()
 		}
 	}
-	return httprouter.CleanPath(p)
+
+	return httprouter.CleanPath(basePath + p)
 }
 
-func Group(path string) *GroupOperator {
-	return &GroupOperator{
-		path: path,
+func BasePath(basePath string) *MetaOperator {
+	return &MetaOperator{
+		basePath: basePath,
 	}
 }
 
-type GroupOperator struct {
+func Group(path string) *MetaOperator {
+	return &MetaOperator{path: path}
+}
+
+type MetaOperator struct {
 	courier.EmptyOperator
-	path string
+	path     string
+	basePath string
 }
 
-func (g *GroupOperator) OperatorParams() map[string][]string {
-	return map[string][]string{
-		"path": {g.path},
-	}
-}
-
-func (g *GroupOperator) Path() string {
+func (g *MetaOperator) Path() string {
 	return g.path
+}
+
+func (g *MetaOperator) BasePath() string {
+	return g.basePath
 }

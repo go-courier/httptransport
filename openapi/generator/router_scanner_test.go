@@ -21,6 +21,6 @@ func ExampleNewRouterScanner() {
 		fmt.Println(r.String())
 	}
 	// Output:
-	// GET /root/:id httptransport.GroupOperator auth.Auth main.Get
-	// HEAD /root/group/health httptransport.GroupOperator httptransport.GroupOperator httptransport.GroupOperator group.Health
+	// GET /root/:id httptransport.MetaOperator auth.Auth main.Get
+	// HEAD /root/group/health httptransport.MetaOperator httptransport.MetaOperator httptransport.MetaOperator group.Health
 }

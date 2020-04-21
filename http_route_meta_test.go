@@ -46,7 +46,6 @@ func ExampleHttpRouteMeta() {
 	// POS /demo/forms/multipart-with-files routes.FormMultipartWithFiles
 	// POS /demo/forms/urlencoded routes.FormURLEncoded
 	// GET /demo/proxy routes.Proxy
-	// GET /demo/proxy/v2 routes.ProxyWithReader
 	// GET /demo/redirect routes.Redirect
 	// POS /demo/redirect routes.RedirectWhenError
 	// POS /demo/restful routes.Create
@@ -54,6 +53,7 @@ func ExampleHttpRouteMeta() {
 	// GET /demo/restful/{id} routes.DataProvider routes.GetByID
 	// DEL /demo/restful/{id} routes.DataProvider routes.RemoveByID
 	// PUT /demo/restful/{id} routes.DataProvider routes.UpdateByID
+	// GET /demo/v2/proxy routes.ProxyV2
 }
 
 func TestNewHttpRouteMeta(t *testing.T) {

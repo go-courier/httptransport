@@ -31,7 +31,6 @@ type ClientGenerator struct {
 func (g *ClientGenerator) Load() {
 	if g.URL == nil {
 		panic(fmt.Errorf("missing spec-url or file"))
-		return
 	}
 
 	if g.URL.Scheme == "file" {

@@ -267,7 +267,7 @@ test2
 	}
 }
 
-func ExampleNewRequestTransformer() {
+func ExampleNewRequestTransformerMgr() {
 	mgr := httptransport.NewRequestTransformerMgr(nil, nil)
 
 	type PlainBody struct {
@@ -484,7 +484,7 @@ func (ReqWithPostValidate) PostValidate(badRequest *httptransport.BadRequest) {
 	badRequest.AddErr(fmt.Errorf("ops"), "query", "StartedAt")
 }
 
-func ExampleRequestTransformer_DecodeFromRequestInfo_FailedOfPost() {
+func ExampleRequestTransformer_DecodeFrom_requestInfo_failedOfPost() {
 	mgr := httptransport.NewRequestTransformerMgr(nil, nil)
 
 	rtForSomeRequest, err := mgr.NewRequestTransformer(nil, reflect.TypeOf(&ReqWithPostValidate{}))

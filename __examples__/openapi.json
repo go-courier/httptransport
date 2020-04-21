@@ -316,61 +316,6 @@
         }
       }
     },
-    "/demo/proxy/v2": {
-      "get": {
-        "tags": [
-          "routes"
-        ],
-        "operationId": "ProxyWithReader",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/IpInfo"
-                }
-              }
-            }
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GithubComGoCourierStatuserrorStatusErr"
-                }
-              }
-            },
-            "x-status-errors": [
-              "@StatusErr[RequestTransformFailed][400000001][transform request failed]"
-            ]
-          },
-          "499": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GithubComGoCourierStatuserrorStatusErr"
-                }
-              }
-            },
-            "x-status-errors": [
-              "@StatusErr[ClientClosedRequest][499000001][request canceled]"
-            ]
-          },
-          "500": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GithubComGoCourierStatuserrorStatusErr"
-                }
-              }
-            },
-            "x-status-errors": [
-              "@StatusErr[RequestFailed][500000001][request failed]"
-            ]
-          }
-        }
-      }
-    },
     "/demo/redirect": {
       "get": {
         "tags": [
@@ -594,6 +539,61 @@
         },
         "responses": {
           "204": {}
+        }
+      }
+    },
+    "/demo/v2/proxy": {
+      "get": {
+        "tags": [
+          "routes"
+        ],
+        "operationId": "ProxyV2",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IpInfo"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GithubComGoCourierStatuserrorStatusErr"
+                }
+              }
+            },
+            "x-status-errors": [
+              "@StatusErr[RequestTransformFailed][400000001][transform request failed]"
+            ]
+          },
+          "499": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GithubComGoCourierStatuserrorStatusErr"
+                }
+              }
+            },
+            "x-status-errors": [
+              "@StatusErr[ClientClosedRequest][499000001][request canceled]"
+            ]
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GithubComGoCourierStatuserrorStatusErr"
+                }
+              }
+            },
+            "x-status-errors": [
+              "@StatusErr[RequestFailed][500000001][request failed]"
+            ]
+          }
         }
       }
     }

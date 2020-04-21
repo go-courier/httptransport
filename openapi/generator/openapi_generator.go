@@ -91,11 +91,11 @@ func (g *OpenAPIGenerator) Scan() {
 	}
 }
 
-var RxHttpRouterPath = regexp.MustCompile("/:([^/]+)")
+var reHttpRouterPath = regexp.MustCompile("/:([^/]+)")
 
 func (g *OpenAPIGenerator) patchPath(openapiPath string, operation *oas.Operation) string {
-	return RxHttpRouterPath.ReplaceAllStringFunc(openapiPath, func(str string) string {
-		name := RxHttpRouterPath.FindAllStringSubmatch(str, -1)[0][1]
+	return reHttpRouterPath.ReplaceAllStringFunc(openapiPath, func(str string) string {
+		name := reHttpRouterPath.FindAllStringSubmatch(str, -1)[0][1]
 
 		var isParameterDefined = false
 
@@ -119,6 +119,9 @@ func (g *OpenAPIGenerator) getOperationByOperatorTypes(method string, operatorTy
 
 	for idx, operatorType := range operatorTypes {
 		operator := g.operatorScanner.Operator(operatorType.TypeName)
+		if operator == nil {
+			continue
+		}
 		operator.BindOperation(method, operation, idx == length-1)
 		if operator.Deprecated {
 			operation.Deprecated = true
