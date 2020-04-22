@@ -42,8 +42,15 @@ func (scanner *OperatorScanner) Operator(typeName *types.TypeName) *Operator {
 		return nil
 	}
 
-	if typeName.Pkg().Path() == pkgImportPathHttpTransport && typeName.Name() == "MetaOperator" {
-		return &Operator{}
+	if typeName.Pkg().Path() == pkgImportPathHttpTransport {
+		if typeName.Name() == "GroupOperator" {
+			// old version fallback
+			return &Operator{}
+		}
+
+		if typeName.Name() == "MetaOperator" {
+			return &Operator{}
+		}
 	}
 
 	if operator, ok := scanner.operators[typeName]; ok {
