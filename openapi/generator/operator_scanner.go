@@ -6,11 +6,13 @@ import (
 	"go/constant"
 	"go/types"
 	"net/http"
+	"reflect"
 	"runtime/debug"
 	"sort"
 	"strconv"
 	"strings"
 
+	"github.com/go-courier/httptransport"
 	"github.com/go-courier/httptransport/httpx"
 	"github.com/go-courier/httptransport/transformers"
 	"github.com/go-courier/oas"
@@ -22,8 +24,8 @@ import (
 
 func NewOperatorScanner(pkg *packagesx.Package) *OperatorScanner {
 	return &OperatorScanner{
-		DefinitionScanner: NewDefinitionScanner(pkg),
 		pkg:               pkg,
+		DefinitionScanner: NewDefinitionScanner(pkg),
 		StatusErrScanner:  NewStatusErrScanner(pkg),
 	}
 }
@@ -35,14 +37,13 @@ type OperatorScanner struct {
 	operators map[*types.TypeName]*Operator
 }
 
-func (scanner *OperatorScanner) tagFrom(pkgPath string) string {
-	tag := strings.TrimPrefix(pkgPath, scanner.pkg.PkgPath)
-	return strings.TrimPrefix(tag, "/")
-}
-
 func (scanner *OperatorScanner) Operator(typeName *types.TypeName) *Operator {
 	if typeName == nil {
 		return nil
+	}
+
+	if typeName.Pkg().Path() == pkgImportPathHttpTransport && typeName.Name() == "MetaOperator" {
+		return &Operator{}
 	}
 
 	if operator, ok := scanner.operators[typeName]; ok {
@@ -58,15 +59,15 @@ func (scanner *OperatorScanner) Operator(typeName *types.TypeName) *Operator {
 	}()
 
 	if typeStruct, ok := typeName.Type().Underlying().(*types.Struct); ok {
-		operator := &Operator{
-			ID:  typeName.Name(),
-			Tag: scanner.tagFrom(typeName.Pkg().Path()),
-		}
+		operator := &Operator{}
 
+		operator.Tag = scanner.tagFrom(typeName.Pkg().Path())
+
+		scanner.scanRouteMeta(operator, typeName)
 		scanner.scanParameterOrRequestBody(operator, typeStruct)
-		scanner.scanSummaryAndDescription(operator, typeName)
 		scanner.scanReturns(operator, typeName)
 
+		// cached scanned
 		if scanner.operators == nil {
 			scanner.operators = map[*types.TypeName]*Operator{}
 		}
@@ -79,7 +80,77 @@ func (scanner *OperatorScanner) Operator(typeName *types.TypeName) *Operator {
 	return nil
 }
 
-func (scanner *OperatorScanner) scanSummaryAndDescription(op *Operator, typeName *types.TypeName) {
+func (scanner *OperatorScanner) singleReturnOf(typeName *types.TypeName, name string) (string, bool) {
+	if typeName == nil {
+		return "", false
+	}
+
+	for _, typ := range []types.Type{
+		typeName.Type(),
+		types.NewPointer(typeName.Type()),
+	} {
+		method, ok := typesutil.FromTType(typ).MethodByName(name)
+		if ok {
+			results, n := scanner.pkg.FuncResultsOf(method.(*typesutil.TMethod).Func)
+			if n == 1 {
+				for _, v := range results[0] {
+					if v.Value != nil {
+						s, err := strconv.Unquote(v.Value.ExactString())
+						if err != nil {
+							panic(fmt.Errorf("%s: %s", err, v.Value))
+						}
+						return s, true
+					}
+				}
+			}
+		}
+	}
+
+	return "", false
+}
+
+func (scanner *OperatorScanner) tagFrom(pkgPath string) string {
+	tag := strings.TrimPrefix(pkgPath, scanner.pkg.PkgPath)
+	return strings.TrimPrefix(tag, "/")
+}
+
+func (scanner *OperatorScanner) scanRouteMeta(op *Operator, typeName *types.TypeName) {
+	typeStruct := typeName.Type().Underlying().(*types.Struct)
+
+	op.ID = typeName.Name()
+
+	for i := 0; i < typeStruct.NumFields(); i++ {
+		f := typeStruct.Field(i)
+		tags := reflect.StructTag(typeStruct.Tag(i))
+
+		if f.Anonymous() && strings.Contains(f.Type().String(), pkgImportPathHttpx+".Method") {
+			if path, ok := tags.Lookup("path"); ok {
+				vs := strings.Split(path, ",")
+				op.Path = vs[0]
+
+				if len(vs) > 0 {
+					for i := range vs {
+						switch vs[i] {
+						case "deprecated":
+							op.Deprecated = true
+							break
+						}
+					}
+				}
+			}
+
+			if basePath, ok := tags.Lookup("basePath"); ok {
+				op.BasePath = basePath
+			}
+
+			if summary, ok := tags.Lookup("summary"); ok {
+				op.Summary = summary
+			}
+
+			break
+		}
+	}
+
 	lines := scanner.pkg.CommentsOf(scanner.pkg.IdentOf(typeName))
 	comments := strings.Split(lines, "\n")
 
@@ -89,13 +160,27 @@ func (scanner *OperatorScanner) scanSummaryAndDescription(op *Operator, typeName
 		}
 	}
 
-	comments = filterMarkedLines(comments)
+	if op.Summary == "" {
+		comments = filterMarkedLines(comments)
 
-	if comments[0] != "" {
-		op.Summary = comments[0]
-		if len(comments) > 1 {
-			op.Description = strings.Join(comments[1:], "\n")
+		if comments[0] != "" {
+			op.Summary = comments[0]
+			if len(comments) > 1 {
+				op.Description = strings.Join(comments[1:], "\n")
+			}
 		}
+	}
+
+	if method, ok := scanner.singleReturnOf(typeName, "Method"); ok {
+		op.Method = method
+	}
+
+	if path, ok := scanner.singleReturnOf(typeName, "Path"); ok {
+		op.Path = path
+	}
+
+	if bathPath, ok := scanner.singleReturnOf(typeName, "BasePath"); ok {
+		op.BasePath = bathPath
 	}
 }
 
@@ -281,11 +366,9 @@ func (scanner *OperatorScanner) scanParameterOrRequestBody(op *Operator, typeStr
 }
 
 type Operator struct {
-	ID string
+	httptransport.RouteMeta
 
-	Deprecated  bool
 	Tag         string
-	Summary     string
 	Description string
 
 	NonBodyParameters map[string]*oas.Parameter
@@ -328,6 +411,7 @@ func (operator *Operator) BindOperation(method string, operation *oas.Operation,
 
 	for _, statusError := range operator.StatusErrors {
 		statusErrorList := make([]string, 0)
+
 		if operation.Responses.Responses != nil {
 			if resp, ok := operation.Responses.Responses[statusError.StatusCode()]; ok {
 				if resp.Extensions != nil {
@@ -339,7 +423,10 @@ func (operator *Operator) BindOperation(method string, operation *oas.Operation,
 				}
 			}
 		}
+
 		statusErrorList = append(statusErrorList, statusError.Summary())
+
+		sort.Strings(statusErrorList)
 
 		resp := oas.NewResponse("")
 		resp.AddExtension(XStatusErrs, statusErrorList)
@@ -349,7 +436,7 @@ func (operator *Operator) BindOperation(method string, operation *oas.Operation,
 
 	if last {
 		operation.OperationId = operator.ID
-
+		operation.Deprecated = operator.Deprecated
 		operation.Summary = operator.Summary
 		operation.Description = operator.Description
 
@@ -409,5 +496,6 @@ func valueOf(v constant.Value) interface{} {
 		v, _ := strconv.ParseInt(v.String(), 10, 64)
 		return v
 	}
+
 	return nil
 }

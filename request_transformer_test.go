@@ -259,7 +259,7 @@ test2
 				require.Equal(t, string(UnifyRequestData([]byte(c.expect))), string(UnifyRequestData(data)))
 
 				rv := reflectx.New(reflectx.Deref(reflect.TypeOf(c.req)))
-				e := rtForSomeRequest.DecodeFrom(httptransport.NewRequestInfo(req), &courier.OperatorMeta{}, rv)
+				e := rtForSomeRequest.DecodeFrom(httptransport.NewRequestInfo(req), &courier.OperatorFactory{}, rv)
 				require.NoError(t, e)
 				require.Equal(t, reflectx.Indirect(reflect.ValueOf(c.req)).Interface(), reflectx.Indirect(rv).Interface())
 			}
@@ -331,7 +331,7 @@ func TestRequestTransformer_DecodeFromRequestInfo_WithDefaults(t *testing.T) {
 
 	r := &Req{}
 
-	err = rtForSomeRequest.DecodeFrom(httptransport.NewRequestInfo(req), &courier.OperatorMeta{}, r)
+	err = rtForSomeRequest.DecodeFrom(httptransport.NewRequestInfo(req), &courier.OperatorFactory{}, r)
 	require.NoError(t, err)
 
 	require.Equal(t, &Req{
@@ -371,7 +371,7 @@ func TestRequestTransformer_DecodeFromRequestInfo_WithEnumValidate(t *testing.T)
 
 	r := &Req{}
 
-	err = rtForSomeRequest.DecodeFrom(httptransport.NewRequestInfo(req), &courier.OperatorMeta{}, r)
+	err = rtForSomeRequest.DecodeFrom(httptransport.NewRequestInfo(req), &courier.OperatorFactory{}, r)
 	require.NoError(t, err)
 
 	require.Equal(t, r, &Req{
@@ -419,7 +419,7 @@ func TestRequestTransformer_DecodeFromRequestInfo_Failed(t *testing.T) {
 		return
 	}
 
-	e := rtForSomeRequest.DecodeFrom(httptransport.NewRequestInfo(req), &courier.OperatorMeta{}, &ReqForFailed{})
+	e := rtForSomeRequest.DecodeFrom(httptransport.NewRequestInfo(req), &courier.OperatorFactory{}, &ReqForFailed{})
 	if e == nil {
 		return
 	}
@@ -497,7 +497,7 @@ func ExampleRequestTransformer_DecodeFrom_requestInfo_failedOfPost() {
 		return
 	}
 
-	e := rtForSomeRequest.DecodeFrom(httptransport.NewRequestInfo(req), &courier.OperatorMeta{}, &ReqWithPostValidate{})
+	e := rtForSomeRequest.DecodeFrom(httptransport.NewRequestInfo(req), &courier.OperatorFactory{}, &ReqWithPostValidate{})
 	if e == nil {
 		return
 	}

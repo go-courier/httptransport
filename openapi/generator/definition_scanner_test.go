@@ -331,7 +331,7 @@ func TestDefinitionScanner(t *testing.T) {
 	t.Run("bind", func(t *testing.T) {
 		openAPI := oas.NewOpenAPI()
 		openAPI.AddOperation(oas.GET, "/", oas.NewOperation("test"))
-		scanner.Bind(openAPI)
+		scanner.BindSchemas(openAPI)
 
 		data, _ := json.MarshalIndent(openAPI, "", "  ")
 		fmt.Println(string(data))

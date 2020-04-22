@@ -12,12 +12,9 @@ import (
 )
 
 type Get struct {
-	httpx.MethodGet
-	ID string `name:"id" in:"path"`
-}
+	httpx.MethodGet `path:"/:id"`
 
-func (get Get) Path() string {
-	return "/:id"
+	ID string `name:"id" in:"path"`
 }
 
 func (get Get) Output(ctx context.Context) (result interface{}, err error) {

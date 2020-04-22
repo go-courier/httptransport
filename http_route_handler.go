@@ -16,12 +16,14 @@ import (
 )
 
 func NewHttpRouteHandler(serviceMeta *ServiceMeta, httpRoute *HttpRouteMeta, requestTransformerMgr *RequestTransformerMgr) *HttpRouteHandler {
-	operatorFactories := httpRoute.OperatorFactories()
+	operatorFactories := httpRoute.OperatorFactoryWithRouteMetas
+
 	if len(operatorFactories) == 0 {
 		panic(fmt.Errorf("missing valid operator"))
 	}
 
 	requestTransformers := make([]*RequestTransformer, len(operatorFactories))
+
 	for i := range operatorFactories {
 		opFactory := operatorFactories[i]
 		rt, err := requestTransformerMgr.NewRequestTransformer(nil, opFactory.Type)
@@ -36,7 +38,6 @@ func NewHttpRouteHandler(serviceMeta *ServiceMeta, httpRoute *HttpRouteMeta, req
 		HttpRouteMeta:         httpRoute,
 
 		serviceMeta:         serviceMeta,
-		operatorFactories:   operatorFactories,
 		requestTransformers: requestTransformers,
 	}
 }
@@ -44,9 +45,7 @@ func NewHttpRouteHandler(serviceMeta *ServiceMeta, httpRoute *HttpRouteMeta, req
 type HttpRouteHandler struct {
 	*RequestTransformerMgr
 	*HttpRouteMeta
-
 	serviceMeta         *ServiceMeta
-	operatorFactories   []*courier.OperatorMeta
 	requestTransformers []*RequestTransformer
 }
 
@@ -58,17 +57,17 @@ func OperationIDFromContext(ctx context.Context) string {
 	return ctx.Value("courier.OperationID").(string)
 }
 
-func ContextWithOperatorMeta(ctx context.Context, om *courier.OperatorMeta) context.Context {
-	return context.WithValue(ctx, "courier.OperatorMeta", om)
+func ContextWithOperatorFactory(ctx context.Context, om *courier.OperatorFactory) context.Context {
+	return context.WithValue(ctx, "courier.OperatorFactory", om)
 }
 
-func OperatorMetaFromContext(ctx context.Context) *courier.OperatorMeta {
-	v, _ := ctx.Value("courier.OperatorMeta").(*courier.OperatorMeta)
+func OperatorFactoryFromContext(ctx context.Context) *courier.OperatorFactory {
+	v, _ := ctx.Value("courier.OperatorFactory").(*courier.OperatorFactory)
 	return v
 }
 
 func (handler *HttpRouteHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
-	operationID := handler.operatorFactories[len(handler.operatorFactories)-1].Type.Name()
+	operationID := handler.OperatorFactoryWithRouteMetas[len(handler.OperatorFactoryWithRouteMetas)-1].ID
 
 	ctx := r.Context()
 	ctx = ContextWithHttpRequest(ctx, r)
@@ -82,16 +81,20 @@ func (handler *HttpRouteHandler) ServeHTTP(rw http.ResponseWriter, r *http.Reque
 
 	requestInfo := NewRequestInfo(r)
 
-	for i := range handler.operatorFactories {
-		opFactory := handler.operatorFactories[i]
+	for i := range handler.OperatorFactoryWithRouteMetas {
+		opFactory := handler.OperatorFactoryWithRouteMetas[i]
+
+		if opFactory.NoOutput {
+			continue
+		}
 
 		op := opFactory.New()
 
-		ctx = ContextWithOperatorMeta(ctx, opFactory)
+		ctx = ContextWithOperatorFactory(ctx, opFactory.OperatorFactory)
 
 		rt := handler.requestTransformers[i]
 		if rt != nil {
-			err := rt.DecodeFrom(requestInfo, opFactory, op)
+			err := rt.DecodeFrom(requestInfo, opFactory.OperatorFactory, op)
 			if err != nil {
 				handler.writeErr(rw, r, err)
 				return

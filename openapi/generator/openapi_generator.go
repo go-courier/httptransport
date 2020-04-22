@@ -19,18 +19,16 @@ import (
 
 func NewOpenAPIGenerator(pkg *packagesx.Package) *OpenAPIGenerator {
 	return &OpenAPIGenerator{
-		pkg:             pkg,
-		openapi:         oas.NewOpenAPI(),
-		routerScanner:   NewRouterScanner(pkg),
-		operatorScanner: NewOperatorScanner(pkg),
+		pkg:           pkg,
+		openapi:       oas.NewOpenAPI(),
+		routerScanner: NewRouterScanner(pkg),
 	}
 }
 
 type OpenAPIGenerator struct {
-	pkg             *packagesx.Package
-	openapi         *oas.OpenAPI
-	routerScanner   *RouterScanner
-	operatorScanner *OperatorScanner
+	pkg           *packagesx.Package
+	openapi       *oas.OpenAPI
+	routerScanner *RouterScanner
 }
 
 func rootRouter(pkgInfo *packagesx.Package, callExpr *ast.CallExpr) *types.Var {
@@ -56,6 +54,10 @@ func rootRouter(pkgInfo *packagesx.Package, callExpr *ast.CallExpr) *types.Var {
 }
 
 func (g *OpenAPIGenerator) Scan() {
+	defer func() {
+		g.routerScanner.operatorScanner.BindSchemas(g.openapi)
+	}()
+
 	for ident, def := range g.pkg.TypesInfo.Defs {
 		if typFunc, ok := def.(*types.Func); ok {
 			if typFunc.Name() != "main" {
@@ -66,22 +68,25 @@ func (g *OpenAPIGenerator) Scan() {
 				switch n := node.(type) {
 				case *ast.CallExpr:
 					if rootRouterVar := rootRouter(g.pkg, n); rootRouterVar != nil {
-
 						router := g.routerScanner.Router(rootRouterVar)
-						routes := router.Routes(g.pkg)
+
+						routes := router.Routes()
 
 						operationIDs := map[string]*Route{}
 
 						for _, route := range routes {
-							operation := g.getOperationByOperatorTypes(route.Method, route.Operators...)
+							method := route.Method()
+
+							operation := g.OperationByOperatorTypes(method, route.Operators...)
+
 							if _, exists := operationIDs[operation.OperationId]; exists {
 								panic(fmt.Errorf("operationID %s should be unique", operation.OperationId))
 							}
-							operationIDs[operation.OperationId] = route
-							g.openapi.AddOperation(oas.HttpMethod(strings.ToLower(route.Method)), g.patchPath(route.Path, operation), operation)
-						}
 
-						g.operatorScanner.Bind(g.openapi)
+							operationIDs[operation.OperationId] = route
+
+							g.openapi.AddOperation(oas.HttpMethod(strings.ToLower(method)), g.patchPath(route.Path(), operation), operation)
+						}
 					}
 				}
 				return true
@@ -113,19 +118,13 @@ func (g *OpenAPIGenerator) patchPath(openapiPath string, operation *oas.Operatio
 	})
 }
 
-func (g *OpenAPIGenerator) getOperationByOperatorTypes(method string, operatorTypes ...*OperatorTypeName) *oas.Operation {
+func (g *OpenAPIGenerator) OperationByOperatorTypes(method string, operatorTypes ...*OperatorWithTypeName) *oas.Operation {
 	operation := &oas.Operation{}
+
 	length := len(operatorTypes)
 
-	for idx, operatorType := range operatorTypes {
-		operator := g.operatorScanner.Operator(operatorType.TypeName)
-		if operator == nil {
-			continue
-		}
-		operator.BindOperation(method, operation, idx == length-1)
-		if operator.Deprecated {
-			operation.Deprecated = true
-		}
+	for idx := range operatorTypes {
+		operatorTypes[idx].BindOperation(method, operation, idx == length-1)
 	}
 
 	return operation

@@ -74,7 +74,7 @@ func fullTypeName(typeName *types.TypeName) string {
 	return typeName.Name()
 }
 
-func (scanner *DefinitionScanner) Bind(openapi *oas.OpenAPI) {
+func (scanner *DefinitionScanner) BindSchemas(openapi *oas.OpenAPI) {
 	openapi.Components.Schemas = scanner.schemas
 }
 

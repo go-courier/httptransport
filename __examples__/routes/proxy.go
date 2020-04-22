@@ -40,11 +40,7 @@ func (Proxy) Output(ctx context.Context) (interface{}, error) {
 }
 
 type ProxyV2 struct {
-	httpx.MethodGet
-}
-
-func (ProxyV2) BasePath() string {
-	return "/demo/v2"
+	httpx.MethodGet `basePath:"/demo/v2"`
 }
 
 func (ProxyV2) Output(ctx context.Context) (interface{}, error) {

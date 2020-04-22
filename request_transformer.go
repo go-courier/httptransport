@@ -299,7 +299,7 @@ type PostValidator interface {
 	PostValidate(badRequest *BadRequest)
 }
 
-func (t *RequestTransformer) DecodeFrom(info *RequestInfo, meta *courier.OperatorMeta, v interface{}) error {
+func (t *RequestTransformer) DecodeFrom(info *RequestInfo, meta *courier.OperatorFactory, v interface{}) error {
 	rv, ok := v.(reflect.Value)
 	if !ok {
 		rv = reflect.ValueOf(v)

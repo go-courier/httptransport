@@ -4,14 +4,12 @@ import (
 	"fmt"
 	"os"
 	"sort"
-	"testing"
 
 	"github.com/fatih/color"
 	"github.com/go-courier/courier"
-	"github.com/go-courier/httptransport/__examples__/routes"
-	"github.com/stretchr/testify/require"
-
 	"github.com/go-courier/httptransport"
+	"github.com/go-courier/httptransport/__examples__/routes"
+	"github.com/go-courier/httptransport/httpx"
 )
 
 func ExampleGroup() {
@@ -19,6 +17,22 @@ func ExampleGroup() {
 	fmt.Println(g.Path())
 	// Output:
 	// /test
+}
+
+func ExampleNewRouter() {
+	type Some struct {
+		httpx.MethodGet `path:"/test"`
+		courier.OperatorWithoutOutput
+	}
+
+	r := courier.NewRouter(&Some{})
+
+	for _, route := range r.Routes() {
+		meta := httptransport.NewHttpRouteMeta(route)
+		fmt.Println(meta)
+	}
+	// Output:
+	// GET /test
 }
 
 func ExampleHttpRouteMeta() {
@@ -54,21 +68,4 @@ func ExampleHttpRouteMeta() {
 	// DEL /demo/restful/{id} routes.DataProvider routes.RemoveByID
 	// PUT /demo/restful/{id} routes.DataProvider routes.UpdateByID
 	// GET /demo/v2/proxy routes.ProxyV2
-}
-
-func TestNewHttpRouteMeta(t *testing.T) {
-	rootRouter := courier.NewRouter(httptransport.Group("/test"))
-	rootRouter.Register(courier.NewRouter(httptransport.Group("/sub")))
-
-	require.Error(t, httptransport.TryCatch(func() {
-		for _, route := range rootRouter.Routes() {
-			httptransport.NewHttpRouteMeta(route).Key()
-		}
-	}))
-
-	require.Error(t, httptransport.TryCatch(func() {
-		for _, route := range rootRouter.Routes() {
-			httptransport.NewHttpRouteMeta(route).Method()
-		}
-	}))
 }

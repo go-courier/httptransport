@@ -155,14 +155,20 @@ func (t *HttpTransport) convertRouterToHttpRouter(router *courier.Router) *httpr
 		panic(fmt.Errorf("need to register Operator to Router %#v before serve", router))
 	}
 
+	routeMetas := make([]*HttpRouteMeta, len(routes))
+	for i := range routes {
+		routeMetas[i] = NewHttpRouteMeta(routes[i])
+	}
+
 	httpRouter := httprouter.New()
 
-	sort.Slice(routes, func(i, j int) bool {
-		return NewHttpRouteMeta(routes[i]).Key() < NewHttpRouteMeta(routes[j]).Key()
+	sort.Slice(routeMetas, func(i, j int) bool {
+		return routeMetas[i].Key() < routeMetas[j].Key()
 	})
 
-	for i := range routes {
-		httpRoute := NewHttpRouteMeta(routes[i])
+	for i := range routeMetas {
+		httpRoute := routeMetas[i]
+
 		courierPrintln(httpRoute.String())
 
 		if err := TryCatch(func() {

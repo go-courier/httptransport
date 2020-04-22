@@ -15,7 +15,7 @@ func ExampleNewRouterScanner() {
 	router := pkg.Var("Router")
 
 	scanner := NewRouterScanner(pkg)
-	routes := scanner.Router(router).Routes(pkg)
+	routes := scanner.Router(router).Routes()
 
 	for _, r := range routes {
 		fmt.Println(r.String())

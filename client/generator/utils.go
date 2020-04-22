@@ -98,6 +98,8 @@ func mediaTypeAndStatusErrors(responses *oas.Responses) (*oas.MediaType, []strin
 		}
 	}
 
+	sort.Strings(statusErrors)
+
 	if response == nil {
 		return nil, nil
 	}
