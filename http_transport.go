@@ -168,8 +168,7 @@ func (t *HttpTransport) convertRouterToHttpRouter(router *courier.Router) *httpr
 
 	for i := range routeMetas {
 		httpRoute := routeMetas[i]
-
-		courierPrintln(httpRoute.String())
+		httpRoute.Log()
 
 		if err := TryCatch(func() {
 			httpRouter.HandlerFunc(

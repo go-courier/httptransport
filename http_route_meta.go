@@ -116,7 +116,7 @@ type HttpRouteMeta struct {
 	OperatorFactoryWithRouteMetas []*OperatorFactoryWithRouteMeta
 }
 
-func (route *HttpRouteMeta) Key() string {
+func (route *HttpRouteMeta) OperatorNames() string {
 	operatorTypeNames := make([]string, 0)
 
 	for _, opFactory := range route.OperatorFactoryWithRouteMetas {
@@ -131,13 +131,36 @@ func (route *HttpRouteMeta) Key() string {
 		}
 	}
 
-	return reHttpRouterPath.ReplaceAllString(route.Path(), "/{$1}") + " " + strings.Join(operatorTypeNames, " ")
+	return strings.Join(operatorTypeNames, " ")
+}
+
+func (route *HttpRouteMeta) Key() string {
+	return reHttpRouterPath.ReplaceAllString(route.Path(), "/{$1}") + " " + route.OperatorNames()
 }
 
 func (route *HttpRouteMeta) String() string {
 	method := route.Method()
 
 	return methodColor(method)("%s %s", method[0:3], route.Key())
+}
+
+func (route *HttpRouteMeta) Log() {
+	method := route.Method()
+
+	last := route.OperatorFactoryWithRouteMetas[len(route.OperatorFactoryWithRouteMetas)-1]
+
+	firstLine := methodColor(method)("%s %s", method[0:3], reHttpRouterPath.ReplaceAllString(route.Path(), "/{$1}"))
+
+	if last.Deprecated {
+		firstLine = firstLine + " Deprecated"
+	}
+
+	if last.Summary != "" {
+		firstLine = firstLine + " " + last.Summary
+	}
+
+	courierPrintln(firstLine)
+	courierPrintln("\t%s", route.OperatorNames())
 }
 
 var reHttpRouterPath = regexp.MustCompile("/:([^/]+)")
