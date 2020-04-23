@@ -136,7 +136,13 @@ func (scanner *DefinitionScanner) Def(typeName *types.TypeName) *oas.Schema {
 		if enumOptions == nil {
 			panic(fmt.Errorf("missing enum option but annotated by openapi:enum"))
 		}
+
+		sort.Slice(enumOptions, func(i, j int) bool {
+			return enumOptions[i].Value < enumOptions[j].Value
+		})
+
 		s := oas.String()
+
 		for _, e := range enumOptions {
 			s.Enum = append(s.Enum, e.Value)
 		}
