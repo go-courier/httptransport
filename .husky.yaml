@@ -1,3 +1,4 @@
+
 scripts:
   lint:
     - husky hook pre-commit
@@ -8,6 +9,9 @@ scripts:
     - go test -v -race -coverprofile=coverage.txt -covermode=atomic ./...
   install:
     - go install -v
+  release:
+    - git push
+    - git push origin $(git describe --tags)
 
 hooks:
   pre-commit:
@@ -19,3 +23,6 @@ hooks:
 lint-staged:
   "*.go":
     - gofmt -l -w
+
+lint-commit:
+  email: "^(.+@gmail.com|.+@qq.com)$"
