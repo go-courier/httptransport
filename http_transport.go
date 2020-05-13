@@ -112,12 +112,6 @@ func (t *HttpTransport) Serve(router *courier.Router) error {
 		}
 	}
 
-	stopCh := make(chan os.Signal, 1)
-	signal.Notify(stopCh, os.Interrupt, syscall.SIGTERM)
-
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
 	go func() {
 		courierPrintln("%s listen on %s", t.ServiceMeta, srv.Addr)
 
@@ -141,9 +135,16 @@ func (t *HttpTransport) Serve(router *courier.Router) error {
 		}
 	}()
 
+	stopCh := make(chan os.Signal, 1)
+	signal.Notify(stopCh, os.Interrupt, syscall.SIGTERM)
 	<-stopCh
 
-	t.Logger.Infof("shutdowning in %s", 10*time.Second)
+	timeout := 10 * time.Second
+
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	t.Logger.Infof("shutdowning in %s", timeout)
 
 	return srv.Shutdown(ctx)
 }

@@ -118,19 +118,19 @@ func TestDefinitionScanner(t *testing.T) {
 			`{
   "type": "string",
   "enum": [
-    "TWO",
-    "ONE"
+    "ONE",
+    "TWO"
   ],
   "x-enum-options": [
-    {
-      "constValue": 2,
-      "value": "TWO",
-      "label": "two"
-    },
     {
       "constValue": 1,
       "value": "ONE",
       "label": "one"
+    },
+    {
+      "constValue": 2,
+      "value": "TWO",
+      "label": "two"
     }
   ],
   "x-id": "Enum"

@@ -6,10 +6,8 @@ import (
 	"sort"
 
 	"github.com/fatih/color"
-	"github.com/go-courier/courier"
 	"github.com/go-courier/httptransport"
 	"github.com/go-courier/httptransport/__examples__/routes"
-	"github.com/go-courier/httptransport/httpx"
 )
 
 func ExampleGroup() {
@@ -17,22 +15,6 @@ func ExampleGroup() {
 	fmt.Println(g.Path())
 	// Output:
 	// /test
-}
-
-func ExampleNewRouter() {
-	type Some struct {
-		httpx.MethodGet `path:"/test"`
-		courier.OperatorWithoutOutput
-	}
-
-	r := courier.NewRouter(&Some{})
-
-	for _, route := range r.Routes() {
-		meta := httptransport.NewHttpRouteMeta(route)
-		fmt.Println(meta)
-	}
-	// Output:
-	// GET /test
 }
 
 func ExampleHttpRouteMeta() {

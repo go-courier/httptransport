@@ -833,15 +833,15 @@
       "Protocol": {
         "type": "string",
         "enum": [
-          "TCP",
+          "HTTP",
           "HTTPS",
-          "HTTP"
+          "TCP"
         ],
         "x-enum-options": [
           {
-            "constValue": 6,
-            "value": "TCP",
-            "label": "TCP"
+            "constValue": 1,
+            "value": "HTTP",
+            "label": "http"
           },
           {
             "constValue": 2,
@@ -849,9 +849,9 @@
             "label": "https"
           },
           {
-            "constValue": 1,
-            "value": "HTTP",
-            "label": "http"
+            "constValue": 6,
+            "value": "TCP",
+            "label": "TCP"
           }
         ],
         "x-id": "Protocol"
