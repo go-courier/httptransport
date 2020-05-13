@@ -16,5 +16,5 @@ func TestLogRoundTripper(t *testing.T) {
 
 	req, _ := mgr.NewRequest(http.MethodGet, "https://github.com", nil)
 
-	NewLogRoundTripper(logrus.WithContext(context.Background()))(http.DefaultTransport).RoundTrip(req)
+	_, _ = NewLogRoundTripper(logrus.WithContext(context.Background()))(http.DefaultTransport).RoundTrip(req)
 }

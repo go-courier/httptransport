@@ -48,9 +48,9 @@ func (scanner *StatusErrScanner) StatusErrorsInFunc(typeFunc *types.Func) []*sta
 
 	if funcDecl != nil {
 		ast.Inspect(funcDecl, func(node ast.Node) bool {
-			switch node.(type) {
+			switch v := node.(type) {
 			case *ast.CallExpr:
-				identList := packagesx.GetIdentChainOfCallFunc(node.(*ast.CallExpr).Fun)
+				identList := packagesx.GetIdentChainOfCallFunc(v.Fun)
 				if len(identList) > 0 {
 					callIdent := identList[len(identList)-1]
 					obj := pkg.TypesInfo.ObjectOf(callIdent)
@@ -66,7 +66,7 @@ func (scanner *StatusErrScanner) StatusErrorsInFunc(typeFunc *types.Func) []*sta
 					}
 				}
 			case *ast.Ident:
-				scanner.mayAddStateErrorByObject(typeFunc, pkg.TypesInfo.ObjectOf(node.(*ast.Ident)))
+				scanner.mayAddStateErrorByObject(typeFunc, pkg.TypesInfo.ObjectOf(v))
 			}
 			return true
 		})

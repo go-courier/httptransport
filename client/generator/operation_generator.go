@@ -20,7 +20,7 @@ type OperationGenerator struct {
 	File        *codegen.File
 }
 
-var reBraceToColon = regexp.MustCompile("/\\{([^/]+)\\}")
+var reBraceToColon = regexp.MustCompile(`/\{([^/]+)\}`)
 
 func toColonPath(path string) string {
 	return reBraceToColon.ReplaceAllStringFunc(path, func(str string) string {

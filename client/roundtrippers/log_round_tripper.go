@@ -28,7 +28,7 @@ func (rt *LogRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) 
 	resp, err := rt.nextRoundTripper.RoundTrip(req)
 
 	defer func() {
-		cost := time.Now().Sub(startedAt)
+		cost := time.Since(startedAt)
 
 		logger := rt.logger.WithContext(req.Context()).WithFields(logrus.Fields{
 			"cost":     fmt.Sprintf("%0.3fms", float64(cost/time.Millisecond)),

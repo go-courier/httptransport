@@ -106,8 +106,8 @@ func (g *TypeGenerator) TypeIndirect(schema *oas.Schema) (codegen.SnippetType, b
 
 			enumOptions := make([]enumeration.EnumOption, 0)
 			buf := bytes.NewBuffer(nil)
-			json.NewEncoder(buf).Encode(enumOptionsValues)
-			json.NewDecoder(buf).Decode(&enumOptions)
+			_ = json.NewEncoder(buf).Encode(enumOptionsValues)
+			_ = json.NewDecoder(buf).Decode(&enumOptions)
 			g.Enums[name] = enumOptions
 
 			return codegen.Type(name), true
@@ -295,15 +295,11 @@ func mayComposedAllOf(schema *oas.Schema) *oas.Schema {
 }
 
 func writeEnumDefines(file *codegen.File, name string, options []enumeration.EnumOption) {
-	file.WriteString(`// openapi:enum
+	_, _ = file.WriteString(`// openapi:enum
 `)
 	file.WriteBlock(
 		codegen.DeclType(codegen.Var(codegen.Int, name)),
 	)
-
-	consts := make([]codegen.SnippetSpec, 0)
-
-	consts = append(consts, codegen.Assign(codegen.Var(codegen.Type(name), codegen.UpperSnakeCase(name)+`_UNKNOWN`)).By(codegen.Iota))
 
 	file.WriteString(`
 const (

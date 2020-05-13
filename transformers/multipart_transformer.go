@@ -122,11 +122,11 @@ func (transformer *MultipartTransformer) EncodeToWriter(w io.Writer, v interface
 				switch v := fieldValue.Interface().(type) {
 				case []*multipart.FileHeader:
 					for i := range v {
-						appendFile(fieldOpt.FieldName, v[i])
+						_ = appendFile(fieldOpt.FieldName, v[i])
 					}
 					return
 				case *multipart.FileHeader:
-					appendFile(fieldOpt.FieldName, v)
+					_ = appendFile(fieldOpt.FieldName, v)
 					return
 				}
 			}
@@ -184,8 +184,11 @@ func (transformer *MultipartTransformer) DecodeFromReader(r io.Reader, v interfa
 			}
 			return nil
 		}
+
 		if len(form.Value[fieldName]) > idx {
-			fieldTransformer.DecodeFromReader(bytes.NewBufferString(form.Value[fieldName][idx]), rv)
+			if err := fieldTransformer.DecodeFromReader(bytes.NewBufferString(form.Value[fieldName][idx]), rv); err != nil {
+				return err
+			}
 		}
 		return nil
 	}

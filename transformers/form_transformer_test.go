@@ -2,6 +2,7 @@ package transformers
 
 import (
 	"bytes"
+	"context"
 	"reflect"
 	"testing"
 
@@ -49,7 +50,7 @@ func TestFormTransformer(t *testing.T) {
 	}
 	data.StringArray = [3]string{"1", "", "3"}
 
-	ct, _ := TransformerMgrDefault.NewTransformer(nil, typesutil.FromRType(reflect.TypeOf(data)), TransformerOption{
+	ct, _ := TransformerMgrDefault.NewTransformer(context.Background(), typesutil.FromRType(reflect.TypeOf(data)), TransformerOption{
 		MIME: "urlencoded",
 	})
 

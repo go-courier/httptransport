@@ -136,6 +136,6 @@ func (g *OpenAPIGenerator) Output(cwd string) {
 	if err != nil {
 		return
 	}
-	ioutil.WriteFile(file, data, os.ModePerm)
+	_ = ioutil.WriteFile(file, data, os.ModePerm)
 	log.Printf("generated openapi spec into %s", color.MagentaString(file))
 }

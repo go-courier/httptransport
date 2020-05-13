@@ -2,6 +2,7 @@ package transformers
 
 import (
 	"bytes"
+	"context"
 	"io"
 	"mime"
 	"mime/multipart"
@@ -103,13 +104,13 @@ text
 	fixMultipart := func(generatedBoundary string) string {
 		buf := bytes.NewBuffer(nil)
 		m := multipart.NewWriter(buf)
-		m.SetBoundary(generatedBoundary)
+		_ = m.SetBoundary(generatedBoundary)
 		reader := multipart.NewReader(bytes.NewBufferString(parts), boundary)
 
 		part, err := reader.NextPart()
 		for err != io.EOF {
 			p, _ := m.CreatePart(part.Header)
-			io.Copy(p, part)
+			_, _ = io.Copy(p, part)
 			part, err = reader.NextPart()
 		}
 
@@ -157,7 +158,7 @@ text
 		MustNewFileHeader("Files", "file1.txt", bytes.NewBufferString("text1")),
 	}
 
-	ct, _ := TransformerMgrDefault.NewTransformer(nil, typesutil.FromRType(reflect.TypeOf(data)), TransformerOption{
+	ct, _ := TransformerMgrDefault.NewTransformer(context.Background(), typesutil.FromRType(reflect.TypeOf(data)), TransformerOption{
 		MIME: "multipart",
 	})
 

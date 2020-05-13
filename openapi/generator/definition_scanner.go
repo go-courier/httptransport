@@ -52,7 +52,7 @@ func setMetaFromDoc(s *oas.Schema, doc string) {
 	lines := strings.Split(doc, "\n")
 
 	for i := range lines {
-		if strings.Index(lines[i], "@deprecated") != -1 {
+		if strings.Contains(lines[i], "@deprecated") {
 			s.Deprecated = true
 		}
 	}

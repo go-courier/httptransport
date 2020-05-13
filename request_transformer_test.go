@@ -2,6 +2,7 @@ package httptransport_test
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"mime/multipart"
@@ -249,7 +250,7 @@ test2
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			for i := 0; i < 5; i++ {
-				rtForSomeRequest, err := mgr.NewRequestTransformer(nil, reflect.TypeOf(c.req))
+				rtForSomeRequest, err := mgr.NewRequestTransformer(context.Background(), reflect.TypeOf(c.req))
 				require.NoError(t, err)
 
 				req, err := rtForSomeRequest.NewRequest(http.MethodGet, c.path, c.req)
@@ -284,7 +285,7 @@ func ExampleNewRequestTransformerMgr() {
 	req := &Req{}
 	req.PlainBody.A = "1"
 
-	rtForSomeRequest, err := mgr.NewRequestTransformer(nil, reflect.TypeOf(req))
+	rtForSomeRequest, err := mgr.NewRequestTransformer(context.Background(), reflect.TypeOf(req))
 	if err != nil {
 		panic(err)
 	}
@@ -313,7 +314,7 @@ func TestRequestTransformer_DecodeFromRequestInfo_WithDefaults(t *testing.T) {
 
 	mgr := httptransport.NewRequestTransformerMgr(nil, nil)
 
-	rtForSomeRequest, err := mgr.NewRequestTransformer(nil, reflect.TypeOf(&Req{}))
+	rtForSomeRequest, err := mgr.NewRequestTransformer(context.Background(), reflect.TypeOf(&Req{}))
 	require.NoError(t, err)
 	if err != nil {
 		return
@@ -358,7 +359,7 @@ func TestRequestTransformer_DecodeFromRequestInfo_WithEnumValidate(t *testing.T)
 
 	mgr := httptransport.NewRequestTransformerMgr(nil, nil)
 
-	rtForSomeRequest, err := mgr.NewRequestTransformer(nil, reflect.TypeOf(&Req{}))
+	rtForSomeRequest, err := mgr.NewRequestTransformer(context.Background(), reflect.TypeOf(&Req{}))
 	require.NoError(t, err)
 	if err != nil {
 		return
@@ -402,7 +403,7 @@ func TestRequestTransformer_DecodeFromRequestInfo_Failed(t *testing.T) {
 		DataForFailed `in:"body"`
 	}
 
-	rtForSomeRequest, err := mgr.NewRequestTransformer(nil, reflect.TypeOf(&ReqForFailed{}))
+	rtForSomeRequest, err := mgr.NewRequestTransformer(context.Background(), reflect.TypeOf(&ReqForFailed{}))
 	if err != nil {
 		return
 	}
@@ -487,7 +488,7 @@ func (ReqWithPostValidate) PostValidate(badRequest *httptransport.BadRequest) {
 func ExampleRequestTransformer_DecodeFrom_requestInfo_failedOfPost() {
 	mgr := httptransport.NewRequestTransformerMgr(nil, nil)
 
-	rtForSomeRequest, err := mgr.NewRequestTransformer(nil, reflect.TypeOf(&ReqWithPostValidate{}))
+	rtForSomeRequest, err := mgr.NewRequestTransformer(context.Background(), reflect.TypeOf(&ReqWithPostValidate{}))
 	if err != nil {
 		return
 	}

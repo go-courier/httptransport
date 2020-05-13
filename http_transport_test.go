@@ -27,17 +27,17 @@ func BenchmarkHttpTransport(b *testing.B) {
 	ht.SetDefaults()
 	ht.Port = 8080
 	go func() {
-		ht.Serve(routes.RootRouter)
+		_ = ht.Serve(routes.RootRouter)
 	}()
 
 	b.Run("request", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			http.Get("http://127.0.0.1:8080/demo/restful/123456")
+			_, _ = http.Get("http://127.0.0.1:8080/demo/restful/123456")
 		}
 	})
 
 	p, _ := os.FindProcess(os.Getpid())
-	p.Signal(os.Interrupt)
+	_ = p.Signal(os.Interrupt)
 }
 
 func TestHttpTransport(t *testing.T) {
@@ -48,7 +48,7 @@ func TestHttpTransport(t *testing.T) {
 	ht.SetDefaults()
 	ht.Port = 8080
 	go func() {
-		ht.Serve(routes.RootRouter)
+		_ = ht.Serve(routes.RootRouter)
 	}()
 
 	time.Sleep(1 * time.Second)
@@ -82,7 +82,7 @@ func TestHttpTransport(t *testing.T) {
 	})
 
 	p, _ := os.FindProcess(os.Getpid())
-	p.Signal(os.Interrupt)
+	_ = p.Signal(os.Interrupt)
 }
 
 func TestHttpTransportWithHTTP2(t *testing.T) {
@@ -101,7 +101,7 @@ func TestHttpTransportWithHTTP2(t *testing.T) {
 	ht.Port = 8080
 
 	go func() {
-		ht.Serve(routes.RootRouter)
+		_ = ht.Serve(routes.RootRouter)
 	}()
 
 	time.Sleep(500 * time.Millisecond)
@@ -129,7 +129,7 @@ func TestHttpTransportWithHTTP2(t *testing.T) {
 	fmt.Println(string(data))
 
 	p, _ := os.FindProcess(os.Getpid())
-	p.Signal(os.Interrupt)
+	_ = p.Signal(os.Interrupt)
 }
 
 func TestHttpTransportWithTLS(t *testing.T) {
@@ -147,7 +147,7 @@ func TestHttpTransportWithTLS(t *testing.T) {
 	ht.Port = 8081
 
 	go func() {
-		ht.Serve(routes.RootRouter)
+		_ = ht.Serve(routes.RootRouter)
 	}()
 
 	time.Sleep(200 * time.Millisecond)
@@ -164,7 +164,7 @@ func TestHttpTransportWithTLS(t *testing.T) {
 
 	time.Sleep(2 * time.Second)
 	p, _ := os.FindProcess(os.Getpid())
-	p.Signal(os.Interrupt)
+	_ = p.Signal(os.Interrupt)
 }
 
 func NewInsecureTLSTransport(rootCA []byte) client.HttpTransport {

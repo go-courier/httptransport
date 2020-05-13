@@ -3,7 +3,6 @@ package transformers
 import (
 	"bytes"
 	"context"
-	"encoding"
 	"fmt"
 	"io"
 	"net/textproto"
@@ -131,9 +130,6 @@ func (c *TransformerFactory) Register(transformers ...Transformer) {
 		}
 	}
 }
-
-var typeEncodingTextMarshaler = reflect.TypeOf((*encoding.TextMarshaler)(nil)).Elem()
-var typeEncodingTextUnmarshaler = reflect.TypeOf((*encoding.TextUnmarshaler)(nil)).Elem()
 
 func (c *TransformerFactory) NewTransformer(ctx context.Context, typ typesutil.Type, opt TransformerOption) (Transformer, error) {
 	if ctx == nil {

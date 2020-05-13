@@ -75,7 +75,7 @@ func (h *loggerHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	}
 
 	defer func() {
-		duration := time.Now().Sub(startAt)
+		duration := time.Since(startAt)
 
 		logger := h.logger.WithContext(metax.ContextWithMeta(req.Context(), metax.ParseMeta(loggerRw.Header().Get("X-Meta"))))
 

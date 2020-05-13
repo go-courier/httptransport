@@ -54,7 +54,6 @@ func NewOperatorFactoryWithRouteMeta(op courier.Operator, last bool) *OperatorFa
 							switch vs[i] {
 							case "deprecated":
 								m.Deprecated = true
-								break
 							}
 						}
 					}

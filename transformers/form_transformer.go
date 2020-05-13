@@ -145,7 +145,7 @@ func (transformer *FormTransformer) DecodeFromReader(r io.Reader, v interface{},
 
 			for idx := 0; idx < fieldValue.Len(); idx++ {
 				if lenOfValues > idx {
-					if maybe.DecodeFromReader(bytes.NewBufferString(valueList[idx]), fieldValue.Index(idx)); err != nil {
+					if err := maybe.DecodeFromReader(bytes.NewBufferString(valueList[idx]), fieldValue.Index(idx)); err != nil {
 						errSet.AddErr(err, fieldOpt.FieldName, idx)
 					}
 				}

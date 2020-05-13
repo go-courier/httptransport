@@ -49,7 +49,7 @@ func ExampleHttpRouteMeta() {
 
 	for i := range routeList {
 		httpRouteMeta := httptransport.NewHttpRouteMeta(routeList[i])
-		fmt.Println(fmt.Sprintf(httpRouteMeta.String()))
+		fmt.Println(httpRouteMeta.String())
 	}
 	// Output:
 	// GET /demo openapi.OpenAPI

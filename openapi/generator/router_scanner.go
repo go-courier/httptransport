@@ -40,9 +40,8 @@ func (scanner *RouterScanner) init() {
 						router := NewRouter(typeVar)
 
 						ast.Inspect(ident.Obj.Decl.(ast.Node), func(node ast.Node) bool {
-							switch node.(type) {
+							switch callExpr := node.(type) {
 							case *ast.CallExpr:
-								callExpr := node.(*ast.CallExpr)
 								router.AppendOperators(scanner.OperatorTypeNamesFromArgs(packagesx.NewPackage(pkg), callExpr.Args...)...)
 								return false
 							}
@@ -73,20 +72,19 @@ func (scanner *RouterScanner) init() {
 											callExpr := node.(*ast.CallExpr)
 											if callExpr.Fun == selectExpr {
 												routerIdent := callExpr.Args[0]
-												switch routerIdent.(type) {
+												switch v := routerIdent.(type) {
 												case *ast.Ident:
-													argTypeVar := pkg.TypesInfo.ObjectOf(routerIdent.(*ast.Ident)).(*types.Var)
+													argTypeVar := pkg.TypesInfo.ObjectOf(v).(*types.Var)
 													if r, ok := scanner.routers[argTypeVar]; ok {
 														router.Register(r)
 													}
 												case *ast.SelectorExpr:
-													argTypeVar := pkg.TypesInfo.ObjectOf(routerIdent.(*ast.SelectorExpr).Sel).(*types.Var)
+													argTypeVar := pkg.TypesInfo.ObjectOf(v.Sel).(*types.Var)
 													if r, ok := scanner.routers[argTypeVar]; ok {
 														router.Register(r)
 													}
 												case *ast.CallExpr:
-													callExprForRegister := routerIdent.(*ast.CallExpr)
-													router.With(scanner.OperatorTypeNamesFromArgs(packagesx.NewPackage(pkg), callExprForRegister.Args...)...)
+													router.With(scanner.OperatorTypeNamesFromArgs(packagesx.NewPackage(pkg), v.Args...)...)
 												}
 												return false
 											}

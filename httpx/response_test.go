@@ -68,7 +68,7 @@ func TestResponse_WriteTo(t *testing.T) {
 		req, _ := http.NewRequest(http.MethodPost, "/", nil)
 		rw := testify.NewMockResponseWriter()
 
-		ResponseFrom(RedirectWithStatusFound(&url.URL{
+		_ = ResponseFrom(RedirectWithStatusFound(&url.URL{
 			Path: "/other",
 		})).WriteTo(rw, req, nil)
 
@@ -83,7 +83,7 @@ Content-Length: 0
 		req, _ := http.NewRequest(http.MethodPost, "/", nil)
 		rw := testify.NewMockResponseWriter()
 
-		ResponseFrom(RedirectWithStatusMovedPermanently(&url.URL{
+		_ = ResponseFrom(RedirectWithStatusMovedPermanently(&url.URL{
 			Path: "/other",
 		})).WriteTo(rw, req, nil)
 
@@ -104,7 +104,7 @@ Content-Length: 0
 			Expires: time.Now().Add(24 * time.Hour),
 		}
 
-		ResponseFrom(WithCookies(cookie)(nil)).WriteTo(rw, req, nil)
+		_ = ResponseFrom(WithCookies(cookie)(nil)).WriteTo(rw, req, nil)
 
 		require.Equal(t, `HTTP/0.0 204 No Content
 Set-Cookie: `+cookie.String()+`
@@ -120,7 +120,7 @@ Set-Cookie: `+cookie.String()+`
 			ID string
 		}
 
-		ResponseFrom(&Data{
+		_ = ResponseFrom(&Data{
 			ID: "123456",
 		}).WriteTo(rw, req, func(response *Response) (string, Encode, error) {
 			return "application/json", func(w io.Writer, v interface{}) error {
@@ -143,7 +143,7 @@ Content-Type: application/json; charset=utf-8
 			ID string
 		}
 
-		ResponseFrom(&Data{
+		_ = ResponseFrom(&Data{
 			ID: "123456",
 		}).WriteTo(rw, req, func(response *Response) (string, Encode, error) {
 			return "application/json", func(w io.Writer, v interface{}) error {
@@ -162,7 +162,7 @@ Content-Type: application/json; charset=utf-8
 		req, _ := http.NewRequest(http.MethodPost, "/", nil)
 		rw := testify.NewMockResponseWriter()
 
-		ResponseFrom(nil).WriteTo(rw, req, nil)
+		_ = ResponseFrom(nil).WriteTo(rw, req, nil)
 
 		require.Equal(t, `HTTP/0.0 204 No Content
 
@@ -174,9 +174,9 @@ Content-Type: application/json; charset=utf-8
 		rw := testify.NewMockResponseWriter()
 
 		attachment := NewAttachment("text.txt", "text/plain")
-		attachment.WriteString("123123123")
+		_, _ = attachment.WriteString("123123123")
 
-		ResponseFrom(attachment).WriteTo(rw, req, nil)
+		_ = ResponseFrom(attachment).WriteTo(rw, req, nil)
 
 		require.Equal(t, `HTTP/0.0 200 OK
 Content-Disposition: attachment; filename=text.txt

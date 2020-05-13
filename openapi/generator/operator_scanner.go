@@ -1,6 +1,7 @@
 package generator
 
 import (
+	"context"
 	"fmt"
 	"go/ast"
 	"go/constant"
@@ -140,7 +141,6 @@ func (scanner *OperatorScanner) scanRouteMeta(op *Operator, typeName *types.Type
 						switch vs[i] {
 						case "deprecated":
 							op.Deprecated = true
-							break
 						}
 					}
 				}
@@ -162,7 +162,7 @@ func (scanner *OperatorScanner) scanRouteMeta(op *Operator, typeName *types.Type
 	comments := strings.Split(lines, "\n")
 
 	for i := range comments {
-		if strings.Index(comments[i], "@deprecated") != -1 {
+		if strings.Contains(comments[i], "@deprecated") {
 			op.Deprecated = true
 		}
 	}
@@ -345,7 +345,7 @@ func (scanner *OperatorScanner) scanParameterOrRequestBody(op *Operator, typeStr
 			scanner.pkg.CommentsOf(scanner.pkg.IdentOf(field.(*typesutil.TStructField).Var)),
 		)
 
-		transformer, err := transformers.TransformerMgrDefault.NewTransformer(nil, field.Type(), transformers.TransformerOption{
+		transformer, err := transformers.TransformerMgrDefault.NewTransformer(context.Background(), field.Type(), transformers.TransformerOption{
 			MIME: field.Tag().Get("mime"),
 		})
 

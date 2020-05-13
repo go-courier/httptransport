@@ -26,7 +26,7 @@ func NewHttpRouteHandler(serviceMeta *ServiceMeta, httpRoute *HttpRouteMeta, req
 
 	for i := range operatorFactories {
 		opFactory := operatorFactories[i]
-		rt, err := requestTransformerMgr.NewRequestTransformer(nil, opFactory.Type)
+		rt, err := requestTransformerMgr.NewRequestTransformer(context.Background(), opFactory.Type)
 		if err != nil {
 			panic(err)
 		}
@@ -123,7 +123,7 @@ func (handler *HttpRouteHandler) ServeHTTP(rw http.ResponseWriter, r *http.Reque
 }
 
 func (handler *HttpRouteHandler) resolveTransformer(response *httpx.Response) (string, httpx.Encode, error) {
-	transformer, err := handler.TransformerMgr.NewTransformer(nil, typesutil.FromRType(reflect.TypeOf(response.Value)), transformers.TransformerOption{
+	transformer, err := handler.TransformerMgr.NewTransformer(context.Background(), typesutil.FromRType(reflect.TypeOf(response.Value)), transformers.TransformerOption{
 		MIME: response.ContentType,
 	})
 	if err != nil {
@@ -156,7 +156,6 @@ func (handler *HttpRouteHandler) writeErr(rw http.ResponseWriter, r *http.Reques
 	errForWrite := resp.WriteTo(rw, r, handler.resolveTransformer)
 	if errForWrite != nil {
 		rw.WriteHeader(http.StatusInternalServerError)
-		rw.Write([]byte("courier write err failed:" + errForWrite.Error()))
+		_, _ = rw.Write([]byte("courier write err failed:" + errForWrite.Error()))
 	}
-	return
 }

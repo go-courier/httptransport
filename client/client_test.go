@@ -47,7 +47,7 @@ func TestClient(t *testing.T) {
 
 		request, _ := http.NewRequest("GET", "http://ip-api.com/json", nil)
 
-		meta, err := ipInfoClient.Do(nil, request).Into(&ipInfo)
+		meta, err := ipInfoClient.Do(context.Background(), request).Into(&ipInfo)
 		require.NoError(t, err)
 
 		t.Log(ipInfo)
@@ -57,7 +57,7 @@ func TestClient(t *testing.T) {
 	t.Run("direct request 404", func(t *testing.T) {
 		request, _ := http.NewRequest("GET", "https://api.github.com/xxxxn", nil)
 
-		meta, err := ipInfoClient.Do(nil, request).Into(nil)
+		meta, err := ipInfoClient.Do(context.Background(), request).Into(nil)
 		require.Error(t, err)
 
 		t.Log(err)
@@ -67,7 +67,7 @@ func TestClient(t *testing.T) {
 	t.Run("request by struct", func(t *testing.T) {
 		ipInfo := IpInfo{}
 
-		meta, err := ipInfoClient.Do(nil, &GetByJSON{}).Into(&ipInfo)
+		meta, err := ipInfoClient.Do(context.Background(), &GetByJSON{}).Into(&ipInfo)
 		require.NoError(t, err)
 
 		t.Log(ipInfo)
@@ -77,7 +77,7 @@ func TestClient(t *testing.T) {
 	t.Run("request by struct as xml", func(t *testing.T) {
 		ipInfo := IpInfo{}
 
-		meta, err := ipInfoClient.Do(nil, &GetByXML{}).Into(&ipInfo)
+		meta, err := ipInfoClient.Do(context.Background(), &GetByXML{}).Into(&ipInfo)
 		require.NoError(t, err)
 
 		t.Log(ipInfo)
@@ -112,12 +112,12 @@ func TestClient(t *testing.T) {
 
 	t.Run("result pass", func(t *testing.T) {
 		request, _ := http.NewRequest("GET", "http://ip-api.com/json", nil)
-		result := ipInfoClient.Do(nil, request)
+		result := ipInfoClient.Do(context.Background(), request)
 
 		req, _ := http.NewRequest(http.MethodGet, "/", nil)
 		rw := testify.NewMockResponseWriter()
 
-		httpx.ResponseFrom(result).WriteTo(rw, req, nil)
+		_ = httpx.ResponseFrom(result).WriteTo(rw, req, nil)
 
 		require.Equal(t, 200, rw.StatusCode)
 	})

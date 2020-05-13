@@ -206,7 +206,7 @@ func (r *Result) Into(body interface{}) (courier.Metadata, error) {
 
 		rv := reflect.ValueOf(body)
 
-		transformer, err := r.TransformerMgr.NewTransformer(nil, typesutil.FromRType(rv.Type()), transformers.TransformerOption{
+		transformer, err := r.TransformerMgr.NewTransformer(context.Background(), typesutil.FromRType(rv.Type()), transformers.TransformerOption{
 			MIME: contentType,
 		})
 
@@ -263,11 +263,9 @@ func GetShortConnClient(timeout time.Duration, httpTransports ...HttpTransport) 
 		Transport: t,
 	}
 
-	if httpTransports != nil {
-		for i := range httpTransports {
-			httpTransport := httpTransports[i]
-			client.Transport = httpTransport(client.Transport)
-		}
+	for i := range httpTransports {
+		httpTransport := httpTransports[i]
+		client.Transport = httpTransport(client.Transport)
 	}
 
 	return client
