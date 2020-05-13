@@ -5,6 +5,14 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 
 
+# [1.17.4](https://github.com/go-courier/httptransport/compare/v1.17.3...v1.17.4)
+
+### Bug Fixes
+
+* **fix(http_transport):** fix Shutdown ([1418e39](https://github.com/go-courier/httptransport/commit/1418e3941a88ec3f5905c61503a75d73659bc4fe))
+
+
+
 # [1.17.3](https://github.com/go-courier/httptransport/compare/v1.17.2...v1.17.3)
 
 ### Bug Fixes
