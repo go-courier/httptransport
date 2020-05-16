@@ -229,11 +229,15 @@ func (response *Response) WriteTo(rw http.ResponseWriter, r *http.Request, resol
 		}
 	case io.Reader:
 		rw.WriteHeader(response.StatusCode)
+
+		defer func() {
+			if c, ok := v.(io.Closer); ok {
+				c.Close()
+			}
+		}()
+
 		if _, err := io.Copy(rw, v); err != nil {
 			return err
-		}
-		if c, ok := v.(io.Closer); ok {
-			c.Close()
 		}
 	default:
 		contentType, encode, err := resolveEncode(response)
