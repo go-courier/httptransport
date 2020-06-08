@@ -5,6 +5,15 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 
 
+# [1.17.5](https://github.com/go-courier/httptransport/compare/v1.17.4...v1.17.5)
+
+### Bug Fixes
+
+* **fix** added defaults timeouts for client & server ([74d21dd](https://github.com/go-courier/httptransport/commit/74d21dd2c0df714a071dee0e0a7831e6b0fe6152))
+* **fix(httpx):** auto close Closer should defer Reader copied ([fc9a543](https://github.com/go-courier/httptransport/commit/fc9a5433e0e268dd95693408a34dafdc82ae26c9))
+
+
+
 # [1.17.4](https://github.com/go-courier/httptransport/compare/v1.17.3...v1.17.4)
 
 ### Bug Fixes
