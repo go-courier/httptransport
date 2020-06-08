@@ -101,9 +101,7 @@ func (t *HttpTransport) Serve(router *courier.Router) error {
 
 	t.httpRouter = t.convertRouterToHttpRouter(router)
 
-	srv := &http.Server{
-		ReadTimeout: 5 * time.Second,
-	}
+	srv := &http.Server{}
 
 	srv.Addr = fmt.Sprintf(":%d", t.Port)
 	srv.Handler = MiddlewareChain(t.Middlewares...)(t)
