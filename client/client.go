@@ -55,15 +55,17 @@ func (c *Client) SetDefaults() {
 	}
 }
 
+var contextKeyClient = &struct{}{}
+
 func ContextWithClient(ctx context.Context, c *http.Client) context.Context {
-	return context.WithValue(ctx, "courier.Client", c)
+	return context.WithValue(ctx, contextKeyClient, c)
 }
 
 func ClientFromContext(ctx context.Context) *http.Client {
 	if ctx == nil {
 		return nil
 	}
-	if c, ok := ctx.Value("courier.Client").(*http.Client); ok {
+	if c, ok := ctx.Value(contextKeyClient).(*http.Client); ok {
 		return c
 	}
 	return nil
@@ -248,10 +250,13 @@ func isOk(code int) bool {
 func GetShortConnClient(timeout time.Duration, httpTransports ...HttpTransport) *http.Client {
 	t := &http.Transport{
 		DialContext: (&net.Dialer{
-			Timeout:   timeout,
+			Timeout:   5 * time.Second,
 			KeepAlive: 0,
 		}).DialContext,
-		DisableKeepAlives: true,
+		DisableKeepAlives:     true,
+		TLSHandshakeTimeout:   5 * time.Second,
+		ResponseHeaderTimeout: 5 * time.Second,
+		ExpectContinueTimeout: 1 * time.Second,
 	}
 
 	if err := http2.ConfigureTransport(t); err != nil {

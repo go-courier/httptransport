@@ -18,8 +18,8 @@ type TransformerMgr interface {
 	NewTransformer(context.Context, typesutil.Type, TransformerOption) (Transformer, error)
 }
 
-const (
-	contextKeyTransformerMgr = "#####TransformerMgr#####"
+var (
+	contextKeyTransformerMgr = &struct{}{}
 )
 
 func ContextWithTransformerMgr(ctx context.Context, mgr TransformerMgr) context.Context {

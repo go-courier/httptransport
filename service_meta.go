@@ -4,7 +4,6 @@ import (
 	"context"
 	"net/http"
 	"os"
-	"reflect"
 
 	"github.com/sirupsen/logrus"
 )
@@ -31,25 +30,25 @@ func (s ServiceMeta) String() string {
 	return s.Name + "@" + s.Version
 }
 
-var HttpRequestKey = reflect.TypeOf(http.Request{}).String()
+var httpRequestKey = &struct{}{}
 
 func ContextWithHttpRequest(ctx context.Context, req *http.Request) context.Context {
-	return context.WithValue(ctx, HttpRequestKey, req)
+	return context.WithValue(ctx, httpRequestKey, req)
 }
 
 func HttpRequestFromContext(ctx context.Context) *http.Request {
-	p, _ := ctx.Value(HttpRequestKey).(*http.Request)
+	p, _ := ctx.Value(httpRequestKey).(*http.Request)
 	return p
 }
 
-var ServiceMetaKey = reflect.TypeOf(ServiceMeta{}).String()
+var contextKeyServiceMetaKey = &struct{}{}
 
 func ContextWithServiceMeta(ctx context.Context, meta ServiceMeta) context.Context {
-	return context.WithValue(ctx, ServiceMetaKey, meta)
+	return context.WithValue(ctx, contextKeyServiceMetaKey, meta)
 }
 
 func ServerMetaFromContext(ctx context.Context) ServiceMeta {
-	p, _ := ctx.Value(ServiceMetaKey).(ServiceMeta)
+	p, _ := ctx.Value(contextKeyServiceMetaKey).(ServiceMeta)
 	return p
 }
 

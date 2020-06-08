@@ -49,20 +49,24 @@ type HttpRouteHandler struct {
 	requestTransformers []*RequestTransformer
 }
 
+var contextKeyOperationID = &struct{}{}
+
 func ContextWithOperationID(ctx context.Context, operationID string) context.Context {
-	return context.WithValue(ctx, "courier.OperationID", operationID)
+	return context.WithValue(ctx, contextKeyOperationID, operationID)
 }
 
 func OperationIDFromContext(ctx context.Context) string {
-	return ctx.Value("courier.OperationID").(string)
+	return ctx.Value(contextKeyOperationID).(string)
 }
 
+var contextKeyOperatorFactory = &struct{}{}
+
 func ContextWithOperatorFactory(ctx context.Context, om *courier.OperatorFactory) context.Context {
-	return context.WithValue(ctx, "courier.OperatorFactory", om)
+	return context.WithValue(ctx, contextKeyOperatorFactory, om)
 }
 
 func OperatorFactoryFromContext(ctx context.Context) *courier.OperatorFactory {
-	v, _ := ctx.Value("courier.OperatorFactory").(*courier.OperatorFactory)
+	v, _ := ctx.Value(contextKeyOperatorFactory).(*courier.OperatorFactory)
 	return v
 }
 
@@ -113,6 +117,7 @@ func (handler *HttpRouteHandler) ServeHTTP(rw http.ResponseWriter, r *http.Reque
 				ctx = c
 			} else {
 				// set result in context with key of operator name
+				// nolint:staticcheck
 				ctx = context.WithValue(ctx, opFactory.ContextKey, result)
 			}
 			continue
