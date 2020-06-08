@@ -5,6 +5,14 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 
 
+# [1.17.6](https://github.com/go-courier/httptransport/compare/v1.17.5...v1.17.6)
+
+### Bug Fixes
+
+* **fix** remote Server read timeout ([3a003e3](https://github.com/go-courier/httptransport/commit/3a003e3781728c97840cbb74e8d9f04a1ca482c7))
+
+
+
 # [1.17.5](https://github.com/go-courier/httptransport/compare/v1.17.4...v1.17.5)
 
 ### Bug Fixes
