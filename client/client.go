@@ -55,17 +55,17 @@ func (c *Client) SetDefaults() {
 	}
 }
 
-var contextKeyClient = &struct{}{}
+type contextKeyClient int
 
 func ContextWithClient(ctx context.Context, c *http.Client) context.Context {
-	return context.WithValue(ctx, contextKeyClient, c)
+	return context.WithValue(ctx, contextKeyClient(1), c)
 }
 
 func ClientFromContext(ctx context.Context) *http.Client {
 	if ctx == nil {
 		return nil
 	}
-	if c, ok := ctx.Value(contextKeyClient).(*http.Client); ok {
+	if c, ok := ctx.Value(contextKeyClient(1)).(*http.Client); ok {
 		return c
 	}
 	return nil

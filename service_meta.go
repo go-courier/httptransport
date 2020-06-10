@@ -30,25 +30,25 @@ func (s ServiceMeta) String() string {
 	return s.Name + "@" + s.Version
 }
 
-var httpRequestKey = &struct{}{}
+type contextKeyKttpRequestKey int
 
 func ContextWithHttpRequest(ctx context.Context, req *http.Request) context.Context {
-	return context.WithValue(ctx, httpRequestKey, req)
+	return context.WithValue(ctx, contextKeyKttpRequestKey(1), req)
 }
 
 func HttpRequestFromContext(ctx context.Context) *http.Request {
-	p, _ := ctx.Value(httpRequestKey).(*http.Request)
+	p, _ := ctx.Value(contextKeyKttpRequestKey(1)).(*http.Request)
 	return p
 }
 
-var contextKeyServiceMetaKey = &struct{}{}
+type contextKeyServiceMetaKey int
 
 func ContextWithServiceMeta(ctx context.Context, meta ServiceMeta) context.Context {
-	return context.WithValue(ctx, contextKeyServiceMetaKey, meta)
+	return context.WithValue(ctx, contextKeyServiceMetaKey(1), meta)
 }
 
 func ServerMetaFromContext(ctx context.Context) ServiceMeta {
-	p, _ := ctx.Value(contextKeyServiceMetaKey).(ServiceMeta)
+	p, _ := ctx.Value(contextKeyServiceMetaKey(1)).(ServiceMeta)
 	return p
 }
 

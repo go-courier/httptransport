@@ -18,16 +18,14 @@ type TransformerMgr interface {
 	NewTransformer(context.Context, typesutil.Type, TransformerOption) (Transformer, error)
 }
 
-var (
-	contextKeyTransformerMgr = &struct{}{}
-)
+type contextKeyTransformerMgr int
 
 func ContextWithTransformerMgr(ctx context.Context, mgr TransformerMgr) context.Context {
-	return context.WithValue(ctx, contextKeyTransformerMgr, mgr)
+	return context.WithValue(ctx, contextKeyTransformerMgr(1), mgr)
 }
 
 func TransformerMgrFromContext(ctx context.Context) TransformerMgr {
-	return ctx.Value(contextKeyTransformerMgr).(TransformerMgr)
+	return ctx.Value(contextKeyTransformerMgr(1)).(TransformerMgr)
 }
 
 type Transformer interface {

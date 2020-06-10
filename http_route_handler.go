@@ -49,24 +49,24 @@ type HttpRouteHandler struct {
 	requestTransformers []*RequestTransformer
 }
 
-var contextKeyOperationID = &struct{}{}
+type contextKeyOperationID int
 
 func ContextWithOperationID(ctx context.Context, operationID string) context.Context {
-	return context.WithValue(ctx, contextKeyOperationID, operationID)
+	return context.WithValue(ctx, contextKeyOperationID(1), operationID)
 }
 
 func OperationIDFromContext(ctx context.Context) string {
-	return ctx.Value(contextKeyOperationID).(string)
+	return ctx.Value(contextKeyOperationID(1)).(string)
 }
 
-var contextKeyOperatorFactory = &struct{}{}
+type contextKeyOperatorFactory int
 
 func ContextWithOperatorFactory(ctx context.Context, om *courier.OperatorFactory) context.Context {
-	return context.WithValue(ctx, contextKeyOperatorFactory, om)
+	return context.WithValue(ctx, contextKeyOperatorFactory(1), om)
 }
 
 func OperatorFactoryFromContext(ctx context.Context) *courier.OperatorFactory {
-	v, _ := ctx.Value(contextKeyOperatorFactory).(*courier.OperatorFactory)
+	v, _ := ctx.Value(contextKeyOperatorFactory(1)).(*courier.OperatorFactory)
 	return v
 }
 
