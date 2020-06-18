@@ -5,6 +5,14 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 
 
+# [1.17.8](https://github.com/go-courier/httptransport/compare/v1.17.7...v1.17.8)
+
+### Bug Fixes
+
+* **fix(generator/openapi):** respect OpenAPISchemaFormat and OpenAPISchemaType interface ([992e0c6](https://github.com/go-courier/httptransport/commit/992e0c6605e34ad9abda95f2729f8479f8655341))
+
+
+
 # [1.17.7](https://github.com/go-courier/httptransport/compare/v1.17.6...v1.17.7)
 
 ### Bug Fixes
