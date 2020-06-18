@@ -17,9 +17,11 @@ type Double float64
 type Int int
 type Uint uint
 
-// openapi:strfmt date-time
 // 日期
 type Time time.Time
+
+func (Time) OpenAPISchemaType() []string { return []string{"string"} }
+func (Time) OpenAPISchemaFormat() string { return "date-time" }
 
 // openapi:type boolean
 type FakeBool int

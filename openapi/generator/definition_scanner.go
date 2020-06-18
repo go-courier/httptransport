@@ -2,6 +2,7 @@ package generator
 
 import (
 	"fmt"
+	"go/ast"
 	"go/types"
 	"reflect"
 	"regexp"
@@ -150,7 +151,39 @@ func (scanner *DefinitionScanner) Def(typeName *types.TypeName) *oas.Schema {
 		return scanner.setDef(typeName, s)
 	}
 
-	s := scanner.GetSchemaByType(typeName.Type().Underlying())
+	s := oas.NewSchema(oas.TypeString, "")
+
+	hasDefinedByInterface := false
+
+	if method, ok := typesutil.FromTType(typeName.Type()).MethodByName("OpenAPISchemaType"); ok {
+		results, n := scanner.pkg.FuncResultsOf(method.(*typesutil.TMethod).Func)
+		if n == 1 {
+			for _, v := range results[0] {
+				if compositeLit, ok := v.Expr.(*ast.CompositeLit); ok {
+					if _, ok := compositeLit.Type.(*ast.ArrayType); ok && len(compositeLit.Elts) > 0 {
+						if b, ok := compositeLit.Elts[0].(*ast.BasicLit); ok {
+							s.Type = oas.Type(strings.Trim(b.Value, `"`))
+							hasDefinedByInterface = true
+						}
+					}
+				}
+			}
+		}
+	}
+
+	if method, ok := typesutil.FromTType(typeName.Type()).MethodByName("OpenAPISchemaFormat"); ok {
+		results, n := scanner.pkg.FuncResultsOf(method.(*typesutil.TMethod).Func)
+		if n == 1 {
+			for _, v := range results[0] {
+				s.Format = strings.Trim(v.Value.String(), `"`)
+				hasDefinedByInterface = true
+			}
+		}
+	}
+
+	if !hasDefinedByInterface {
+		s = scanner.GetSchemaByType(typeName.Type().Underlying())
+	}
 
 	setMetaFromDoc(s, doc)
 
