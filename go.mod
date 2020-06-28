@@ -14,7 +14,7 @@ require (
 	github.com/go-courier/ptr v1.0.1
 	github.com/go-courier/reflectx v1.3.4
 	github.com/go-courier/statuserror v1.1.1
-	github.com/go-courier/validator v1.5.1
+	github.com/go-courier/validator v1.5.4
 	github.com/google/uuid v1.1.1
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/mattn/go-colorable v0.1.6 // indirect
