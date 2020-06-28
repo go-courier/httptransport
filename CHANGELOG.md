@@ -5,6 +5,9 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 
 
+# [1.17.9](https://github.com/go-courier/httptransport/compare/v1.17.8...v1.17.9)
+
+
 # [1.17.8](https://github.com/go-courier/httptransport/compare/v1.17.7...v1.17.8)
 
 ### Bug Fixes
