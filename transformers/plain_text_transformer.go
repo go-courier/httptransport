@@ -24,7 +24,7 @@ func (t *PlainTextTransformer) String() string {
 }
 
 func (PlainTextTransformer) Names() []string {
-	return []string{"text/plain", "plain", "text", "txt"}
+	return []string{"text/plain", "plain", "text", "txt", "text/html"}
 }
 
 func (PlainTextTransformer) NamedByTag() string {
