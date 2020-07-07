@@ -5,7 +5,17 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 
 
+# [1.17.10](https://github.com/go-courier/httptransport/compare/v1.17.9...v1.17.10)
+
+### Bug Fixes
+
+* **fix** added HTMLTextTransformer ([91eee1c](https://github.com/go-courier/httptransport/commit/91eee1ccb2da75b9d6191c38eb9106f5a8d74878))
+* **fix** full port range support ([8899111](https://github.com/go-courier/httptransport/commit/8899111a089ca0ebdd2984e9bf0d6994dd9aa21d))
+
+
+
 # [1.17.9](https://github.com/go-courier/httptransport/compare/v1.17.8...v1.17.9)
+
 
 
 # [1.17.8](https://github.com/go-courier/httptransport/compare/v1.17.7...v1.17.8)
