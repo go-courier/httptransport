@@ -29,7 +29,7 @@ type HttpTransport func(rt http.RoundTripper) http.RoundTripper
 type Client struct {
 	Protocol              string
 	Host                  string
-	Port                  int16
+	Port                  uint16
 	Timeout               time.Duration
 	RequestTransformerMgr *httptransport.RequestTransformerMgr
 	HttpTransports        []HttpTransport
