@@ -314,11 +314,6 @@ func (scanner *DefinitionScanner) GetSchemaByType(typ types.Type) *oas.Schema {
 		s.MinItems = &length
 		return s
 	case *types.Struct:
-		err := (StructFieldUniqueChecker{}).Check(t, false)
-		if err != nil {
-			panic(fmt.Errorf("type %s: %s", typ, err))
-		}
-
 		structSchema := oas.ObjectOf(nil)
 		schemas := make([]*oas.Schema, 0)
 
@@ -440,34 +435,6 @@ func (scanner *DefinitionScanner) propSchemaByField(
 	}
 
 	return propSchema
-}
-
-type StructFieldUniqueChecker map[string]*types.Var
-
-func (checker StructFieldUniqueChecker) Check(structType *types.Struct, anonymous bool) error {
-	for i := 0; i < structType.NumFields(); i++ {
-		field := structType.Field(i)
-		if !field.Exported() {
-			continue
-		}
-		if field.Anonymous() {
-			if named, ok := field.Type().(*types.Named); ok {
-				if st, ok := named.Underlying().(*types.Struct); ok {
-					if err := checker.Check(st, true); err != nil {
-						return err
-					}
-				}
-			}
-			continue
-		}
-		if anonymous {
-			if _, ok := checker[field.Name()]; ok {
-				return fmt.Errorf("%s.%s already defined in other anonymous field", structType.String(), field.Name())
-			}
-			checker[field.Name()] = field
-		}
-	}
-	return nil
 }
 
 type VendorExtensible interface {
