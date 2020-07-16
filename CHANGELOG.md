@@ -5,6 +5,14 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 
 
+# [1.17.11](https://github.com/go-courier/httptransport/compare/v1.17.10...v1.17.11)
+
+### Bug Fixes
+
+* **fix(openapi):** drop omnibus check ([fbd2d6e](https://github.com/go-courier/httptransport/commit/fbd2d6eabde0b424c4b88f652940575925647c46))
+
+
+
 # [1.17.10](https://github.com/go-courier/httptransport/compare/v1.17.9...v1.17.10)
 
 ### Bug Fixes
