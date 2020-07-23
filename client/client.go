@@ -71,6 +71,22 @@ func ClientFromContext(ctx context.Context) *http.Client {
 	return nil
 }
 
+type contextKeyDefaultHttpTransport int
+
+func ContextWithDefaultHttpTransport(ctx context.Context, t *http.Transport) context.Context {
+	return context.WithValue(ctx, contextKeyDefaultHttpTransport(1), t)
+}
+
+func DefaultHttpTransportFromContext(ctx context.Context) *http.Transport {
+	if ctx == nil {
+		return nil
+	}
+	if t, ok := ctx.Value(contextKeyDefaultHttpTransport(1)).(*http.Transport); ok {
+		return t
+	}
+	return nil
+}
+
 func (c *Client) Do(ctx context.Context, req interface{}, metas ...courier.Metadata) courier.Result {
 	request, ok := req.(*http.Request)
 	if !ok {
@@ -87,7 +103,7 @@ func (c *Client) Do(ctx context.Context, req interface{}, metas ...courier.Metad
 
 	httpClient := ClientFromContext(ctx)
 	if httpClient == nil {
-		httpClient = GetShortConnClient(c.Timeout, c.HttpTransports...)
+		httpClient = GetShortConnClientContext(ctx, c.Timeout, c.HttpTransports...)
 	}
 
 	resp, err := httpClient.Do(request)
@@ -247,16 +263,25 @@ func isOk(code int) bool {
 	return code >= http.StatusOK && code < http.StatusMultipleChoices
 }
 
+// Deprecated use GetShortConnClientContext instead
 func GetShortConnClient(timeout time.Duration, httpTransports ...HttpTransport) *http.Client {
-	t := &http.Transport{
-		DialContext: (&net.Dialer{
-			Timeout:   5 * time.Second,
-			KeepAlive: 0,
-		}).DialContext,
-		DisableKeepAlives:     true,
-		TLSHandshakeTimeout:   5 * time.Second,
-		ResponseHeaderTimeout: 5 * time.Second,
-		ExpectContinueTimeout: 1 * time.Second,
+	return GetShortConnClientContext(context.Background(), timeout, httpTransports...)
+}
+
+func GetShortConnClientContext(ctx context.Context, timeout time.Duration, httpTransports ...HttpTransport) *http.Client {
+	t := DefaultHttpTransportFromContext(ctx)
+
+	if t == nil {
+		t = &http.Transport{
+			DialContext: (&net.Dialer{
+				Timeout:   5 * time.Second,
+				KeepAlive: 0,
+			}).DialContext,
+			DisableKeepAlives:     true,
+			TLSHandshakeTimeout:   5 * time.Second,
+			ResponseHeaderTimeout: 5 * time.Second,
+			ExpectContinueTimeout: 1 * time.Second,
+		}
 	}
 
 	if err := http2.ConfigureTransport(t); err != nil {
