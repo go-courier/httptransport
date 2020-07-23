@@ -5,6 +5,14 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 
 
+# [1.17.12](https://github.com/go-courier/httptransport/compare/v1.17.11...v1.17.12)
+
+### Bug Fixes
+
+* **fix** added context with DefaultHttpTransport for inject *http.Transport ([96e931a](https://github.com/go-courier/httptransport/commit/96e931a85d6c5620f275670fd29bec4c1c7d5288))
+
+
+
 # [1.17.11](https://github.com/go-courier/httptransport/compare/v1.17.10...v1.17.11)
 
 ### Bug Fixes
