@@ -271,7 +271,9 @@ func GetShortConnClient(timeout time.Duration, httpTransports ...HttpTransport) 
 func GetShortConnClientContext(ctx context.Context, timeout time.Duration, httpTransports ...HttpTransport) *http.Client {
 	t := DefaultHttpTransportFromContext(ctx)
 
-	if t == nil {
+	if t != nil {
+		t = t.Clone()
+	} else {
 		t = &http.Transport{
 			DialContext: (&net.Dialer{
 				Timeout:   5 * time.Second,
