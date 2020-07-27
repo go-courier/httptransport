@@ -5,6 +5,14 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 
 
+# [1.17.13](https://github.com/go-courier/httptransport/compare/v1.17.12...v1.17.13)
+
+### Bug Fixes
+
+* **fix(client):** DefaultHttpTransport should be cloned ([c798ff1](https://github.com/go-courier/httptransport/commit/c798ff1f33ab5a1ca26cb3402fca5efb75d5a2dc))
+
+
+
 # [1.17.12](https://github.com/go-courier/httptransport/compare/v1.17.11...v1.17.12)
 
 ### Bug Fixes
