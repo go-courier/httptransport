@@ -117,7 +117,6 @@ func (handler *HttpRouteHandler) ServeHTTP(rw http.ResponseWriter, r *http.Reque
 				ctx = c
 			} else {
 				// set result in context with key of operator name
-				// nolint:staticcheck
 				ctx = context.WithValue(ctx, opFactory.ContextKey, result)
 			}
 			continue
