@@ -5,7 +5,7 @@ go 1.14
 require (
 	github.com/fatih/color v1.9.0
 	github.com/go-courier/codegen v1.1.2
-	github.com/go-courier/courier v1.4.0
+	github.com/go-courier/courier v1.4.1
 	github.com/go-courier/enumeration v1.1.0
 	github.com/go-courier/metax v1.2.1
 	github.com/go-courier/oas v1.2.0
