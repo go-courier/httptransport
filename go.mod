@@ -19,6 +19,6 @@ require (
 	github.com/mattn/go-colorable v0.1.7 // indirect
 	github.com/sirupsen/logrus v1.6.0
 	github.com/stretchr/testify v1.4.0
-	golang.org/x/net v0.0.0-20200226121028-0de0cce0169b
+	golang.org/x/net 62affa334b73
 	golang.org/x/sys v0.0.0-20200802091954-4b90ce9b60b3 // indirect
 )
