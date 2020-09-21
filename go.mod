@@ -14,7 +14,7 @@ require (
 	github.com/go-courier/reflectx v1.3.4
 	github.com/go-courier/statuserror v1.1.1
 	github.com/go-courier/validator v1.5.4
-	github.com/google/uuid v1.1.1
+	github.com/google/uuid v1.1.2
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/mattn/go-colorable v0.1.7 // indirect
 	github.com/sirupsen/logrus v1.6.0
