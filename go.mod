@@ -5,7 +5,7 @@ go 1.14
 require (
 	github.com/fatih/color v1.9.0
 	github.com/go-courier/codegen v1.1.2
-	github.com/go-courier/courier v1.4.0
+	github.com/go-courier/courier v1.4.1
 	github.com/go-courier/enumeration v1.1.0
 	github.com/go-courier/metax v1.2.1
 	github.com/go-courier/oas v1.2.0
@@ -19,6 +19,6 @@ require (
 	github.com/mattn/go-colorable v0.1.7 // indirect
 	github.com/sirupsen/logrus v1.6.0
 	github.com/stretchr/testify v1.4.0
-	golang.org/x/net v0.0.0-20200226121028-0de0cce0169b
+	golang.org/x/net v0.0.0-20200520004742-59133d7f0dd7
 	golang.org/x/sys v0.0.0-20200802091954-4b90ce9b60b3 // indirect
 )
