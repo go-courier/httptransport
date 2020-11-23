@@ -1,7 +1,9 @@
 package httptransport_test
 
 import (
+	"context"
 	"net/http"
+	"net/http/httputil"
 	"testing"
 	"time"
 
@@ -100,12 +102,23 @@ X-Meta: operator=service-test%401.0.0%23Cookie
 		httpRoute := httptransport.NewHttpRouteMeta(rootRouter.Routes()[0])
 		httpRouterHandler := httptransport.NewHttpRouteHandler(serviceMeta, httpRoute, rtMgr)
 
-		reqData := routes.DataProvider{
-			ID: "123456",
+		reqData := struct {
+			routes.DataProvider
+			routes.GetByID
+		}{
+			DataProvider: routes.DataProvider{
+				ID: "123456",
+			},
+			GetByID: routes.GetByID{
+				Label: []string{"label"},
+			},
 		}
 
-		req, err := rtMgr.NewRequest((routes.GetByID{}).Method(), reqData.Path(), reqData)
+		req, err := rtMgr.NewRequestWithContext(httptransport.EnableQueryInBodyForHttpGet(context.Background()), (routes.GetByID{}).Method(), reqData.Path(), reqData)
 		require.NoError(t, err)
+
+		httpReq, _ := httputil.DumpRequest(req, true)
+		require.Equal(t, "GET /123456 HTTP/1.1\r\nContent-Type: application/x-www-form-urlencoded; param=value\r\n\r\nlabel=label", string(httpReq))
 
 		rw := testify.NewMockResponseWriter()
 		httpRouterHandler.ServeHTTP(rw, req)
@@ -114,7 +127,7 @@ X-Meta: operator=service-test%401.0.0%23Cookie
 Content-Type: application/json; charset=utf-8
 X-Meta: operator=service-test%401.0.0%23GetByID
 
-{"id":"123456","label":""}
+{"id":"123456","label":"label"}
 `, string(rw.MustDumpResponse()))
 	})
 

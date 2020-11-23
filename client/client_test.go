@@ -43,15 +43,10 @@ func TestClient(t *testing.T) {
 	ipInfoClient.SetDefaults()
 
 	t.Run("direct request", func(t *testing.T) {
-		ipInfo := IpInfo{}
+		request, _ := http.NewRequest("GET", "https://api.github.com", nil)
 
-		request, _ := http.NewRequest("GET", "http://ip-api.com/json", nil)
-
-		meta, err := ipInfoClient.Do(context.Background(), request).Into(&ipInfo)
+		_, err := ipInfoClient.Do(context.Background(), request).Into(nil)
 		require.NoError(t, err)
-
-		t.Log(ipInfo)
-		t.Log(meta)
 	})
 
 	t.Run("direct request 404", func(t *testing.T) {

@@ -6,10 +6,13 @@ import (
 	"fmt"
 	"go/ast"
 	"io"
+	"io/ioutil"
+	"mime"
 	"net/http"
 	"net/textproto"
 	"net/url"
 	"reflect"
+	"strings"
 	"sync"
 	"time"
 
@@ -46,14 +49,18 @@ func (mgr *RequestTransformerMgr) SetDefaults() {
 }
 
 func (mgr *RequestTransformerMgr) NewRequest(method string, rawUrl string, v interface{}) (*http.Request, error) {
+	return mgr.NewRequestWithContext(context.Background(), method, rawUrl, v)
+}
+
+func (mgr *RequestTransformerMgr) NewRequestWithContext(ctx context.Context, method string, rawUrl string, v interface{}) (*http.Request, error) {
 	if v == nil {
-		return http.NewRequest(method, rawUrl, nil)
+		return http.NewRequestWithContext(ctx, method, rawUrl, nil)
 	}
-	rt, err := mgr.NewRequestTransformer(context.Background(), reflect.TypeOf(v))
+	rt, err := mgr.NewRequestTransformer(ctx, reflect.TypeOf(v))
 	if err != nil {
 		return nil, err
 	}
-	return rt.NewRequest(method, rawUrl, v)
+	return rt.NewRequestWithContext(ctx, method, rawUrl, v)
 }
 
 func (mgr *RequestTransformerMgr) NewRequestTransformer(ctx context.Context, typ reflect.Type) (*RequestTransformer, error) {
@@ -142,8 +149,12 @@ type RequestTransformer struct {
 }
 
 func (t *RequestTransformer) NewRequest(method string, rawUrl string, v interface{}) (*http.Request, error) {
+	return t.NewRequestWithContext(context.Background(), method, rawUrl, v)
+}
+
+func (t *RequestTransformer) NewRequestWithContext(ctx context.Context, method string, rawUrl string, v interface{}) (*http.Request, error) {
 	if v == nil {
-		return http.NewRequest(method, rawUrl, nil)
+		return http.NewRequestWithContext(ctx, method, rawUrl, nil)
 	}
 
 	rv, ok := v.(reflect.Value)
@@ -229,7 +240,17 @@ func (t *RequestTransformer) NewRequest(method string, rawUrl string, v interfac
 	}
 
 	u.Path = NewPathnamePattern(u.Path).Stringify(params)
-	u.RawQuery = query.Encode()
+
+	if len(query) > 0 {
+		if method == http.MethodGet && ShouldQueryInBodyForHttpGet(ctx) {
+			header.Set("Content-Type", mime.FormatMediaType("application/x-www-form-urlencoded", map[string]string{
+				"param": "value",
+			}))
+			body = bytes.NewBufferString(query.Encode())
+		} else {
+			u.RawQuery = query.Encode()
+		}
+	}
 
 	req, err := http.NewRequest(method, u.String(), body)
 	if err != nil {
@@ -247,6 +268,19 @@ func (t *RequestTransformer) NewRequest(method string, rawUrl string, v interfac
 	}
 
 	return req, nil
+}
+
+type contextKeyQueryInBodyForHttpGet int
+
+func EnableQueryInBodyForHttpGet(ctx context.Context) context.Context {
+	return context.WithValue(ctx, contextKeyQueryInBodyForHttpGet(0), true)
+}
+
+func ShouldQueryInBodyForHttpGet(ctx context.Context) bool {
+	if v, ok := ctx.Value(contextKeyQueryInBodyForHttpGet(0)).(bool); ok {
+		return v
+	}
+	return false
 }
 
 type BadRequest struct {
@@ -449,6 +483,20 @@ func (info *RequestInfo) Param(name string) string {
 func (info *RequestInfo) QueryValues(name string) []string {
 	if info.query == nil {
 		info.query = info.Request.URL.Query()
+
+		if info.Request.Method == http.MethodGet && len(info.query) == 0 && info.Request.ContentLength > 0 {
+			if strings.HasPrefix(info.Request.Header.Get("Content-Type"), httpx.MIME_FORM_URLENCODED) {
+				data, err := ioutil.ReadAll(info.Request.Body)
+				if err == nil {
+					info.Request.Body.Close()
+
+					query, e := url.ParseQuery(string(data))
+					if e == nil {
+						info.query = query
+					}
+				}
+			}
+		}
 	}
 	return info.query[name]
 }

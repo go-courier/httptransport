@@ -157,7 +157,7 @@ func (c *Client) newRequest(ctx context.Context, req interface{}, metas ...couri
 		path = pathDescriber.Path()
 	}
 
-	request, err := c.RequestTransformerMgr.NewRequest(method, c.toUrl(path), req)
+	request, err := c.RequestTransformerMgr.NewRequestWithContext(ctx, method, c.toUrl(path), req)
 	if err != nil {
 		return nil, RequestTransformFailed.StatusErr().WithDesc(err.Error())
 	}

@@ -1,12 +1,13 @@
 module github.com/go-courier/httptransport
 
-go 1.14
+go 1.15
 
 require (
-	github.com/fatih/color v1.9.0
+	github.com/davecgh/go-spew v1.1.1
+	github.com/fatih/color v1.10.0
 	github.com/go-courier/codegen v1.1.2
-	github.com/go-courier/courier v1.4.0
-	github.com/go-courier/enumeration v1.1.0
+	github.com/go-courier/courier v1.4.1
+	github.com/go-courier/enumeration v1.2.1
 	github.com/go-courier/metax v1.2.1
 	github.com/go-courier/oas v1.2.0
 	github.com/go-courier/packagesx v1.0.2
@@ -14,11 +15,13 @@ require (
 	github.com/go-courier/reflectx v1.3.4
 	github.com/go-courier/statuserror v1.1.1
 	github.com/go-courier/validator v1.5.4
-	github.com/google/uuid v1.1.1
+	github.com/google/uuid v1.1.2
 	github.com/julienschmidt/httprouter v1.3.0
-	github.com/mattn/go-colorable v0.1.7 // indirect
-	github.com/sirupsen/logrus v1.6.0
-	github.com/stretchr/testify v1.4.0
-	golang.org/x/net v0.0.0-20200226121028-0de0cce0169b
-	golang.org/x/sys v0.0.0-20200802091954-4b90ce9b60b3 // indirect
+	github.com/konsorten/go-windows-terminal-sequences v1.0.3 // indirect
+	github.com/sirupsen/logrus v1.7.0
+	github.com/stretchr/testify v1.6.1
+	golang.org/x/net v0.0.0-20201110031124-69a78807bb2b
+	golang.org/x/sys v0.0.0-20201119102817-f84b799fce68 // indirect
+	golang.org/x/text v0.3.4 // indirect
+	golang.org/x/tools v0.0.0-20201121010211-780cb80bd7fb // indirect
 )

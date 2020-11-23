@@ -63,7 +63,11 @@ type GetByID struct {
 }
 
 func (req GetByID) Output(ctx context.Context) (interface{}, error) {
-	return DataFromContext(ctx), nil
+	data := DataFromContext(ctx)
+	if len(req.Label) > 0 {
+		data.Label = req.Label[0]
+	}
+	return data, nil
 }
 
 // remove by id
