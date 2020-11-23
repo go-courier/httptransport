@@ -5,7 +5,16 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 
 
+# [1.18.0](https://github.com/go-courier/httptransport/compare/v1.17.14...v1.18.0)
+
+### Features
+
+* **feat** query could in body when http get ([574eadb](https://github.com/go-courier/httptransport/commit/574eadb09c6d7c98273211dc073e2fe8ec1c6787))
+
+
+
 # [1.17.14](https://github.com/go-courier/httptransport/compare/v1.17.13...v1.17.14)
+
 
 
 # [1.17.13](https://github.com/go-courier/httptransport/compare/v1.17.12...v1.17.13)
