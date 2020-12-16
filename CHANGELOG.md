@@ -5,6 +5,14 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 
 
+# [1.18.1](https://github.com/go-courier/httptransport/compare/v1.18.0...v1.18.1)
+
+### Bug Fixes
+
+* **fix** request out should disable validate ([da4aad4](https://github.com/go-courier/httptransport/commit/da4aad43c636f774e4b5ac59d3221ef963284e68))
+
+
+
 # [1.18.0](https://github.com/go-courier/httptransport/compare/v1.17.14...v1.18.0)
 
 ### Features
