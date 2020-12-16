@@ -56,7 +56,7 @@ func (mgr *RequestTransformerMgr) NewRequestWithContext(ctx context.Context, met
 	if v == nil {
 		return http.NewRequestWithContext(ctx, method, rawUrl, nil)
 	}
-	rt, err := mgr.NewRequestTransformer(ctx, reflect.TypeOf(v))
+	rt, err := mgr.NewRequestTransformer(AsRequestOut(ctx), reflect.TypeOf(v))
 	if err != nil {
 		return nil, err
 	}
@@ -74,6 +74,22 @@ func (mgr *RequestTransformerMgr) NewRequestTransformer(ctx context.Context, typ
 	}
 	mgr.cache.Store(key, rt)
 	return rt, nil
+}
+
+type contextKeyForRequestOut int
+
+func AsRequestOut(ctx context.Context) context.Context {
+	return context.WithValue(ctx, contextKeyForRequestOut(1), true)
+}
+
+func isRequestOut(ctx context.Context) bool {
+	if ctx == nil {
+		return false
+	}
+	if t, ok := ctx.Value(contextKeyForRequestOut(1)).(bool); ok {
+		return t
+	}
+	return false
 }
 
 func (mgr *RequestTransformerMgr) newRequestTransformer(ctx context.Context, typ reflect.Type) (*RequestTransformer, error) {
@@ -122,13 +138,15 @@ func (mgr *RequestTransformerMgr) newRequestTransformer(ctx context.Context, typ
 		}
 		parameter.Transformer = transformer
 
-		parameterValidator, err := transformers.NewValidator(validator.ContextWithValidatorMgr(context.Background(), mgr.ValidatorMgr), field, tag.Get(validator.TagValidate), omitempty, transformer)
-		if err != nil {
-			errSet.AddErr(err, field.Name())
-			return true
+		if !isRequestOut(ctx) {
+			parameterValidator, err := transformers.NewValidator(validator.ContextWithValidatorMgr(context.Background(), mgr.ValidatorMgr), field, tag.Get(validator.TagValidate), omitempty, transformer)
+			if err != nil {
+				errSet.AddErr(err, field.Name())
+				return true
+			}
+			parameter.Validator = parameterValidator
 		}
 
-		parameter.Validator = parameterValidator
 		rt.Parameters[fieldName] = parameter
 
 		return true
