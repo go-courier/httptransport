@@ -3,7 +3,6 @@ module github.com/go-courier/httptransport
 go 1.15
 
 require (
-	github.com/davecgh/go-spew v1.1.1
 	github.com/fatih/color v1.10.0
 	github.com/go-courier/codegen v1.1.2
 	github.com/go-courier/courier v1.4.1
@@ -15,9 +14,8 @@ require (
 	github.com/go-courier/reflectx v1.3.4
 	github.com/go-courier/statuserror v1.1.1
 	github.com/go-courier/validator v1.5.4
-	github.com/google/uuid v1.1.2
+	github.com/google/uuid v1.1.4
 	github.com/julienschmidt/httprouter v1.3.0
-	github.com/konsorten/go-windows-terminal-sequences v1.0.3 // indirect
 	github.com/sirupsen/logrus v1.7.0
 	github.com/stretchr/testify v1.6.1
 	golang.org/x/mod v0.4.0 // indirect
