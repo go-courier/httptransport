@@ -5,6 +5,14 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 
 
+# [1.19.0](https://github.com/go-courier/httptransport/compare/v1.18.1...v1.19.0)
+
+### Features
+
+* **feat(openapi):** enum enhancement and vendor import by go.mod ([bb68dcd](https://github.com/go-courier/httptransport/commit/bb68dcda3056ac5b647a76c601d80b1ab71ed4bf))
+
+
+
 # [1.18.1](https://github.com/go-courier/httptransport/compare/v1.18.0...v1.18.1)
 
 ### Bug Fixes
