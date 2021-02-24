@@ -1,6 +1,7 @@
 package generator
 
 import (
+	"context"
 	"net/http"
 	"regexp"
 
@@ -29,9 +30,9 @@ func toColonPath(path string) string {
 	})
 }
 
-func (g *OperationGenerator) Scan(openapi *oas.OpenAPI) {
+func (g *OperationGenerator) Scan(ctx context.Context, openapi *oas.OpenAPI) {
 	eachOperation(openapi, func(method string, path string, op *oas.Operation) {
-		g.WriteOperation(method, path, op)
+		g.WriteOperation(ctx, method, path, op)
 	})
 }
 
@@ -42,16 +43,16 @@ func (g *OperationGenerator) ID(id string) string {
 	return id
 }
 
-func (g *OperationGenerator) WriteOperation(method string, path string, operation *oas.Operation) {
+func (g *OperationGenerator) WriteOperation(ctx context.Context, method string, path string, operation *oas.Operation) {
 	id := operation.OperationId
 
 	fields := make([]*codegen.SnippetField, 0)
 
 	for i := range operation.Parameters {
-		fields = append(fields, g.ParamField(operation.Parameters[i]))
+		fields = append(fields, g.ParamField(ctx, operation.Parameters[i]))
 	}
 
-	if respBodyField := g.RequestBodyField(operation.RequestBody); respBodyField != nil {
+	if respBodyField := g.RequestBodyField(ctx, operation.RequestBody); respBodyField != nil {
 		fields = append(fields, respBodyField)
 	}
 
@@ -75,7 +76,7 @@ func (g *OperationGenerator) WriteOperation(method string, path string, operatio
 			Do(codegen.Return(g.File.Val(method))),
 	)
 
-	respType, statusErrors := g.ResponseType(&operation.Responses)
+	respType, statusErrors := g.ResponseType(ctx, &operation.Responses)
 
 	g.File.Write(codegen.Comments(statusErrors...).Bytes())
 
@@ -180,8 +181,8 @@ meta, err := req.Do(ctx, c, metas...).Into(resp)
 
 }
 
-func (g *OperationGenerator) ParamField(parameter *oas.Parameter) *codegen.SnippetField {
-	field := NewTypeGenerator(g.ServiceName, g.File).FieldOf(parameter.Name, parameter.Schema, map[string]bool{
+func (g *OperationGenerator) ParamField(ctx context.Context, parameter *oas.Parameter) *codegen.SnippetField {
+	field := NewTypeGenerator(g.ServiceName, g.File).FieldOf(ctx, parameter.Name, parameter.Schema, map[string]bool{
 		parameter.Name: parameter.Required,
 	})
 
@@ -194,14 +195,14 @@ func (g *OperationGenerator) ParamField(parameter *oas.Parameter) *codegen.Snipp
 	return field
 }
 
-func (g *OperationGenerator) RequestBodyField(requestBody *oas.RequestBody) *codegen.SnippetField {
+func (g *OperationGenerator) RequestBodyField(ctx context.Context, requestBody *oas.RequestBody) *codegen.SnippetField {
 	mediaType := requestBodyMediaType(requestBody)
 
 	if mediaType == nil {
 		return nil
 	}
 
-	field := NewTypeGenerator(g.ServiceName, g.File).FieldOf("Data", mediaType.Schema, map[string]bool{})
+	field := NewTypeGenerator(g.ServiceName, g.File).FieldOf(ctx, "Data", mediaType.Schema, map[string]bool{})
 
 	tag := `in:"body"`
 	if field.Tag != "" {
@@ -216,13 +217,13 @@ func isOk(code int) bool {
 	return code >= http.StatusOK && code < http.StatusMultipleChoices
 }
 
-func (g *OperationGenerator) ResponseType(responses *oas.Responses) (codegen.SnippetType, []string) {
+func (g *OperationGenerator) ResponseType(ctx context.Context, responses *oas.Responses) (codegen.SnippetType, []string) {
 	mediaType, statusErrors := mediaTypeAndStatusErrors(responses)
 
 	if mediaType == nil {
 		return nil, nil
 	}
 
-	typ, _ := NewTypeGenerator(g.ServiceName, g.File).Type(mediaType.Schema)
+	typ, _ := NewTypeGenerator(g.ServiceName, g.File).Type(ctx, mediaType.Schema)
 	return typ, statusErrors
 }

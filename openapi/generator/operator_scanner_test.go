@@ -23,6 +23,7 @@ func TestOperatorScanner(t *testing.T) {
   "operationId": "RespWithDescribers",
   "responses": {
     "200": {
+      "description": "",
       "content": {
         "application/json": {
           "schema": {
@@ -36,7 +37,9 @@ func TestOperatorScanner(t *testing.T) {
 		"NoContent": /* language=json*/ `{
   "operationId": "NoContent",
   "responses": {
-    "204": {}
+    "204": {
+      "description": ""
+    }
   }
 }`,
 		"Auth": /* language=json*/ `{
@@ -176,6 +179,7 @@ func TestOperatorScanner(t *testing.T) {
   },
   "responses": {
     "200": {
+      "description": "",
       "content": {
         "*": {
           "schema": {

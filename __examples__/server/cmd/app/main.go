@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/go-courier/courier"
-	"github.com/go-courier/httptransport/__examples__/routes"
+	"github.com/go-courier/httptransport/__examples__/server/cmd/app/routes"
 
 	"github.com/go-courier/httptransport"
 )

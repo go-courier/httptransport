@@ -1,15 +1,16 @@
 package generator
 
 import (
-	"bytes"
-	"encoding/json"
+	"context"
 	"fmt"
+	"path/filepath"
+	"strconv"
+
 	"sort"
 	"strings"
 
 	"github.com/go-courier/codegen"
-	"github.com/go-courier/enumeration"
-	eg "github.com/go-courier/enumeration/generator"
+	"github.com/go-courier/enumeration/scanner"
 	"github.com/go-courier/httptransport/openapi/generator"
 	"github.com/go-courier/oas"
 	"github.com/go-courier/packagesx"
@@ -19,17 +20,17 @@ func NewTypeGenerator(serviceName string, file *codegen.File) *TypeGenerator {
 	return &TypeGenerator{
 		ServiceName: serviceName,
 		File:        file,
-		Enums:       map[string][]enumeration.EnumOption{},
+		Enums:       map[string]scanner.Options{},
 	}
 }
 
 type TypeGenerator struct {
 	ServiceName string
 	File        *codegen.File
-	Enums       map[string][]enumeration.EnumOption
+	Enums       map[string]scanner.Options
 }
 
-func (g *TypeGenerator) Scan(openapi *oas.OpenAPI) {
+func (g *TypeGenerator) Scan(ctx context.Context, openapi *oas.OpenAPI) {
 	ids := make([]string, 0)
 	for id := range openapi.Components.Schemas {
 		ids = append(ids, id)
@@ -39,7 +40,7 @@ func (g *TypeGenerator) Scan(openapi *oas.OpenAPI) {
 	for _, id := range ids {
 		s := openapi.Components.Schemas[id]
 
-		typ, ok := g.Type(s)
+		typ, ok := g.Type(ctx, s)
 
 		if ok {
 			g.File.WriteBlock(
@@ -67,15 +68,11 @@ func (g *TypeGenerator) Scan(openapi *oas.OpenAPI) {
 		options := g.Enums[enumName]
 
 		writeEnumDefines(g.File, enumName, options)
-
-		e := eg.NewEnum(enumName, options)
-		e.WriteToFile(g.File)
 	}
-
 }
 
-func (g *TypeGenerator) Type(schema *oas.Schema) (codegen.SnippetType, bool) {
-	tpe, alias := g.TypeIndirect(schema)
+func (g *TypeGenerator) Type(ctx context.Context, schema *oas.Schema) (codegen.SnippetType, bool) {
+	tpe, alias := g.TypeIndirect(ctx, schema)
 	if schema != nil && schema.Extensions[generator.XGoStarLevel] != nil {
 		level := int(schema.Extensions[generator.XGoStarLevel].(float64))
 		for level > 0 {
@@ -86,7 +83,25 @@ func (g *TypeGenerator) Type(schema *oas.Schema) (codegen.SnippetType, bool) {
 	return tpe, alias
 }
 
-func (g *TypeGenerator) TypeIndirect(schema *oas.Schema) (codegen.SnippetType, bool) {
+func paths(path string) []string {
+	paths := make([]string, 0)
+
+	d := path
+
+	for {
+		paths = append(paths, d)
+
+		if !strings.Contains(d, "/") {
+			break
+		}
+
+		d = filepath.Join(d, "../")
+	}
+
+	return paths
+}
+
+func (g *TypeGenerator) TypeIndirect(ctx context.Context, schema *oas.Schema) (codegen.SnippetType, bool) {
 	if schema == nil {
 		return codegen.Interface(), false
 	}
@@ -97,17 +112,73 @@ func (g *TypeGenerator) TypeIndirect(schema *oas.Schema) (codegen.SnippetType, b
 
 	if schema.Extensions[generator.XGoVendorType] != nil {
 		pkgImportPath, expose := packagesx.GetPkgImportPathAndExpose(schema.Extensions[generator.XGoVendorType].(string))
-		return codegen.Type(g.File.Use(pkgImportPath, expose)), true
+
+		vendorImports := VendorImportsFromContext(ctx)
+
+		if len(vendorImports) > 0 {
+			for _, p := range paths(pkgImportPath) {
+				if _, ok := vendorImports[p]; ok {
+					return codegen.Type(g.File.Use(pkgImportPath, expose)), true
+				}
+			}
+		} else {
+			return codegen.Type(g.File.Use(pkgImportPath, expose)), true
+		}
 	}
 
 	if schema.Enum != nil {
-		if enumOptionsValues, ok := schema.Extensions[generator.XEnumOptions]; ok {
-			name := codegen.UpperCamelCase(g.ServiceName) + schema.Extensions[generator.XID].(string)
+		name := codegen.UpperCamelCase(g.ServiceName)
 
-			enumOptions := make([]enumeration.EnumOption, 0)
-			buf := bytes.NewBuffer(nil)
-			_ = json.NewEncoder(buf).Encode(enumOptionsValues)
-			_ = json.NewDecoder(buf).Decode(&enumOptions)
+		if id, ok := schema.Extensions[generator.XID].(string); ok {
+			name = name + id
+
+			enumOptions := scanner.Options{}
+
+			enumLabels := make([]string, len(schema.Enum))
+
+			if xEnumLabels, ok := schema.Extensions[generator.XEnumLabels]; ok {
+				if labels, ok := xEnumLabels.([]interface{}); ok {
+					for i, l := range labels {
+						if v, ok := l.(string); ok {
+							enumLabels[i] = v
+						}
+					}
+				}
+			}
+
+			if options, ok := schema.Extensions[generator.XEnumOptions]; ok {
+				if list, ok := options.([]interface{}); ok {
+					for i, l := range list {
+						if opt, ok := l.(map[string]interface{}); ok {
+							if s, ok := opt["label"]; ok {
+								if v, ok := s.(string); ok {
+									enumLabels[i] = v
+								}
+							}
+						}
+					}
+				}
+			}
+
+			for i, e := range schema.Enum {
+				o := scanner.Option{}
+
+				switch v := e.(type) {
+				case float64:
+					o.Float = &v
+				case int64:
+					o.Int = &v
+				case string:
+					o.Str = &v
+				}
+
+				if len(enumLabels) > i {
+					o.Label = enumLabels[i]
+				}
+
+				enumOptions = append(enumOptions, o)
+			}
+
 			g.Enums[name] = enumOptions
 
 			return codegen.Type(name), true
@@ -116,26 +187,26 @@ func (g *TypeGenerator) TypeIndirect(schema *oas.Schema) (codegen.SnippetType, b
 
 	if len(schema.AllOf) > 0 {
 		if schema.AllOf[len(schema.AllOf)-1].Type == oas.TypeObject {
-			return codegen.Struct(g.FieldsFrom(schema)...), false
+			return codegen.Struct(g.FieldsFrom(ctx, schema)...), false
 		}
-		return g.TypeIndirect(mayComposedAllOf(schema))
+		return g.TypeIndirect(ctx, mayComposedAllOf(schema))
 	}
 
 	if schema.Type == oas.TypeObject {
 		if schema.AdditionalProperties != nil {
-			tpe, _ := g.Type(schema.AdditionalProperties.Schema)
+			tpe, _ := g.Type(ctx, schema.AdditionalProperties.Schema)
 			keyTyp := codegen.SnippetType(codegen.String)
 			if schema.PropertyNames != nil {
-				keyTyp, _ = g.Type(schema.PropertyNames)
+				keyTyp, _ = g.Type(ctx, schema.PropertyNames)
 			}
 			return codegen.Map(keyTyp, tpe), false
 		}
-		return codegen.Struct(g.FieldsFrom(schema)...), false
+		return codegen.Struct(g.FieldsFrom(ctx, schema)...), false
 	}
 
 	if schema.Type == oas.TypeArray {
 		if schema.Items != nil {
-			tpe, _ := g.Type(schema.Items)
+			tpe, _ := g.Type(ctx, schema.Items)
 			if schema.MaxItems != nil && schema.MinItems != nil && *schema.MaxItems == *schema.MinItems {
 				return codegen.Array(tpe, int(*schema.MinItems)), false
 			}
@@ -173,7 +244,7 @@ func (g *TypeGenerator) BasicType(schemaType string, format string) codegen.Snip
 	}
 }
 
-func (g *TypeGenerator) FieldsFrom(schema *oas.Schema) (fields []*codegen.SnippetField) {
+func (g *TypeGenerator) FieldsFrom(ctx context.Context, schema *oas.Schema) (fields []*codegen.SnippetField) {
 	finalSchema := &oas.Schema{}
 
 	if schema.AllOf != nil {
@@ -206,12 +277,12 @@ func (g *TypeGenerator) FieldsFrom(schema *oas.Schema) (fields []*codegen.Snippe
 	}
 
 	for _, name := range names {
-		fields = append(fields, g.FieldOf(name, mayComposedAllOf(finalSchema.Properties[name]), requiredFieldSet))
+		fields = append(fields, g.FieldOf(ctx, name, mayComposedAllOf(finalSchema.Properties[name]), requiredFieldSet))
 	}
 	return
 }
 
-func (g *TypeGenerator) FieldOf(name string, propSchema *oas.Schema, requiredFields map[string]bool) *codegen.SnippetField {
+func (g *TypeGenerator) FieldOf(ctx context.Context, name string, propSchema *oas.Schema, requiredFields map[string]bool) *codegen.SnippetField {
 	isRequired := requiredFields[name]
 
 	if len(propSchema.AllOf) == 2 && propSchema.AllOf[1].Type != oas.TypeObject {
@@ -227,7 +298,7 @@ func (g *TypeGenerator) FieldOf(name string, propSchema *oas.Schema, requiredFie
 		fieldName = propSchema.Extensions[generator.XGoFieldName].(string)
 	}
 
-	typ, _ := g.Type(propSchema)
+	typ, _ := g.Type(ctx, propSchema)
 
 	field := codegen.Var(typ, fieldName).WithComments(mayPrefixDeprecated(propSchema.Description, propSchema.Deprecated)...)
 
@@ -294,40 +365,43 @@ func mayComposedAllOf(schema *oas.Schema) *oas.Schema {
 	return schema
 }
 
-func writeEnumDefines(file *codegen.File, name string, options []enumeration.EnumOption) {
-	_, _ = file.WriteString(`// openapi:enum
-`)
-	file.WriteBlock(
-		codegen.DeclType(codegen.Var(codegen.Int, name)),
-	)
+func writeEnumDefines(file *codegen.File, name string, options scanner.Options) {
+	if len(options) == 0 {
+		return
+	}
+
+	switch options[0].Value().(type) {
+	case int64:
+		file.WriteBlock(
+			codegen.DeclType(codegen.Var(codegen.Int64, name)),
+		)
+	case float64:
+		file.WriteBlock(
+			codegen.DeclType(codegen.Var(codegen.Float64, name)),
+		)
+	case string:
+		file.WriteBlock(
+			codegen.DeclType(codegen.Var(codegen.String, name)),
+		)
+	}
 
 	file.WriteString(`
 const (
 `)
 
-	file.WriteString(codegen.UpperSnakeCase(name) + `_UNKNOWN ` + name + ` = iota
-	`)
+	sort.Sort(options)
 
-	sort.Slice(options, func(i, j int) bool {
-		return options[i].ConstValue < options[j].ConstValue
-	})
-
-	index := 1
 	for _, item := range options {
-		v := item.ConstValue
-		if v > index {
-			file.WriteString(`)
+		v := item.Value()
+		value := v
 
-	const (
-	`)
-			file.WriteString(codegen.UpperSnakeCase(name) + `__` + item.Value + fmt.Sprintf(" %s = iota + %d", name, v) + ` // ` + item.Label + `
-	`)
-			index = v + 1
-			continue
+		switch n := v.(type) {
+		case string:
+			value = strconv.Quote(n)
 		}
-		index++
-		file.WriteString(codegen.UpperSnakeCase(name) + `__` + item.Value + ` // ` + item.Label + `
-	`)
+
+		_, _ = fmt.Fprintf(file, `%s__%v %s = %v // %s
+`, codegen.UpperSnakeCase(name), v, name, value, item.Label)
 	}
 
 	file.WriteString(`)

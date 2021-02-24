@@ -11,15 +11,13 @@ import (
 
 func TestOpenAPIGenerator(t *testing.T) {
 	cwd, _ := os.Getwd()
-	dir := filepath.Join(cwd, "../../__examples__")
 
-	g := NewClientGenerator("demo", &url.URL{
-		Scheme: "file",
-		Path:   dir + "/openapi.json",
-	})
+	openAPISchema := &url.URL{Scheme: "file", Path: filepath.Join(cwd, "../../__examples__/server/cmd/app/openapi.json")}
+
+	g := NewClientGenerator("demo", openAPISchema, OptionVendorImportByGoMod())
 
 	g.Load()
-	g.Output(dir)
+	g.Output(filepath.Join(cwd, "../../__examples__/downstream"))
 }
 
 func TestToColonPath(t *testing.T) {

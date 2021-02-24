@@ -12,7 +12,7 @@ import (
 
 func TestOpenAPIGenerator(t *testing.T) {
 	cwd, _ := os.Getwd()
-	dir := filepath.Join(cwd, "../../__examples__")
+	dir := filepath.Join(cwd, "../../__examples__/server/cmd/app")
 
 	pkg, err := packagesx.Load(dir)
 	require.NoError(t, err)

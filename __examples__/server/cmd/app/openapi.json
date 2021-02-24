@@ -1,5 +1,5 @@
 {
-  "openapi": "3.0.1",
+  "openapi": "3.0.3",
   "info": {
     "title": "",
     "version": ""
@@ -13,6 +13,7 @@
         "operationId": "OpenAPI",
         "responses": {
           "200": {
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
@@ -33,6 +34,7 @@
         "operationId": "DownloadFile",
         "responses": {
           "200": {
+            "description": "",
             "content": {
               "application/octet-stream": {
                 "schema": {
@@ -53,6 +55,7 @@
         "operationId": "ShowImage",
         "responses": {
           "200": {
+            "description": "",
             "content": {
               "image/png": {
                 "schema": {
@@ -83,6 +86,7 @@
         ],
         "responses": {
           "201": {
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
@@ -133,7 +137,7 @@
                       "format": "int32"
                     },
                     "propertyNames": {
-                      "$ref": "#/components/schemas/Protocol"
+                      "$ref": "#/components/schemas/GithubComGoCourierHttptransportExamplesServerPkgTypesProtocol"
                     },
                     "x-go-field-name": "Map",
                     "x-tag-name": "map,omitempty"
@@ -163,7 +167,9 @@
           }
         },
         "responses": {
-          "204": {}
+          "204": {
+            "description": ""
+          }
         }
       }
     },
@@ -202,7 +208,9 @@
           }
         },
         "responses": {
-          "204": {}
+          "204": {
+            "description": ""
+          }
         }
       }
     },
@@ -257,7 +265,9 @@
           }
         },
         "responses": {
-          "204": {}
+          "204": {
+            "description": ""
+          }
         }
       }
     },
@@ -269,6 +279,7 @@
         "operationId": "Proxy",
         "responses": {
           "200": {
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
@@ -278,6 +289,7 @@
             }
           },
           "400": {
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
@@ -290,6 +302,7 @@
             ]
           },
           "499": {
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
@@ -302,6 +315,7 @@
             ]
           },
           "500": {
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
@@ -323,7 +337,9 @@
         ],
         "operationId": "Redirect",
         "responses": {
-          "302": {}
+          "302": {
+            "description": ""
+          }
         }
       },
       "post": {
@@ -332,7 +348,9 @@
         ],
         "operationId": "RedirectWhenError",
         "responses": {
-          "204": {}
+          "204": {
+            "description": ""
+          }
         }
       }
     },
@@ -342,8 +360,27 @@
           "routes"
         ],
         "operationId": "HealthCheck",
+        "parameters": [
+          {
+            "name": "pullPolicy",
+            "in": "query",
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/GithubComGoCourierHttptransportExamplesServerPkgTypesPullPolicy"
+                },
+                {
+                  "x-go-field-name": "PullPolicy",
+                  "x-tag-name": "pullPolicy,omitempty"
+                }
+              ]
+            }
+          }
+        ],
         "responses": {
-          "204": {}
+          "204": {
+            "description": ""
+          }
         }
       },
       "post": {
@@ -371,6 +408,7 @@
         },
         "responses": {
           "201": {
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
@@ -404,8 +442,11 @@
           }
         ],
         "responses": {
-          "204": {},
+          "204": {
+            "description": ""
+          },
           "401": {
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
@@ -418,6 +459,7 @@
             ]
           },
           "500": {
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
@@ -478,7 +520,7 @@
             "schema": {
               "allOf": [
                 {
-                  "$ref": "#/components/schemas/Protocol"
+                  "$ref": "#/components/schemas/GithubComGoCourierHttptransportExamplesServerPkgTypesProtocol"
                 },
                 {
                   "x-go-field-name": "Protocol",
@@ -490,6 +532,7 @@
         ],
         "responses": {
           "200": {
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
@@ -538,7 +581,9 @@
           }
         },
         "responses": {
-          "204": {}
+          "204": {
+            "description": ""
+          }
         }
       }
     },
@@ -550,6 +595,7 @@
         "operationId": "ProxyV2",
         "responses": {
           "200": {
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
@@ -559,6 +605,7 @@
             }
           },
           "400": {
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
@@ -571,6 +618,7 @@
             ]
           },
           "499": {
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
@@ -583,6 +631,7 @@
             ]
           },
           "500": {
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
@@ -622,7 +671,7 @@
           "protocol": {
             "allOf": [
               {
-                "$ref": "#/components/schemas/Protocol"
+                "$ref": "#/components/schemas/GithubComGoCourierHttptransportExamplesServerPkgTypesProtocol"
               },
               {
                 "x-go-field-name": "Protocol",
@@ -654,6 +703,36 @@
           "label"
         ],
         "x-id": "Data"
+      },
+      "GithubComGoCourierHttptransportExamplesServerPkgTypesProtocol": {
+        "type": "string",
+        "enum": [
+          "HTTP",
+          "HTTPS",
+          "TCP"
+        ],
+        "x-enum-labels": [
+          "http",
+          "https",
+          "TCP"
+        ],
+        "x-go-vendor-type": "github.com/go-courier/httptransport/__examples__/server/pkg/types.Protocol",
+        "x-id": "GithubComGoCourierHttptransportExamplesServerPkgTypesProtocol"
+      },
+      "GithubComGoCourierHttptransportExamplesServerPkgTypesPullPolicy": {
+        "type": "string",
+        "enum": [
+          "Always",
+          "IfNotPresent",
+          "Never"
+        ],
+        "x-enum-labels": [
+          "Always",
+          "IfNotPresent",
+          "Never"
+        ],
+        "x-go-vendor-type": "github.com/go-courier/httptransport/__examples__/server/pkg/types.PullPolicy",
+        "x-id": "GithubComGoCourierHttptransportExamplesServerPkgTypesPullPolicy"
       },
       "GithubComGoCourierHttptransportHttpxAttachment": {
         "type": "string",
@@ -829,32 +908,6 @@
           "countryCode"
         ],
         "x-id": "IpInfo"
-      },
-      "Protocol": {
-        "type": "string",
-        "enum": [
-          "HTTP",
-          "HTTPS",
-          "TCP"
-        ],
-        "x-enum-options": [
-          {
-            "constValue": 1,
-            "value": "HTTP",
-            "label": "http"
-          },
-          {
-            "constValue": 2,
-            "value": "HTTPS",
-            "label": "https"
-          },
-          {
-            "constValue": 6,
-            "value": "TCP",
-            "label": "TCP"
-          }
-        ],
-        "x-id": "Protocol"
       },
       "SubData": {
         "type": "object",

@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	"github.com/go-courier/courier"
-	"github.com/go-courier/httptransport/__examples__/constants/errors"
-	"github.com/go-courier/httptransport/__examples__/constants/types"
+	"github.com/go-courier/httptransport/__examples__/server/pkg/errors"
+	"github.com/go-courier/httptransport/__examples__/server/pkg/types"
 	"github.com/go-courier/httptransport/httpx"
 
 	"github.com/go-courier/httptransport"
@@ -26,6 +26,7 @@ func init() {
 
 type HealthCheck struct {
 	httpx.MethodHead
+	PullPolicy types.PullPolicy `name:"pullPolicy,omitempty" in:"query"`
 }
 
 func (HealthCheck) Output(ctx context.Context) (interface{}, error) {

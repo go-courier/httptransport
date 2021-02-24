@@ -9,8 +9,9 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/go-courier/enumeration/scanner"
+
 	"github.com/go-courier/codegen"
-	"github.com/go-courier/enumeration/generator"
 	"github.com/go-courier/oas"
 	"github.com/go-courier/packagesx"
 	"github.com/go-courier/reflectx/typesutil"
@@ -19,16 +20,15 @@ import (
 
 func NewDefinitionScanner(pkg *packagesx.Package) *DefinitionScanner {
 	return &DefinitionScanner{
-		enumScanner:       generator.NewEnumScanner(pkg),
+		enumScanner:       scanner.NewScanner(pkg),
 		pkg:               pkg,
 		ioWriterInterface: packagesx.NewPackage(pkg.Pkg("io")).TypeName("Writer").Type().Underlying().(*types.Interface),
 	}
 }
 
 type DefinitionScanner struct {
-	enumInterfaceType *types.Interface
 	pkg               *packagesx.Package
-	enumScanner       *generator.EnumScanner
+	enumScanner       *scanner.Scanner
 	definitions       map[*types.TypeName]*oas.Schema
 	schemas           map[string]*oas.Schema
 	ioWriterInterface *types.Interface
@@ -79,20 +79,6 @@ func (scanner *DefinitionScanner) BindSchemas(openapi *oas.OpenAPI) {
 	openapi.Components.Schemas = scanner.schemas
 }
 
-func (scanner *DefinitionScanner) isEnum(typeName *types.TypeName) bool {
-	if scanner.enumInterfaceType == nil {
-		pkgInfo := scanner.pkg.Pkg("github.com/go-courier/enumeration")
-		if pkgInfo != nil {
-			p := packagesx.NewPackage(pkgInfo)
-			scanner.enumInterfaceType = p.TypeName("Enum").Type().Underlying().(*types.Interface)
-		}
-	}
-	if scanner.enumInterfaceType != nil {
-		return types.Implements(typeName.Type(), scanner.enumInterfaceType)
-	}
-	return false
-}
-
 func (scanner *DefinitionScanner) Def(typeName *types.TypeName) *oas.Schema {
 	if s, ok := scanner.definitions[typeName]; ok {
 		return s
@@ -132,22 +118,38 @@ func (scanner *DefinitionScanner) Def(typeName *types.TypeName) *oas.Schema {
 		}
 	}
 
-	if scanner.isEnum(typeName) {
-		enumOptions := scanner.enumScanner.Enum(typeName)
-		if enumOptions == nil {
-			panic(fmt.Errorf("missing enum option but annotated by openapi:enum"))
-		}
-
-		sort.Slice(enumOptions, func(i, j int) bool {
-			return enumOptions[i].Value < enumOptions[j].Value
-		})
-
+	if enumOptions, ok := scanner.enumScanner.Options(typeName); ok {
 		s := oas.String()
 
-		for _, e := range enumOptions {
-			s.Enum = append(s.Enum, e.Value)
+		optionsLabels := make([]string, 0)
+		enumVersionGot := false
+
+		for _, o := range enumOptions {
+			v := o.Value()
+
+			if v == nil {
+				continue
+			}
+
+			if !enumVersionGot {
+				enumVersionGot = true
+
+				switch v.(type) {
+				case string:
+					s = oas.String()
+				case int64:
+					s = oas.Integer()
+				case float64:
+					s = oas.Float()
+				}
+			}
+
+			s.Enum = append(s.Enum, o.Value())
+			optionsLabels = append(optionsLabels, o.Label)
 		}
-		s.AddExtension(XEnumOptions, enumOptions)
+
+		s.AddExtension(XEnumLabels, optionsLabels)
+
 		return scanner.setDef(typeName, s)
 	}
 

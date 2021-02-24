@@ -8,10 +8,6 @@ import (
 	github_com_go_courier_enumeration "github.com/go-courier/enumeration"
 )
 
-func init() {
-	github_com_go_courier_enumeration.DefaultEnumMap.Register(PROTOCOL_UNKNOWN)
-}
-
 var InvalidProtocol = errors.New("invalid Protocol type")
 
 func ParseProtocolFromLabelString(s string) (Protocol, error) {

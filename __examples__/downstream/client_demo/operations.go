@@ -98,10 +98,10 @@ func (req *DownloadFile) Invoke(c github_com_go_courier_courier.Client, metas ..
 
 type FormMultipartWithFile struct {
 	FormData struct {
-		Data  Data                       `name:"data,omitempty"`
-		File  *mime_multipart.FileHeader `name:"file"`
-		Map   map[Protocol]int32         `name:"map,omitempty"`
-		Slice []string                   `name:"slice,omitempty"`
+		Data  Data                                                                    `name:"data,omitempty"`
+		File  *mime_multipart.FileHeader                                              `name:"file"`
+		Map   map[GithubComGoCourierHttptransportExamplesServerPkgTypesProtocol]int32 `name:"map,omitempty"`
+		Slice []string                                                                `name:"slice,omitempty"`
 		// @deprecated
 		String string `name:"string,omitempty"`
 	} `in:"body" mime:"multipart"`
@@ -191,10 +191,10 @@ func (req *FormURLEncoded) Invoke(c github_com_go_courier_courier.Client, metas 
 }
 
 type GetByID struct {
-	ID       string   `in:"path" name:"id" validate:"@string[6,]"`
-	Label    []string `in:"query" name:"label,omitempty"`
-	Name     string   `in:"query" name:"name,omitempty"`
-	Protocol Protocol `in:"query" name:"protocol,omitempty"`
+	ID       string                                                        `in:"path" name:"id" validate:"@string[6,]"`
+	Label    []string                                                      `in:"query" name:"label,omitempty"`
+	Name     string                                                        `in:"query" name:"name,omitempty"`
+	Protocol GithubComGoCourierHttptransportExamplesServerPkgTypesProtocol `in:"query" name:"protocol,omitempty"`
 }
 
 func (GetByID) Path() string {

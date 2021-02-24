@@ -7,7 +7,7 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/go-courier/httptransport"
-	"github.com/go-courier/httptransport/__examples__/routes"
+	"github.com/go-courier/httptransport/__examples__/server/cmd/app/routes"
 )
 
 func ExampleGroup() {

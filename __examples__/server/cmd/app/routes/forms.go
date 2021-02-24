@@ -5,7 +5,7 @@ import (
 	"mime/multipart"
 
 	"github.com/go-courier/courier"
-	"github.com/go-courier/httptransport/__examples__/constants/types"
+	"github.com/go-courier/httptransport/__examples__/server/pkg/types"
 	"github.com/go-courier/httptransport/httpx"
 
 	"github.com/go-courier/httptransport"

@@ -16,7 +16,7 @@ import (
 	"time"
 
 	"github.com/go-courier/courier"
-	"github.com/go-courier/httptransport/__examples__/constants/types"
+	"github.com/go-courier/httptransport/__examples__/server/pkg/types"
 	"github.com/go-courier/httptransport/transformers"
 	"github.com/go-courier/reflectx"
 	"github.com/go-courier/statuserror"

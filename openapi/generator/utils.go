@@ -24,6 +24,8 @@ const (
 	XTagXML      = `x-tag-xml`
 	XTagName     = `x-tag-name`
 
+	XEnumLabels = `x-enum-labels`
+	// Deprecated  use XEnumLabels
 	XEnumOptions = `x-enum-options`
 	XStatusErrs  = `x-status-errors`
 )

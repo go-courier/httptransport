@@ -1,6 +1,8 @@
 package generator
 
 import (
+	"context"
+
 	"github.com/go-courier/codegen"
 	"github.com/go-courier/oas"
 )
@@ -17,8 +19,8 @@ type ServiceClientGenerator struct {
 	File        *codegen.File
 }
 
-func (g *ServiceClientGenerator) Scan(openapi *oas.OpenAPI) {
-	g.WriteClientInterface(openapi)
+func (g *ServiceClientGenerator) Scan(ctx context.Context, openapi *oas.OpenAPI) {
+	g.WriteClientInterface(ctx, openapi)
 
 	g.WriteClient()
 
@@ -42,12 +44,12 @@ func (c *` + g.ClientInstanceName() + `) Context() context.Context {
 
 	eachOperation(openapi, func(method string, path string, op *oas.Operation) {
 		g.File.WriteBlock(
-			g.OperationMethod(op, false),
+			g.OperationMethod(ctx, op, false),
 		)
 	})
 }
 
-func (g *ServiceClientGenerator) WriteClientInterface(openapi *oas.OpenAPI) {
+func (g *ServiceClientGenerator) WriteClientInterface(ctx context.Context, openapi *oas.OpenAPI) {
 	varContext := codegen.Var(codegen.Type(g.File.Use("context", "Context")))
 
 	snippets := []codegen.SnippetCanBeInterfaceMethod{
@@ -56,7 +58,7 @@ func (g *ServiceClientGenerator) WriteClientInterface(openapi *oas.OpenAPI) {
 	}
 
 	eachOperation(openapi, func(method string, path string, op *oas.Operation) {
-		snippets = append(snippets, g.OperationMethod(op, true).(*codegen.FuncType))
+		snippets = append(snippets, g.OperationMethod(ctx, op, true).(*codegen.FuncType))
 	})
 
 	g.File.WriteBlock(
@@ -104,7 +106,7 @@ func (g *ServiceClientGenerator) WriteClient() {
 	)
 }
 
-func (g *ServiceClientGenerator) OperationMethod(operation *oas.Operation, asInterface bool) codegen.Snippet {
+func (g *ServiceClientGenerator) OperationMethod(ctx context.Context, operation *oas.Operation, asInterface bool) codegen.Snippet {
 	mediaType, _ := mediaTypeAndStatusErrors(&operation.Responses)
 
 	params := make([]*codegen.SnippetField, 0)
@@ -120,7 +122,7 @@ func (g *ServiceClientGenerator) OperationMethod(operation *oas.Operation, asInt
 	returns := make([]*codegen.SnippetField, 0)
 
 	if mediaType != nil {
-		respType, _ := NewTypeGenerator(g.ServiceName, g.File).Type(mediaType.Schema)
+		respType, _ := NewTypeGenerator(g.ServiceName, g.File).Type(ctx, mediaType.Schema)
 
 		if respType != nil {
 			returns = append(returns, codegen.Var(codegen.Star(respType)))
