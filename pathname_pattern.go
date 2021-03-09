@@ -1,8 +1,9 @@
 package httptransport
 
 import (
-	"fmt"
 	"strings"
+
+	"github.com/pkg/errors"
 
 	"github.com/julienschmidt/httprouter"
 )
@@ -66,7 +67,7 @@ func (pattern *PathnamePattern) Parse(pathname string) (params httprouter.Params
 	parts := toPathParts(pathname)
 
 	if len(parts) != len(pattern.parts) {
-		return nil, fmt.Errorf("pathname %s is not match %s", pathname, pattern)
+		return nil, errors.Errorf("pathname %s is not match %s", pathname, pattern)
 	}
 
 	for idx, part := range pattern.parts {
@@ -76,7 +77,7 @@ func (pattern *PathnamePattern) Parse(pathname string) (params httprouter.Params
 				Value: parts[idx],
 			})
 		} else if part != parts[idx] {
-			return nil, fmt.Errorf("pathname %s is not match %s", pathname, pattern)
+			return nil, errors.Errorf("pathname %s is not match %s", pathname, pattern)
 		}
 	}
 

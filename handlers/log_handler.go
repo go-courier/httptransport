@@ -7,23 +7,23 @@ import (
 	"strings"
 	"time"
 
+	"github.com/go-courier/logr"
+	"github.com/pkg/errors"
+
 	"github.com/go-courier/httptransport/httpx"
 	"github.com/go-courier/metax"
 	"github.com/google/uuid"
-	"github.com/sirupsen/logrus"
 )
 
-func LogHandler(logger *logrus.Entry) func(handler http.Handler) http.Handler {
+func LogHandler() func(handler http.Handler) http.Handler {
 	return func(handler http.Handler) http.Handler {
 		return &loggerHandler{
-			logger:      logger,
 			nextHandler: handler,
 		}
 	}
 }
 
 type loggerHandler struct {
-	logger      *logrus.Entry
 	nextHandler http.Handler
 }
 
@@ -69,42 +69,38 @@ func (h *loggerHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 
 	startAt := time.Now()
 
-	level, _ := logrus.ParseLevel(strings.ToLower(req.Header.Get("x-log-level")))
-	if level == logrus.PanicLevel {
-		level = h.logger.Logger.Level
-	}
+	logger := logr.FromContext(req.Context())
+
+	level, _ := logr.ParseLevel(strings.ToLower(req.Header.Get("x-log-level")))
 
 	defer func() {
 		duration := time.Since(startAt)
 
-		logger := h.logger.WithContext(metax.ContextWithMeta(req.Context(), metax.ParseMeta(loggerRw.Header().Get("X-Meta"))))
-
 		header := req.Header
 
-		fields := logrus.Fields{
-			"tag":         "access",
-			"cost":        fmt.Sprintf("%0.3fms", float64(duration/time.Millisecond)),
-			"remote_ip":   httpx.ClientIP(req),
-			"method":      req.Method,
-			"request_url": req.URL.String(),
-			"user_agent":  header.Get(httpx.HeaderUserAgent),
+		fields := []interface{}{
+			"tag", "access",
+			"cost", fmt.Sprintf("%0.3fms", float64(duration/time.Millisecond)),
+			"remote_ip", httpx.ClientIP(req),
+			"method", req.Method,
+			"request_url", req.URL.String(),
+			"user_agent", header.Get(httpx.HeaderUserAgent),
+			"status", loggerRw.StatusCode,
 		}
-
-		fields["status"] = loggerRw.StatusCode
 
 		if loggerRw.ErrMsg.Len() > 0 {
 			if loggerRw.StatusCode >= http.StatusInternalServerError {
-				if level >= logrus.ErrorLevel {
-					logger.WithFields(fields).Error(loggerRw.ErrMsg.String())
+				if level >= logr.ErrorLevel {
+					logger.WithValues(fields).Error(errors.New(loggerRw.ErrMsg.String()))
 				}
 			} else {
-				if level >= logrus.WarnLevel {
-					logger.WithFields(fields).Warn(loggerRw.ErrMsg.String())
+				if level >= logr.WarnLevel {
+					logger.WithValues(fields).Warn(errors.New(loggerRw.ErrMsg.String()))
 				}
 			}
 		} else {
-			if level >= logrus.InfoLevel {
-				logger.WithFields(fields).Info()
+			if level >= logr.InfoLevel {
+				logger.WithValues(fields).Info("")
 			}
 		}
 	}()

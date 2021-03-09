@@ -1,11 +1,8 @@
 package roundtrippers
 
 import (
-	"context"
 	"net/http"
 	"testing"
-
-	"github.com/sirupsen/logrus"
 
 	"github.com/go-courier/httptransport"
 )
@@ -16,5 +13,5 @@ func TestLogRoundTripper(t *testing.T) {
 
 	req, _ := mgr.NewRequest(http.MethodGet, "https://github.com", nil)
 
-	_, _ = NewLogRoundTripper(logrus.WithContext(context.Background()))(http.DefaultTransport).RoundTrip(req)
+	_, _ = NewLogRoundTripper()(http.DefaultTransport).RoundTrip(req)
 }

@@ -2,7 +2,6 @@ package client
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"mime"
@@ -12,16 +11,16 @@ import (
 	"reflect"
 	"time"
 
+	"github.com/pkg/errors"
+
 	"github.com/go-courier/courier"
+	"github.com/go-courier/httptransport"
 	"github.com/go-courier/httptransport/client/roundtrippers"
 	"github.com/go-courier/httptransport/httpx"
 	"github.com/go-courier/httptransport/transformers"
 	"github.com/go-courier/reflectx/typesutil"
 	"github.com/go-courier/statuserror"
-	"github.com/sirupsen/logrus"
 	"golang.org/x/net/http2"
-
-	"github.com/go-courier/httptransport"
 )
 
 type HttpTransport func(rt http.RoundTripper) http.RoundTripper
@@ -42,7 +41,7 @@ func (c *Client) SetDefaults() {
 		c.RequestTransformerMgr.SetDefaults()
 	}
 	if c.HttpTransports == nil {
-		c.HttpTransports = []HttpTransport{roundtrippers.NewLogRoundTripper(logrus.WithField("client", ""))}
+		c.HttpTransports = []HttpTransport{roundtrippers.NewLogRoundTripper()}
 	}
 	if c.NewError == nil {
 		c.NewError = func(resp *http.Response) error {

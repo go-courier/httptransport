@@ -3,7 +3,6 @@ package generator
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -15,6 +14,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/go-courier/codegen"
 	"github.com/go-courier/oas"
+	"github.com/pkg/errors"
 	"golang.org/x/mod/modfile"
 	"golang.org/x/tools/go/packages"
 )
@@ -55,7 +55,7 @@ type ClientGenerator struct {
 
 func (g *ClientGenerator) Load() {
 	if g.URL == nil {
-		panic(fmt.Errorf("missing spec-url or file"))
+		panic(errors.Errorf("missing spec-url or file"))
 	}
 
 	if g.URL.Scheme == "file" {

@@ -3,7 +3,6 @@ package transformers
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"mime"
@@ -12,7 +11,8 @@ import (
 	"reflect"
 
 	"github.com/go-courier/reflectx/typesutil"
-	"github.com/go-courier/validator/errors"
+	verrors "github.com/go-courier/validator/errors"
+	"github.com/pkg/errors"
 )
 
 func init() {
@@ -56,7 +56,7 @@ func (FormTransformer) New(ctx context.Context, typ typesutil.Type) (Transformer
 
 	typ = typesutil.Deref(typ)
 	if typ.Kind() != reflect.Struct {
-		return nil, fmt.Errorf("content transformer `%s` should be used for struct type", transformer)
+		return nil, errors.Errorf("content transformer `%s` should be used for struct type", transformer)
 	}
 
 	transformer.FlattenParams = &FlattenParams{}
@@ -76,7 +76,7 @@ func (transformer *FormTransformer) EncodeToWriter(w io.Writer, v interface{}) (
 
 	valueAdder := url.Values{}
 
-	errSet := errors.NewErrorSet("")
+	errSet := verrors.NewErrorSet("")
 
 	NamedStructFieldValueRange(reflect.Indirect(rv), func(fieldValue reflect.Value, field *reflect.StructField) {
 		fieldOpt := transformer.fieldOpts[field.Name]
@@ -124,7 +124,7 @@ func (transformer *FormTransformer) DecodeFromReader(r io.Reader, v interface{},
 		return err
 	}
 
-	errSet := errors.NewErrorSet("")
+	errSet := verrors.NewErrorSet("")
 
 	NamedStructFieldValueRange(reflect.Indirect(rv), func(fieldValue reflect.Value, field *reflect.StructField) {
 		fieldOpt := transformer.fieldOpts[field.Name]

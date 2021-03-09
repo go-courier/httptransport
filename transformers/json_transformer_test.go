@@ -3,19 +3,20 @@ package transformers
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"reflect"
 	"testing"
 
+	verrors "github.com/go-courier/validator/errors"
+	"github.com/pkg/errors"
+
 	"github.com/go-courier/reflectx/typesutil"
-	"github.com/go-courier/validator/errors"
 	"github.com/stretchr/testify/require"
 )
 
 type S string
 
 func (s *S) UnmarshalText(data []byte) error {
-	return fmt.Errorf("err")
+	return errors.Errorf("err")
 }
 
 func TestJSONTransformer(t *testing.T) {
@@ -105,7 +106,7 @@ func TestJSONTransformer(t *testing.T) {
 	for _, c := range cases {
 		b := bytes.NewBufferString(c.json)
 		err := ct.DecodeFromReader(b, &data)
-		err.(*errors.ErrorSet).Each(func(fieldErr *errors.FieldError) {
+		err.(*verrors.ErrorSet).Each(func(fieldErr *verrors.FieldError) {
 			require.Equal(t, c.location, fieldErr.Field.String())
 		})
 	}

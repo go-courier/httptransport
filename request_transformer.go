@@ -3,7 +3,6 @@ package httptransport
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"go/ast"
 	"io"
 	"io/ioutil"
@@ -16,6 +15,9 @@ import (
 	"sync"
 	"time"
 
+	verrors "github.com/go-courier/validator/errors"
+	"github.com/pkg/errors"
+
 	"github.com/go-courier/courier"
 	"github.com/go-courier/httptransport/httpx"
 	"github.com/go-courier/httptransport/transformers"
@@ -23,7 +25,6 @@ import (
 	"github.com/go-courier/reflectx/typesutil"
 	"github.com/go-courier/statuserror"
 	"github.com/go-courier/validator"
-	"github.com/go-courier/validator/errors"
 	"github.com/julienschmidt/httprouter"
 )
 
@@ -93,7 +94,7 @@ func isRequestOut(ctx context.Context) bool {
 }
 
 func (mgr *RequestTransformerMgr) newRequestTransformer(ctx context.Context, typ reflect.Type) (*RequestTransformer, error) {
-	errSet := errors.NewErrorSet("")
+	errSet := verrors.NewErrorSet("")
 
 	rt := &RequestTransformer{}
 	rt.Type = reflectx.Deref(typ)
@@ -105,7 +106,7 @@ func (mgr *RequestTransformerMgr) newRequestTransformer(ctx context.Context, typ
 
 		in, exists := tag.Lookup("in")
 		if !exists {
-			panic(fmt.Errorf("missing tag `in` of %s", field.Name()))
+			panic(errors.Errorf("missing tag `in` of %s", field.Name()))
 		}
 
 		if in == "path" {
@@ -182,10 +183,10 @@ func (t *RequestTransformer) NewRequestWithContext(ctx context.Context, method s
 
 	typ := reflectx.Deref(rv.Type())
 	if !typ.ConvertibleTo(t.Type) {
-		return nil, fmt.Errorf("unmatched request transformer, need %s but got %s", t.Type, typ)
+		return nil, errors.Errorf("unmatched request transformer, need %s but got %s", t.Type, typ)
 	}
 
-	errSet := errors.NewErrorSet("")
+	errSet := verrors.NewErrorSet("")
 	params := httprouter.Params{}
 	query := url.Values{}
 	header := http.Header{}
@@ -316,15 +317,15 @@ func (e *BadRequest) SetMsg(msg string) {
 }
 
 func (e *BadRequest) AddErr(err error, in string, nameOrIdx ...interface{}) {
-	errSet := errors.NewErrorSet("")
+	errSet := verrors.NewErrorSet("")
 
-	if es, ok := err.(*errors.ErrorSet); ok && in == "body" {
+	if es, ok := err.(*verrors.ErrorSet); ok && in == "body" {
 		errSet = es
 	} else {
 		errSet.AddErr(err, nameOrIdx...)
 	}
 
-	errSet.Flatten().Each(func(fieldErr *errors.FieldError) {
+	errSet.Flatten().Each(func(fieldErr *verrors.FieldError) {
 		e.errorFields = append(e.errorFields, statuserror.NewErrorField(in, fieldErr.Field.String(), fieldErr.Error.Error()))
 	})
 }
@@ -359,7 +360,7 @@ func (t *RequestTransformer) DecodeFrom(info *RequestInfo, meta *courier.Operato
 
 	typ := reflectx.Deref(rv.Type())
 	if !typ.ConvertibleTo(t.Type) {
-		return fmt.Errorf("unmatched request transformer, need %s but got %s", t.Type, typ)
+		return errors.Errorf("unmatched request transformer, need %s but got %s", t.Type, typ)
 	}
 
 	badRequestError := &BadRequest{}
@@ -547,7 +548,7 @@ func (info *RequestInfo) Body() io.Reader {
 func OperatorParamsFromStruct(v interface{}) map[string][]string {
 	rv := reflectx.Indirect(reflect.ValueOf(v))
 	if rv.Kind() != reflect.Struct {
-		panic(fmt.Errorf("must struct"))
+		panic(errors.Errorf("must struct"))
 	}
 
 	params := map[string][]string{}

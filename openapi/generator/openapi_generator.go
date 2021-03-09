@@ -1,8 +1,8 @@
 package generator
 
 import (
+	"context"
 	"encoding/json"
-	"fmt"
 	"go/ast"
 	"go/types"
 	"io/ioutil"
@@ -15,6 +15,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/go-courier/oas"
 	"github.com/go-courier/packagesx"
+	"github.com/pkg/errors"
 )
 
 func NewOpenAPIGenerator(pkg *packagesx.Package) *OpenAPIGenerator {
@@ -53,7 +54,7 @@ func rootRouter(pkgInfo *packagesx.Package, callExpr *ast.CallExpr) *types.Var {
 	return nil
 }
 
-func (g *OpenAPIGenerator) Scan() {
+func (g *OpenAPIGenerator) Scan(ctx context.Context) {
 	defer func() {
 		g.routerScanner.operatorScanner.BindSchemas(g.openapi)
 	}()
@@ -80,7 +81,7 @@ func (g *OpenAPIGenerator) Scan() {
 							operation := g.OperationByOperatorTypes(method, route.Operators...)
 
 							if _, exists := operationIDs[operation.OperationId]; exists {
-								panic(fmt.Errorf("operationID %s should be unique", operation.OperationId))
+								panic(errors.Errorf("operationID %s should be unique", operation.OperationId))
 							}
 
 							operationIDs[operation.OperationId] = route

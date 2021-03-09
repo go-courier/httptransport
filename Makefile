@@ -3,6 +3,10 @@ VERSION = v$(shell cat .version)
 COMMIT_SHA ?= $(shell git describe --always)-devel
 GOTEST = go test -v -race
 
+fmt:
+	goimports -l -w .
+	gofmt -l -w .
+
 test:
 	GODEBUG=x509ignoreCN=0 $(GOTEST) ./...
 

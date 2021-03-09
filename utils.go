@@ -1,13 +1,11 @@
 package httptransport
 
-import (
-	"fmt"
-)
+import "github.com/pkg/errors"
 
 func TryCatch(fn func()) (err error) {
 	defer func() {
 		if e := recover(); e != nil {
-			err = fmt.Errorf("%v", e)
+			err = errors.Errorf("%+v", e)
 		}
 	}()
 

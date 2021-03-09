@@ -5,7 +5,6 @@ import (
 	"os"
 	"testing"
 
-	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 )
 
@@ -29,18 +28,4 @@ func TestServiceMetaWithContext(t *testing.T) {
 	})
 	serviceMeta := ServerMetaFromContext(ctx)
 	require.Equal(t, "test", serviceMeta.Name)
-}
-
-func TestHookForServiceMeta(t *testing.T) {
-	hook := ServiceMetaHook{
-		ServiceMeta{
-			Name: "test",
-		},
-	}
-
-	entry := logrus.NewEntry(logrus.StandardLogger())
-
-	require.Equal(t, logrus.AllLevels, hook.Levels())
-	require.NoError(t, hook.Fire(entry))
-	require.Equal(t, hook.ServiceMeta.String(), entry.Data["service"])
 }

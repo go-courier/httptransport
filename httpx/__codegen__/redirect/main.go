@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/token"
@@ -11,6 +10,7 @@ import (
 	"strconv"
 
 	"github.com/go-courier/codegen"
+	"github.com/pkg/errors"
 	"golang.org/x/tools/go/packages"
 )
 
@@ -111,7 +111,7 @@ func getPkgDir(importPath string) string {
 		panic(err)
 	}
 	if len(pkgs) == 0 {
-		panic(fmt.Errorf("package `%s` not found", importPath))
+		panic(errors.Errorf("package `%s` not found", importPath))
 	}
 	return filepath.Dir(pkgs[0].GoFiles[0])
 }

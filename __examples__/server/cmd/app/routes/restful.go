@@ -2,12 +2,12 @@ package routes
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/go-courier/courier"
 	"github.com/go-courier/httptransport/__examples__/server/pkg/errors"
 	"github.com/go-courier/httptransport/__examples__/server/pkg/types"
 	"github.com/go-courier/httptransport/httpx"
+	perrors "github.com/pkg/errors"
 
 	"github.com/go-courier/httptransport"
 )
@@ -95,7 +95,7 @@ type UpdateByID struct {
 }
 
 func (req UpdateByID) Output(ctx context.Context) (interface{}, error) {
-	return nil, fmt.Errorf("something wrong")
+	return nil, perrors.Errorf("something wrong")
 }
 
 type DataProvider struct {

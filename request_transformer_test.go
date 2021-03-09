@@ -21,6 +21,7 @@ import (
 	"github.com/go-courier/reflectx"
 	"github.com/go-courier/statuserror"
 	"github.com/go-courier/validator/errors"
+	perrors "github.com/pkg/errors"
 	"github.com/stretchr/testify/require"
 
 	"github.com/go-courier/httptransport"
@@ -482,7 +483,7 @@ type ReqWithPostValidate struct {
 }
 
 func (ReqWithPostValidate) PostValidate(badRequest *httptransport.BadRequest) {
-	badRequest.AddErr(fmt.Errorf("ops"), "query", "StartedAt")
+	badRequest.AddErr(perrors.Errorf("ops"), "query", "StartedAt")
 }
 
 func ExampleRequestTransformer_DecodeFrom_requestInfo_failedOfPost() {

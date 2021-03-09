@@ -1,6 +1,7 @@
 package generator
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -195,7 +196,7 @@ func TestOperatorScanner(t *testing.T) {
 	for n, result := range cases {
 		t.Run(n, func(t *testing.T) {
 			operation := &oas.Operation{}
-			op := scanner.Operator(pkg.TypeName(n))
+			op := scanner.Operator(context.Background(), pkg.TypeName(n))
 			op.BindOperation("", operation, true)
 			data, _ := json.MarshalIndent(operation, "", "  ")
 			fmt.Println(string(data))

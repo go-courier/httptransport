@@ -13,6 +13,9 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/go-courier/logr"
+	"github.com/pkg/errors"
+
 	"github.com/go-courier/httptransport"
 	"github.com/go-courier/httptransport/httpx"
 	"github.com/go-courier/httptransport/transformers"
@@ -20,7 +23,6 @@ import (
 	"github.com/go-courier/packagesx"
 	"github.com/go-courier/reflectx/typesutil"
 	"github.com/go-courier/statuserror"
-	"github.com/sirupsen/logrus"
 )
 
 func NewOperatorScanner(pkg *packagesx.Package) *OperatorScanner {
@@ -38,7 +40,7 @@ type OperatorScanner struct {
 	operators map[*types.TypeName]*Operator
 }
 
-func (scanner *OperatorScanner) Operator(typeName *types.TypeName) *Operator {
+func (scanner *OperatorScanner) Operator(ctx context.Context, typeName *types.TypeName) *Operator {
 	if typeName == nil {
 		return nil
 	}
@@ -58,11 +60,11 @@ func (scanner *OperatorScanner) Operator(typeName *types.TypeName) *Operator {
 		return operator
 	}
 
-	logrus.Debugf("scanning Operator `%s.%s`", typeName.Pkg().Path(), typeName.Name())
+	logr.FromContext(ctx).Debug("scanning Operator `%s.%s`", typeName.Pkg().Path(), typeName.Name())
 
 	defer func() {
 		if e := recover(); e != nil {
-			panic(fmt.Errorf("scan Operator `%s` failed, panic: %s; calltrace: %s", fullTypeName(typeName), fmt.Sprint(e), string(debug.Stack())))
+			panic(errors.Errorf("scan Operator `%s` failed, panic: %s; calltrace: %s", fullTypeName(typeName), fmt.Sprint(e), string(debug.Stack())))
 		}
 	}()
 
@@ -72,8 +74,8 @@ func (scanner *OperatorScanner) Operator(typeName *types.TypeName) *Operator {
 		operator.Tag = scanner.tagFrom(typeName.Pkg().Path())
 
 		scanner.scanRouteMeta(operator, typeName)
-		scanner.scanParameterOrRequestBody(operator, typeStruct)
-		scanner.scanReturns(operator, typeName)
+		scanner.scanParameterOrRequestBody(ctx, operator, typeStruct)
+		scanner.scanReturns(ctx, operator, typeName)
 
 		// cached scanned
 		if scanner.operators == nil {
@@ -105,7 +107,7 @@ func (scanner *OperatorScanner) singleReturnOf(typeName *types.TypeName, name st
 					if v.Value != nil {
 						s, err := strconv.Unquote(v.Value.ExactString())
 						if err != nil {
-							panic(fmt.Errorf("%s: %s", err, v.Value))
+							panic(errors.Errorf("%s: %s", err, v.Value))
 						}
 						return s, true
 					}
@@ -191,7 +193,7 @@ func (scanner *OperatorScanner) scanRouteMeta(op *Operator, typeName *types.Type
 	}
 }
 
-func (scanner *OperatorScanner) scanReturns(op *Operator, typeName *types.TypeName) {
+func (scanner *OperatorScanner) scanReturns(ctx context.Context, op *Operator, typeName *types.TypeName) {
 	for _, typ := range []types.Type{
 		typeName.Type(),
 		types.NewPointer(typeName.Type()),
@@ -204,10 +206,10 @@ func (scanner *OperatorScanner) scanReturns(op *Operator, typeName *types.TypeNa
 					if v.Type != nil {
 						if v.Type.String() != types.Typ[types.UntypedNil].String() {
 							if op.SuccessType != nil && op.SuccessType.String() != v.Type.String() {
-								logrus.Warnf(fmt.Sprintf("%s success result must be same struct, but got %v, already set %v", op.ID, v.Type, op.SuccessType))
+								logr.FromContext(ctx).Warn(errors.Errorf("%s success result must be same struct, but got %v, already set %v", op.ID, v.Type, op.SuccessType))
 							}
 							op.SuccessType = v.Type
-							op.SuccessStatus, op.SuccessResponse = scanner.getResponse(v.Type, v.Expr)
+							op.SuccessStatus, op.SuccessResponse = scanner.getResponse(ctx, v.Type, v.Expr)
 						}
 					}
 				}
@@ -215,7 +217,7 @@ func (scanner *OperatorScanner) scanReturns(op *Operator, typeName *types.TypeNa
 
 			if scanner.StatusErrScanner.StatusErrType != nil {
 				op.StatusErrors = scanner.StatusErrScanner.StatusErrorsInFunc(method.(*typesutil.TMethod).Func)
-				op.StatusErrorSchema = scanner.DefinitionScanner.GetSchemaByType(scanner.StatusErrScanner.StatusErrType)
+				op.StatusErrorSchema = scanner.DefinitionScanner.GetSchemaByType(ctx, scanner.StatusErrScanner.StatusErrType)
 			}
 		}
 	}
@@ -239,7 +241,7 @@ func (scanner *OperatorScanner) firstValueOfFunc(named *types.Named, name string
 	return nil, false
 }
 
-func (scanner *OperatorScanner) getResponse(tpe types.Type, expr ast.Expr) (statusCode int, response *oas.Response) {
+func (scanner *OperatorScanner) getResponse(ctx context.Context, tpe types.Type, expr ast.Expr) (statusCode int, response *oas.Response) {
 	response = &oas.Response{}
 
 	if tpe.String() == "error" {
@@ -321,22 +323,23 @@ func (scanner *OperatorScanner) getResponse(tpe types.Type, expr ast.Expr) (stat
 		contentType = httpx.MIME_JSON
 	}
 
-	response.AddContent(contentType, oas.NewMediaTypeWithSchema(scanner.DefinitionScanner.GetSchemaByType(tpe)))
+	response.AddContent(contentType, oas.NewMediaTypeWithSchema(scanner.DefinitionScanner.GetSchemaByType(ctx, tpe)))
 
 	return
 }
 
-func (scanner *OperatorScanner) scanParameterOrRequestBody(op *Operator, typeStruct *types.Struct) {
+func (scanner *OperatorScanner) scanParameterOrRequestBody(ctx context.Context, op *Operator, typeStruct *types.Struct) {
 	typesutil.EachField(typesutil.FromTType(typeStruct), "name", func(field typesutil.StructField, fieldDisplayName string, omitempty bool) bool {
 		location, _ := tagValueAndFlagsByTagString(field.Tag().Get("in"))
 
 		if location == "" {
-			panic(fmt.Errorf("missing tag `in` for %s of %s", field.Name(), op.ID))
+			panic(errors.Errorf("missing tag `in` for %s of %s", field.Name(), op.ID))
 		}
 
 		name, flags := tagValueAndFlagsByTagString(field.Tag().Get("name"))
 
 		schema := scanner.DefinitionScanner.propSchemaByField(
+			ctx,
 			field.Name(),
 			field.Type().(*typesutil.TType).Type,
 			field.Tag(),

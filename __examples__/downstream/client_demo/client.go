@@ -16,7 +16,7 @@ type ClientDemo interface {
 	FormMultipartWithFiles(req *FormMultipartWithFiles, metas ...github_com_go_courier_courier.Metadata) (github_com_go_courier_courier.Metadata, error)
 	FormURLEncoded(req *FormURLEncoded, metas ...github_com_go_courier_courier.Metadata) (github_com_go_courier_courier.Metadata, error)
 	GetByID(req *GetByID, metas ...github_com_go_courier_courier.Metadata) (*Data, github_com_go_courier_courier.Metadata, error)
-	HealthCheck(metas ...github_com_go_courier_courier.Metadata) (github_com_go_courier_courier.Metadata, error)
+	HealthCheck(req *HealthCheck, metas ...github_com_go_courier_courier.Metadata) (github_com_go_courier_courier.Metadata, error)
 	Proxy(metas ...github_com_go_courier_courier.Metadata) (*IpInfo, github_com_go_courier_courier.Metadata, error)
 	ProxyV2(metas ...github_com_go_courier_courier.Metadata) (*IpInfo, github_com_go_courier_courier.Metadata, error)
 	Redirect(metas ...github_com_go_courier_courier.Metadata) (github_com_go_courier_courier.Metadata, error)
@@ -79,8 +79,8 @@ func (c *ClientDemoStruct) GetByID(req *GetByID, metas ...github_com_go_courier_
 	return req.InvokeContext(c.Context(), c.Client, metas...)
 }
 
-func (c *ClientDemoStruct) HealthCheck(metas ...github_com_go_courier_courier.Metadata) (github_com_go_courier_courier.Metadata, error) {
-	return (&HealthCheck{}).InvokeContext(c.Context(), c.Client, metas...)
+func (c *ClientDemoStruct) HealthCheck(req *HealthCheck, metas ...github_com_go_courier_courier.Metadata) (github_com_go_courier_courier.Metadata, error) {
+	return req.InvokeContext(c.Context(), c.Client, metas...)
 }
 
 func (c *ClientDemoStruct) Proxy(metas ...github_com_go_courier_courier.Metadata) (*IpInfo, github_com_go_courier_courier.Metadata, error) {

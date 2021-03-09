@@ -5,42 +5,44 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/sirupsen/logrus"
+	"github.com/go-courier/logr"
+	"github.com/pkg/errors"
 )
 
-func NewLogRoundTripper(logger *logrus.Entry) func(roundTripper http.RoundTripper) http.RoundTripper {
+func NewLogRoundTripper() func(roundTripper http.RoundTripper) http.RoundTripper {
 	return func(roundTripper http.RoundTripper) http.RoundTripper {
 		return &LogRoundTripper{
-			logger:           logger,
 			nextRoundTripper: roundTripper,
 		}
 	}
 }
 
 type LogRoundTripper struct {
-	logger           *logrus.Entry
 	nextRoundTripper http.RoundTripper
 }
 
 func (rt *LogRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	startedAt := time.Now()
 
-	resp, err := rt.nextRoundTripper.RoundTrip(req)
+	ctx, logger := logr.Start(req.Context(), "Request")
+	defer logger.End()
+
+	resp, err := rt.nextRoundTripper.RoundTrip(req.WithContext(ctx))
 
 	defer func() {
 		cost := time.Since(startedAt)
 
-		logger := rt.logger.WithContext(req.Context()).WithFields(logrus.Fields{
-			"cost":     fmt.Sprintf("%0.3fms", float64(cost/time.Millisecond)),
-			"method":   req.Method,
-			"url":      req.URL.String(),
-			"metadata": req.Header,
-		})
+		logger := logger.WithValues(
+			"cost", fmt.Sprintf("%0.3fms", float64(cost/time.Millisecond)),
+			"method", req.Method,
+			"url", req.URL.String(),
+			"metadata", req.Header,
+		)
 
 		if err == nil {
-			logger.Infof("success")
+			logger.Info("success")
 		} else {
-			logger.Warnf("do http request failed %s", err)
+			logger.Warn(errors.Wrap(err, "http request failed"))
 		}
 	}()
 

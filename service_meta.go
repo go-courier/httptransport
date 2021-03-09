@@ -4,8 +4,6 @@ import (
 	"context"
 	"net/http"
 	"os"
-
-	"github.com/sirupsen/logrus"
 )
 
 type ServiceMeta struct {
@@ -50,17 +48,4 @@ func ContextWithServiceMeta(ctx context.Context, meta ServiceMeta) context.Conte
 func ServerMetaFromContext(ctx context.Context) ServiceMeta {
 	p, _ := ctx.Value(contextKeyServiceMetaKey(1)).(ServiceMeta)
 	return p
-}
-
-type ServiceMetaHook struct {
-	ServiceMeta
-}
-
-func (ServiceMetaHook) Levels() []logrus.Level {
-	return logrus.AllLevels
-}
-
-func (s *ServiceMetaHook) Fire(entry *logrus.Entry) error {
-	entry.Data["service"] = s.String()
-	return nil
 }

@@ -1,15 +1,16 @@
 package handlers
 
 import (
+	"context"
 	"net/http"
 	"time"
 
 	"github.com/go-courier/httptransport/testify"
-	"github.com/sirupsen/logrus"
+	"github.com/go-courier/logr"
 )
 
 func ExampleLogHandler() {
-	logrus.SetLevel(logrus.DebugLevel)
+	ctx := logr.WithLogger(context.Background(), logr.StdLogger())
 
 	var handle http.HandlerFunc = func(rw http.ResponseWriter, req *http.Request) {
 		time.Sleep(20 * time.Millisecond)
@@ -29,10 +30,10 @@ func ExampleLogHandler() {
 		}
 	}
 
-	handler := LogHandler(logrus.WithField("service", ""))(handle).(*loggerHandler)
+	handler := LogHandler()(handle).(*loggerHandler)
 
 	for _, method := range []string{http.MethodGet, http.MethodPut, http.MethodDelete, http.MethodPost} {
-		req, _ := http.NewRequest(method, "/", nil)
+		req, _ := http.NewRequestWithContext(ctx, method, "/", nil)
 		handler.ServeHTTP(testify.NewMockResponseWriter(), req)
 	}
 	// Output:

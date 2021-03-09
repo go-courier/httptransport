@@ -11,9 +11,11 @@ import (
 	"reflect"
 	"strconv"
 
+	"github.com/pkg/errors"
+
 	"github.com/go-courier/httptransport/httpx"
 	"github.com/go-courier/reflectx/typesutil"
-	"github.com/go-courier/validator/errors"
+	verrors "github.com/go-courier/validator/errors"
 )
 
 func init() {
@@ -44,7 +46,7 @@ func (MultipartTransformer) New(ctx context.Context, typ typesutil.Type) (Transf
 
 	typ = typesutil.Deref(typ)
 	if typ.Kind() != reflect.Struct {
-		return nil, fmt.Errorf("content transformer `%s` should be used for struct type", transformer)
+		return nil, errors.Errorf("content transformer `%s` should be used for struct type", transformer)
 	}
 
 	transformer.FlattenParams = &FlattenParams{}
@@ -65,7 +67,7 @@ func (transformer *MultipartTransformer) EncodeToWriter(w io.Writer, v interface
 	multipartWriter := multipart.NewWriter(w)
 
 	return superWrite(w, func(w io.Writer) error {
-		errSet := errors.NewErrorSet("")
+		errSet := verrors.NewErrorSet("")
 
 		addPart := func(rv reflect.Value, fieldName string, fieldTransformer Transformer, omitempty bool) error {
 			buf := bytes.NewBuffer(nil)
@@ -175,7 +177,7 @@ func (transformer *MultipartTransformer) DecodeFromReader(r io.Reader, v interfa
 		return err
 	}
 
-	errSet := errors.NewErrorSet("")
+	errSet := verrors.NewErrorSet("")
 
 	setValue := func(rv reflect.Value, fieldTransformer Transformer, fieldName string, idx int, omitempty bool) error {
 		if rv.Type().ConvertibleTo(typeFileHeader) {

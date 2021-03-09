@@ -10,12 +10,15 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/pkg/errors"
+
+	"github.com/go-courier/logr"
+
 	"github.com/go-courier/courier"
 	"github.com/go-courier/httptransport/handlers"
 	"github.com/go-courier/httptransport/transformers"
 	"github.com/go-courier/validator"
 	"github.com/julienschmidt/httprouter"
-	"github.com/sirupsen/logrus"
 )
 
 func MiddlewareChain(mw ...HttpMiddleware) HttpMiddleware {
@@ -53,9 +56,6 @@ type HttpTransport struct {
 	// transformer mgr for parameter transforming
 	TransformerMgr transformers.TransformerMgr
 
-	// Logger
-	Logger *logrus.Entry
-
 	CertFile string
 	KeyFile  string
 
@@ -75,12 +75,8 @@ func (t *HttpTransport) SetDefaults() {
 		t.TransformerMgr = transformers.TransformerMgrDefault
 	}
 
-	if t.Logger == nil {
-		t.Logger = logrus.WithField("service", t.ServiceMeta.String())
-	}
-
 	if t.Middlewares == nil {
-		t.Middlewares = []HttpMiddleware{handlers.LogHandler(t.Logger)}
+		t.Middlewares = []HttpMiddleware{handlers.LogHandler()}
 	}
 
 	if t.Port == 0 {
@@ -97,7 +93,13 @@ func courierPrintln(format string, args ...interface{}) {
 }
 
 func (t *HttpTransport) Serve(router *courier.Router) error {
+	return t.ServeContext(context.Background(), router)
+}
+
+func (t *HttpTransport) ServeContext(ctx context.Context, router *courier.Router) error {
 	t.SetDefaults()
+
+	logger := logr.FromContext(ctx)
 
 	t.httpRouter = t.convertRouterToHttpRouter(router)
 
@@ -108,7 +110,7 @@ func (t *HttpTransport) Serve(router *courier.Router) error {
 
 	for i := range t.ServerModifiers {
 		if err := t.ServerModifiers[i](srv); err != nil {
-			t.Logger.Fatal(err)
+			logger.Fatal(err)
 		}
 	}
 
@@ -118,9 +120,9 @@ func (t *HttpTransport) Serve(router *courier.Router) error {
 		if t.CertFile != "" && t.KeyFile != "" {
 			if err := srv.ListenAndServeTLS(t.CertFile, t.KeyFile); err != nil {
 				if err == http.ErrServerClosed {
-					logrus.Error(err)
+					logger.Error(err)
 				} else {
-					logrus.Fatal(err)
+					logger.Fatal(err)
 				}
 			}
 			return
@@ -128,9 +130,9 @@ func (t *HttpTransport) Serve(router *courier.Router) error {
 
 		if err := srv.ListenAndServe(); err != nil {
 			if err == http.ErrServerClosed {
-				logrus.Error(err)
+				logger.Error(err)
 			} else {
-				logrus.Fatal(err)
+				logger.Fatal(err)
 			}
 		}
 	}()
@@ -144,7 +146,7 @@ func (t *HttpTransport) Serve(router *courier.Router) error {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
-	t.Logger.Infof("shutdowning in %s", timeout)
+	logger.Info("shutdowning in %s", timeout)
 
 	return srv.Shutdown(ctx)
 }
@@ -153,7 +155,7 @@ func (t *HttpTransport) convertRouterToHttpRouter(router *courier.Router) *httpr
 	routes := router.Routes()
 
 	if len(routes) == 0 {
-		panic(fmt.Errorf("need to register Operator to Router %#v before serve", router))
+		panic(errors.Errorf("need to register Operator to Router %#v before serve", router))
 	}
 
 	routeMetas := make([]*HttpRouteMeta, len(routes))
@@ -178,7 +180,7 @@ func (t *HttpTransport) convertRouterToHttpRouter(router *courier.Router) *httpr
 				NewHttpRouteHandler(&t.ServiceMeta, httpRoute, NewRequestTransformerMgr(t.TransformerMgr, t.ValidatorMgr)).ServeHTTP,
 			)
 		}); err != nil {
-			panic(fmt.Errorf("register http route `%s` failed: %s", httpRoute, err))
+			panic(errors.Errorf("register http route `%s` failed: %s", httpRoute, err))
 		}
 	}
 

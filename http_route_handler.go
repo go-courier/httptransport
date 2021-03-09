@@ -2,10 +2,11 @@ package httptransport
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"net/http"
 	"reflect"
+
+	"github.com/pkg/errors"
 
 	"github.com/go-courier/courier"
 	"github.com/go-courier/httptransport/httpx"
@@ -19,7 +20,7 @@ func NewHttpRouteHandler(serviceMeta *ServiceMeta, httpRoute *HttpRouteMeta, req
 	operatorFactories := httpRoute.OperatorFactoryWithRouteMetas
 
 	if len(operatorFactories) == 0 {
-		panic(fmt.Errorf("missing valid operator"))
+		panic(errors.Errorf("missing valid operator"))
 	}
 
 	requestTransformers := make([]*RequestTransformer, len(operatorFactories))

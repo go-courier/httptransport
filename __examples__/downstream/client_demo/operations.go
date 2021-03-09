@@ -225,6 +225,7 @@ func (req *GetByID) Invoke(c github_com_go_courier_courier.Client, metas ...gith
 }
 
 type HealthCheck struct {
+	PullPolicy GithubComGoCourierHttptransportExamplesServerPkgTypesPullPolicy `in:"query" name:"pullPolicy,omitempty"`
 }
 
 func (HealthCheck) Path() string {

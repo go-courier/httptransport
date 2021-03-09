@@ -1,6 +1,7 @@
 package generator
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -10,6 +11,7 @@ import (
 
 	"github.com/go-courier/oas"
 	"github.com/go-courier/packagesx"
+	"github.com/pkg/errors"
 	"github.com/stretchr/testify/require"
 )
 
@@ -314,7 +316,7 @@ func TestDefinitionScanner(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c[0], func(t *testing.T) {
-			s := scanner.Def(pkg.TypeName(c[0]))
+			s := scanner.Def(context.Background(), pkg.TypeName(c[0]))
 			data, _ := json.MarshalIndent(s, "", "  ")
 			require.Equal(t, strings.TrimSpace(c[1]), string(data))
 		})
@@ -331,7 +333,7 @@ func TestDefinitionScanner(t *testing.T) {
 
 	t.Run("invalid", func(t *testing.T) {
 		err := tryCatch(func() {
-			scanner.Def(pkg.TypeName("InvalidComposed"))
+			scanner.Def(context.Background(), pkg.TypeName("InvalidComposed"))
 		})
 		require.Error(t, err)
 	})
@@ -340,7 +342,7 @@ func TestDefinitionScanner(t *testing.T) {
 func tryCatch(fn func()) (err error) {
 	defer func() {
 		if e := recover(); e != nil {
-			err = fmt.Errorf("%v", e)
+			err = errors.Errorf("%v", e)
 		}
 	}()
 

@@ -1,7 +1,7 @@
 package generator
 
 import (
-	"fmt"
+	"context"
 	"go/ast"
 	"go/types"
 	"reflect"
@@ -9,13 +9,15 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/go-courier/logr"
+	"github.com/pkg/errors"
+
 	"github.com/go-courier/enumeration/scanner"
 
 	"github.com/go-courier/codegen"
 	"github.com/go-courier/oas"
 	"github.com/go-courier/packagesx"
 	"github.com/go-courier/reflectx/typesutil"
-	"github.com/sirupsen/logrus"
 )
 
 func NewDefinitionScanner(pkg *packagesx.Package) *DefinitionScanner {
@@ -79,12 +81,12 @@ func (scanner *DefinitionScanner) BindSchemas(openapi *oas.OpenAPI) {
 	openapi.Components.Schemas = scanner.schemas
 }
 
-func (scanner *DefinitionScanner) Def(typeName *types.TypeName) *oas.Schema {
+func (scanner *DefinitionScanner) Def(ctx context.Context, typeName *types.TypeName) *oas.Schema {
 	if s, ok := scanner.definitions[typeName]; ok {
 		return s
 	}
 
-	logrus.Debugf("scanning Type `%s.%s`", typeName.Pkg().Path(), typeName.Name())
+	logr.FromContext(ctx).Debug("scanning Type `%s.%s`", typeName.Pkg().Path(), typeName.Name())
 
 	if typeName.IsAlias() {
 		typeName = typeName.Type().(*types.Named).Obj()
@@ -184,7 +186,7 @@ func (scanner *DefinitionScanner) Def(typeName *types.TypeName) *oas.Schema {
 	}
 
 	if !hasDefinedByInterface {
-		s = scanner.GetSchemaByType(typeName.Type().Underlying())
+		s = scanner.GetSchemaByType(ctx, typeName.Type().Underlying())
 	}
 
 	setMetaFromDoc(s, doc)
@@ -271,13 +273,13 @@ func (r SchemaRefer) RefString() string {
 	return oas.NewComponentRefer("schemas", s.Extensions[XID].(string)).RefString()
 }
 
-func (scanner *DefinitionScanner) GetSchemaByType(typ types.Type) *oas.Schema {
+func (scanner *DefinitionScanner) GetSchemaByType(ctx context.Context, typ types.Type) *oas.Schema {
 	switch t := typ.(type) {
 	case *types.Named:
 		if t.String() == "mime/multipart.FileHeader" {
 			return oas.Binary()
 		}
-		return oas.RefSchemaByRefer(NewSchemaRefer(scanner.Def(t.Obj())))
+		return oas.RefSchemaByRefer(NewSchemaRefer(scanner.Def(ctx, t.Obj())))
 	case *types.Interface:
 		return &oas.Schema{}
 	case *types.Basic:
@@ -298,20 +300,20 @@ func (scanner *DefinitionScanner) GetSchemaByType(typ types.Type) *oas.Schema {
 			}
 		}
 
-		s := scanner.GetSchemaByType(elem)
+		s := scanner.GetSchemaByType(ctx, elem)
 		markPointer(s, count)
 		return s
 	case *types.Map:
-		keySchema := scanner.GetSchemaByType(t.Key())
+		keySchema := scanner.GetSchemaByType(ctx, t.Key())
 		if keySchema != nil && len(keySchema.Type) > 0 && keySchema.Type != "string" {
-			panic(fmt.Errorf("only support map[string]interface{}"))
+			panic(errors.New("only support map[string]interface{}"))
 		}
-		return oas.KeyValueOf(keySchema, scanner.GetSchemaByType(t.Elem()))
+		return oas.KeyValueOf(keySchema, scanner.GetSchemaByType(ctx, t.Elem()))
 	case *types.Slice:
-		return oas.ItemsOf(scanner.GetSchemaByType(t.Elem()))
+		return oas.ItemsOf(scanner.GetSchemaByType(ctx, t.Elem()))
 	case *types.Array:
 		length := uint64(t.Len())
-		s := oas.ItemsOf(scanner.GetSchemaByType(t.Elem()))
+		s := oas.ItemsOf(scanner.GetSchemaByType(ctx, t.Elem()))
 		s.MaxItems = &length
 		s.MinItems = &length
 		return s
@@ -345,7 +347,7 @@ func (scanner *DefinitionScanner) GetSchemaByType(typ types.Type) *oas.Schema {
 					structSchema = oas.Binary()
 					break
 				}
-				s := scanner.GetSchemaByType(structFieldType)
+				s := scanner.GetSchemaByType(ctx, structFieldType)
 				if s != nil {
 					schemas = append(schemas, s)
 				}
@@ -363,7 +365,7 @@ func (scanner *DefinitionScanner) GetSchemaByType(typ types.Type) *oas.Schema {
 
 			structSchema.SetProperty(
 				name,
-				scanner.propSchemaByField(field.Name(), structFieldType, tags, name, flags, scanner.pkg.CommentsOf(scanner.pkg.IdentOf(field))),
+				scanner.propSchemaByField(ctx, field.Name(), structFieldType, tags, name, flags, scanner.pkg.CommentsOf(scanner.pkg.IdentOf(field))),
 				required,
 			)
 		}
@@ -378,6 +380,7 @@ func (scanner *DefinitionScanner) GetSchemaByType(typ types.Type) *oas.Schema {
 }
 
 func (scanner *DefinitionScanner) propSchemaByField(
+	ctx context.Context,
 	fieldName string,
 	fieldType types.Type,
 	tags reflect.StructTag,
@@ -385,7 +388,7 @@ func (scanner *DefinitionScanner) propSchemaByField(
 	flags map[string]bool,
 	desc string,
 ) *oas.Schema {
-	propSchema := scanner.GetSchemaByType(fieldType)
+	propSchema := scanner.GetSchemaByType(ctx, fieldType)
 
 	refSchema := (*oas.Schema)(nil)
 
@@ -499,5 +502,5 @@ func getSchemaTypeFromBasicType(basicTypeName string) (typ oas.Type, format stri
 	if schemaTypeAndFormat, ok := basicTypeToSchemaType[basicTypeName]; ok {
 		return oas.Type(schemaTypeAndFormat[0]), schemaTypeAndFormat[1]
 	}
-	panic(fmt.Errorf("unsupported type %q", basicTypeName))
+	panic(errors.Errorf("unsupported type %q", basicTypeName))
 }

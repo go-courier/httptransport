@@ -3,12 +3,13 @@ package transformers
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"io"
 	"net/textproto"
 	"net/url"
 	"reflect"
 	"sync"
+
+	"github.com/pkg/errors"
 
 	"github.com/go-courier/reflectx"
 	"github.com/go-courier/reflectx/typesutil"
@@ -168,7 +169,7 @@ func (c *TransformerFactory) NewTransformer(ctx context.Context, typ typesutil.T
 		return contentTransformer, nil
 	}
 
-	return nil, fmt.Errorf("fmt %s is not supported for content transformer", key)
+	return nil, errors.Errorf("fmt %s is not supported for content transformer", key)
 }
 
 type Adder interface {

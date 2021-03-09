@@ -2,6 +2,7 @@ package generator
 
 import (
 	"bytes"
+	"context"
 	"go/ast"
 	"go/types"
 	"sort"
@@ -174,7 +175,7 @@ func (scanner *RouterScanner) OperatorTypeNameFromType(typ types.Type) *Operator
 	case *types.Named:
 		typeName := t.Obj()
 
-		if operator := scanner.operatorScanner.Operator(typeName); operator != nil {
+		if operator := scanner.operatorScanner.Operator(context.Background(), typeName); operator != nil {
 			return &OperatorWithTypeName{
 				Operator: operator,
 				TypeName: typeName,
