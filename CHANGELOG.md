@@ -5,6 +5,14 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 
 
+# [1.20.0](https://github.com/go-courier/httptransport/compare/v1.19.0...v1.20.0)
+
+### Features
+
+* **feat** drop logrus ([ce30f84](https://github.com/go-courier/httptransport/commit/ce30f84f9b6125fc32958e0ad8e20b212b7e270c))
+
+
+
 # [1.19.0](https://github.com/go-courier/httptransport/compare/v1.18.1...v1.19.0)
 
 ### Features
