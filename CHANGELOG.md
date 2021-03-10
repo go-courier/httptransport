@@ -5,6 +5,14 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 
 
+# [1.20.2](https://github.com/go-courier/httptransport/compare/v1.20.1...v1.20.2)
+
+### Bug Fixes
+
+* **fix** openapi should scan the new status error map ([da2945a](https://github.com/go-courier/httptransport/commit/da2945a9dda1589ac7b4496f216aaf72b752b2b7))
+
+
+
 # [1.20.1](https://github.com/go-courier/httptransport/compare/v1.20.0...v1.20.1)
 
 ### Bug Fixes
