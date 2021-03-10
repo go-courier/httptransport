@@ -182,7 +182,7 @@ X-Meta: operator=service-test%401.0.0%23Create
 Content-Type: application/json; charset=utf-8
 X-Meta: operator=service-test%401.0.0%23Create
 
-{"key":"BadRequest","code":400000000,"msg":"invalid Parameters","desc":"","canBeTalkError":false,"id":"","sources":["service-test@1.0.0"],"errorFields":[{"field":"label","msg":"missing required field","in":"body"}]}
+{"key":"BadRequest","code":400000000,"msg":"invalid parameters","desc":"","canBeTalkError":false,"id":"","sources":["service-test@1.0.0"],"errorFields":[{"field":"label","msg":"missing required field","in":"body"}]}
 `, string(rw.MustDumpResponse()))
 	})
 
@@ -265,7 +265,7 @@ X-Meta: operator=service-test%401.0.0%23DownloadFile
 Content-Type: application/json; charset=utf-8
 X-Meta: operator=service-test%401.0.0%23UpdateByID
 
-{"key":"UnknownError","code":500000000,"msg":"unknown error","desc":"something wrong","canBeTalkError":false,"id":"","sources":["service-test@1.0.0"],"errorFields":null}
+{"key":"UnknownError","code":500000000,"msg":"UnknownError","desc":"something wrong","canBeTalkError":false,"id":"","sources":["service-test@1.0.0"],"errorFields":null}
 `, string(rw.MustDumpResponse()))
 	})
 
@@ -290,7 +290,7 @@ X-Meta: operator=service-test%401.0.0%23UpdateByID
 Content-Type: application/json; charset=utf-8
 X-Meta: operator=service-test%401.0.0%23GetByID
 
-{"key":"BadRequest","code":400000000,"msg":"invalid Parameters","desc":"","canBeTalkError":false,"id":"","sources":["service-test@1.0.0"],"errorFields":[{"field":"id","msg":"string length should be larger than 6, but got invalid value 2","in":"path"}]}
+{"key":"BadRequest","code":400000000,"msg":"invalid parameters","desc":"","canBeTalkError":false,"id":"","sources":["service-test@1.0.0"],"errorFields":[{"field":"id","msg":"string length should be larger than 6, but got invalid value 2","in":"path"}]}
 `, string(rw.MustDumpResponse()))
 	})
 }

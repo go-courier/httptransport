@@ -287,45 +287,6 @@
                 }
               }
             }
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GithubComGoCourierStatuserrorStatusErr"
-                }
-              }
-            },
-            "x-status-errors": [
-              "@StatusErr[RequestTransformFailed][400000001][transform request failed]"
-            ]
-          },
-          "499": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GithubComGoCourierStatuserrorStatusErr"
-                }
-              }
-            },
-            "x-status-errors": [
-              "@StatusErr[ClientClosedRequest][499000001][request canceled]"
-            ]
-          },
-          "500": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GithubComGoCourierStatuserrorStatusErr"
-                }
-              }
-            },
-            "x-status-errors": [
-              "@StatusErr[RequestFailed][500000001][request failed]"
-            ]
           }
         }
       }
@@ -603,45 +564,6 @@
                 }
               }
             }
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GithubComGoCourierStatuserrorStatusErr"
-                }
-              }
-            },
-            "x-status-errors": [
-              "@StatusErr[RequestTransformFailed][400000001][transform request failed]"
-            ]
-          },
-          "499": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GithubComGoCourierStatuserrorStatusErr"
-                }
-              }
-            },
-            "x-status-errors": [
-              "@StatusErr[ClientClosedRequest][499000001][request canceled]"
-            ]
-          },
-          "500": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GithubComGoCourierStatuserrorStatusErr"
-                }
-              }
-            },
-            "x-status-errors": [
-              "@StatusErr[RequestFailed][500000001][request failed]"
-            ]
           }
         }
       }
@@ -817,7 +739,7 @@
           "code": {
             "type": "integer",
             "format": "int32",
-            "description": "unique err code",
+            "description": "http code",
             "x-go-field-name": "Code",
             "x-tag-json": "code",
             "x-tag-xml": "code"

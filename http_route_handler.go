@@ -155,7 +155,13 @@ func (handler *HttpRouteHandler) writeErr(rw http.ResponseWriter, r *http.Reques
 	}
 
 	if statusErr, ok := statuserror.IsStatusErr(resp.Unwrap()); ok {
-		resp.Value = statusErr.AppendSource(handler.serviceMeta.String())
+		err := statusErr.AppendSource(handler.serviceMeta.String())
+
+		if rwe, ok := rw.(ResponseWithError); ok {
+			rwe.WriteErrer(err)
+		}
+
+		resp.Value = err
 	}
 
 	errForWrite := resp.WriteTo(rw, r, handler.resolveTransformer)
@@ -163,4 +169,8 @@ func (handler *HttpRouteHandler) writeErr(rw http.ResponseWriter, r *http.Reques
 		rw.WriteHeader(http.StatusInternalServerError)
 		_, _ = rw.Write([]byte("courier write err failed:" + errForWrite.Error()))
 	}
+}
+
+type ResponseWithError interface {
+	WriteErrer(err error)
 }

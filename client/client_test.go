@@ -88,7 +88,7 @@ func TestClient(t *testing.T) {
 
 		ipInfo := IpInfo{}
 		_, err := ipInfoClient.Do(ctx, &GetByJSON{}).Into(&ipInfo)
-		require.Equal(t, ClientClosedRequest.Key(), err.(*statuserror.StatusErr).Key)
+		require.Equal(t, "ClientClosedRequest", err.(*statuserror.StatusErr).Key)
 	})
 
 	t.Run("err request", func(t *testing.T) {

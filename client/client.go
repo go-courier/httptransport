@@ -11,6 +11,8 @@ import (
 	"reflect"
 	"time"
 
+	"github.com/go-courier/statuserror"
+
 	"github.com/pkg/errors"
 
 	"github.com/go-courier/courier"
@@ -19,7 +21,6 @@ import (
 	"github.com/go-courier/httptransport/httpx"
 	"github.com/go-courier/httptransport/transformers"
 	"github.com/go-courier/reflectx/typesutil"
-	"github.com/go-courier/statuserror"
 	"golang.org/x/net/http2"
 )
 
@@ -92,7 +93,7 @@ func (c *Client) Do(ctx context.Context, req interface{}, metas ...courier.Metad
 		request2, err := c.newRequest(ctx, req, metas...)
 		if err != nil {
 			return &Result{
-				Err:            RequestFailed.StatusErr().WithDesc(err.Error()),
+				Err:            statuserror.Wrap(err, http.StatusInternalServerError, "RequestFailed"),
 				NewError:       c.NewError,
 				TransformerMgr: c.RequestTransformerMgr.TransformerMgr,
 			}
@@ -109,14 +110,14 @@ func (c *Client) Do(ctx context.Context, req interface{}, metas ...courier.Metad
 	if err != nil {
 		if errors.Unwrap(err) == context.Canceled {
 			return &Result{
-				Err:            ClientClosedRequest.StatusErr().WithDesc(err.Error()),
+				Err:            statuserror.Wrap(err, 499, "ClientClosedRequest"),
 				NewError:       c.NewError,
 				TransformerMgr: c.RequestTransformerMgr.TransformerMgr,
 			}
 		}
 
 		return &Result{
-			Err:            RequestFailed.StatusErr().WithDesc(err.Error()),
+			Err:            statuserror.Wrap(err, http.StatusInternalServerError, "RequestFailed"),
 			NewError:       c.NewError,
 			TransformerMgr: c.RequestTransformerMgr.TransformerMgr,
 		}
@@ -158,7 +159,7 @@ func (c *Client) newRequest(ctx context.Context, req interface{}, metas ...couri
 
 	request, err := c.RequestTransformerMgr.NewRequestWithContext(ctx, method, c.toUrl(path), req)
 	if err != nil {
-		return nil, RequestTransformFailed.StatusErr().WithDesc(err.Error())
+		return nil, statuserror.Wrap(err, http.StatusBadRequest, "RequestTransformFailed")
 	}
 
 	request = request.WithContext(ctx)
@@ -228,11 +229,11 @@ func (r *Result) Into(body interface{}) (courier.Metadata, error) {
 		})
 
 		if err != nil {
-			return ReadFailed.StatusErr().WithDesc(err.Error())
+			return statuserror.Wrap(err, http.StatusInternalServerError, "ReadFailed")
 		}
 
 		if e := transformer.DecodeFromReader(r.Response.Body, rv, textproto.MIMEHeader(r.Response.Header)); e != nil {
-			return ReadFailed.StatusErr().WithDesc(e.Error())
+			return statuserror.Wrap(err, http.StatusInternalServerError, "DecodeFailed")
 		}
 
 		return nil
@@ -247,7 +248,7 @@ func (r *Result) Into(body interface{}) (courier.Metadata, error) {
 		return meta, v
 	case io.Writer:
 		if _, err := io.Copy(v, r.Response.Body); err != nil {
-			return meta, ReadFailed.StatusErr().WithDesc(err.Error())
+			return meta, statuserror.Wrap(err, http.StatusInternalServerError, "WriteFailed")
 		}
 	default:
 		if err := decode(body); err != nil {

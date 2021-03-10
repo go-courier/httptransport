@@ -1,18 +1,16 @@
 package handlers
 
 import (
-	"bytes"
 	"fmt"
 	"net/http"
 	"strings"
 	"time"
 
-	"github.com/go-courier/logr"
-	"github.com/pkg/errors"
-
 	"github.com/go-courier/httptransport/httpx"
+	"github.com/go-courier/logr"
 	"github.com/go-courier/metax"
 	"github.com/google/uuid"
+	"github.com/pkg/errors"
 )
 
 func LogHandler() func(handler http.Handler) http.Handler {
@@ -32,12 +30,16 @@ type LoggerResponseWriter struct {
 
 	headerWritten bool
 
-	StatusCode int
-	ErrMsg     bytes.Buffer
+	statusCode int
+	err        error
 }
 
 func (rw *LoggerResponseWriter) Header() http.Header {
 	return rw.rw.Header()
+}
+
+func (rw *LoggerResponseWriter) WriteErr(err error) {
+	rw.err = err
 }
 
 func (rw *LoggerResponseWriter) WriteHeader(statusCode int) {
@@ -45,8 +47,8 @@ func (rw *LoggerResponseWriter) WriteHeader(statusCode int) {
 }
 
 func (rw *LoggerResponseWriter) Write(data []byte) (int, error) {
-	if rw.StatusCode >= http.StatusBadRequest {
-		rw.ErrMsg.Write(data)
+	if rw.err != nil && rw.statusCode >= http.StatusBadRequest {
+		rw.err = errors.New(string(data))
 	}
 	return rw.rw.Write(data)
 }
@@ -54,7 +56,7 @@ func (rw *LoggerResponseWriter) Write(data []byte) (int, error) {
 func (rw *LoggerResponseWriter) writeHeader(statusCode int) {
 	if !rw.headerWritten {
 		rw.rw.WriteHeader(statusCode)
-		rw.StatusCode = statusCode
+		rw.statusCode = statusCode
 		rw.headerWritten = true
 	}
 }
@@ -72,6 +74,9 @@ func (h *loggerHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	logger := logr.FromContext(req.Context())
 
 	level, _ := logr.ParseLevel(strings.ToLower(req.Header.Get("x-log-level")))
+	if level == logr.PanicLevel {
+		level = logr.TraceLevel
+	}
 
 	defer func() {
 		duration := time.Since(startAt)
@@ -85,17 +90,17 @@ func (h *loggerHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 			"method", req.Method,
 			"request_url", req.URL.String(),
 			"user_agent", header.Get(httpx.HeaderUserAgent),
-			"status", loggerRw.StatusCode,
+			"status", loggerRw.statusCode,
 		}
 
-		if loggerRw.ErrMsg.Len() > 0 {
-			if loggerRw.StatusCode >= http.StatusInternalServerError {
+		if loggerRw.err != nil {
+			if loggerRw.statusCode >= http.StatusInternalServerError {
 				if level >= logr.ErrorLevel {
-					logger.WithValues(fields).Error(errors.New(loggerRw.ErrMsg.String()))
+					logger.WithValues(fields).Error(loggerRw.err)
 				}
 			} else {
 				if level >= logr.WarnLevel {
-					logger.WithValues(fields).Warn(errors.New(loggerRw.ErrMsg.String()))
+					logger.WithValues(fields).Warn(loggerRw.err)
 				}
 			}
 		} else {

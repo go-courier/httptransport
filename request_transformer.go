@@ -334,17 +334,18 @@ func (e *BadRequest) Err() error {
 	if e.errorFields == nil {
 		return nil
 	}
+
 	msg := e.msg
 	if msg == "" {
-		msg = "invalid Parameters"
+		msg = "invalid parameters"
 	}
-	err := statuserror.
-		NewStatusErr("BadRequest", http.StatusBadRequest*1e6, msg).
-		AppendErrorFields(e.errorFields...)
+
+	err := statuserror.Wrap(errors.New(""), http.StatusBadRequest, "BadRequest").WithMsg(msg).AppendErrorFields(e.errorFields...)
 
 	if e.errTalk {
 		err = err.EnableErrTalk()
 	}
+
 	return err
 }
 

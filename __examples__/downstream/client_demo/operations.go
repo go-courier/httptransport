@@ -262,9 +262,6 @@ func (Proxy) Method() string {
 	return "GET"
 }
 
-// @StatusErr[ClientClosedRequest][499000001][request canceled]
-// @StatusErr[RequestFailed][500000001][request failed]
-// @StatusErr[RequestTransformFailed][400000001][transform request failed]
 func (req *Proxy) Do(ctx context.Context, c github_com_go_courier_courier.Client, metas ...github_com_go_courier_courier.Metadata) github_com_go_courier_courier.Result {
 
 	ctx = github_com_go_courier_metax.ContextWith(ctx, "operationID", "demo.Proxy")
@@ -295,9 +292,6 @@ func (ProxyV2) Method() string {
 	return "GET"
 }
 
-// @StatusErr[ClientClosedRequest][499000001][request canceled]
-// @StatusErr[RequestFailed][500000001][request failed]
-// @StatusErr[RequestTransformFailed][400000001][transform request failed]
 func (req *ProxyV2) Do(ctx context.Context, c github_com_go_courier_courier.Client, metas ...github_com_go_courier_courier.Metadata) github_com_go_courier_courier.Result {
 
 	ctx = github_com_go_courier_metax.ContextWith(ctx, "operationID", "demo.ProxyV2")

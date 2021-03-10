@@ -89,9 +89,9 @@ func ResponseFrom(v interface{}) *Response {
 			if !ok {
 				if e == context.Canceled {
 					// https://httpstatuses.com/499
-					statusErr = statuserror.NewStatusErr("ContextCanceled", 499*1e6, e.Error())
+					statusErr = statuserror.Wrap(e, 499, "ContextCanceled")
 				} else {
-					statusErr = statuserror.NewUnknownErr().WithDesc(e.Error())
+					statusErr = statuserror.Wrap(e, http.StatusInternalServerError, "UnknownError")
 				}
 			}
 			v = statusErr
@@ -168,6 +168,10 @@ type Transformer interface {
 }
 
 type Encode func(w io.Writer, v interface{}) error
+
+type ResponseWriterError interface {
+	WriteError(err error) (int, error)
+}
 
 func (response *Response) WriteTo(rw http.ResponseWriter, r *http.Request, resolveEncode func(response *Response) (string, Encode, error)) error {
 	defer func() {
