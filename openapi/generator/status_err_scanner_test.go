@@ -5,8 +5,9 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/onsi/gomega"
+
 	"github.com/go-courier/packagesx"
-	"github.com/stretchr/testify/require"
 )
 
 func TestStatusErrScanner(t *testing.T) {
@@ -15,13 +16,13 @@ func TestStatusErrScanner(t *testing.T) {
 
 	scanner := NewStatusErrScanner(pkg)
 
-	{
-		statusErrs := scanner.StatusErrorsInFunc(pkg.Func("main"))
-		require.Len(t, statusErrs, 3)
-	}
-
-	{
+	t.Run("should scan from comments", func(t *testing.T) {
 		statusErrs := scanner.StatusErrorsInFunc(pkg.Func("call"))
-		require.Len(t, statusErrs, 2)
-	}
+		gomega.NewWithT(t).Expect(statusErrs).To(gomega.HaveLen(2))
+	})
+
+	t.Run("should scan all", func(t *testing.T) {
+		statusErrs := scanner.StatusErrorsInFunc(pkg.Func("main"))
+		gomega.NewWithT(t).Expect(statusErrs).To(gomega.HaveLen(3))
+	})
 }

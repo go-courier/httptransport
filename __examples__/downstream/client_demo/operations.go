@@ -20,6 +20,8 @@ func (Cookie) Method() string {
 	return "POST"
 }
 
+// @StatusErr[ContextCanceled][499000000][ContextCanceled]
+// @StatusErr[UnknownError][500000000][UnknownError]
 func (req *Cookie) Do(ctx context.Context, c github_com_go_courier_courier.Client, metas ...github_com_go_courier_courier.Metadata) github_com_go_courier_courier.Result {
 
 	ctx = github_com_go_courier_metax.ContextWith(ctx, "operationID", "demo.Cookie")
@@ -262,6 +264,9 @@ func (Proxy) Method() string {
 	return "GET"
 }
 
+// @StatusErr[ClientClosedRequest][499000000][ClientClosedRequest]
+// @StatusErr[RequestFailed][500000000][RequestFailed]
+// @StatusErr[RequestTransformFailed][400000000][RequestTransformFailed]
 func (req *Proxy) Do(ctx context.Context, c github_com_go_courier_courier.Client, metas ...github_com_go_courier_courier.Metadata) github_com_go_courier_courier.Result {
 
 	ctx = github_com_go_courier_metax.ContextWith(ctx, "operationID", "demo.Proxy")
@@ -292,6 +297,11 @@ func (ProxyV2) Method() string {
 	return "GET"
 }
 
+// @StatusErr[ClientClosedRequest][499000000][ClientClosedRequest]
+// @StatusErr[ContextCanceled][499000000][ContextCanceled]
+// @StatusErr[RequestFailed][500000000][RequestFailed]
+// @StatusErr[RequestTransformFailed][400000000][RequestTransformFailed]
+// @StatusErr[UnknownError][500000000][UnknownError]
 func (req *ProxyV2) Do(ctx context.Context, c github_com_go_courier_courier.Client, metas ...github_com_go_courier_courier.Metadata) github_com_go_courier_courier.Result {
 
 	ctx = github_com_go_courier_metax.ContextWith(ctx, "operationID", "demo.ProxyV2")

@@ -19,6 +19,7 @@ require (
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/konsorten/go-windows-terminal-sequences v1.0.3 // indirect
 	github.com/magefile/mage v1.11.0 // indirect
+	github.com/onsi/gomega v1.11.0 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.7.0
 	golang.org/x/mod v0.4.1

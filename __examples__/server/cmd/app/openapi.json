@@ -21,6 +21,32 @@
                 }
               }
             }
+          },
+          "499": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GithubComGoCourierStatuserrorStatusErr"
+                }
+              }
+            },
+            "x-status-errors": [
+              "@StatusErr[ContextCanceled][499000000][ContextCanceled]"
+            ]
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GithubComGoCourierStatuserrorStatusErr"
+                }
+              }
+            },
+            "x-status-errors": [
+              "@StatusErr[UnknownError][500000000][UnknownError]"
+            ]
           }
         }
       }
@@ -94,6 +120,32 @@
                 }
               }
             }
+          },
+          "499": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GithubComGoCourierStatuserrorStatusErr"
+                }
+              }
+            },
+            "x-status-errors": [
+              "@StatusErr[ContextCanceled][499000000][ContextCanceled]"
+            ]
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GithubComGoCourierStatuserrorStatusErr"
+                }
+              }
+            },
+            "x-status-errors": [
+              "@StatusErr[UnknownError][500000000][UnknownError]"
+            ]
           }
         }
       }
@@ -287,6 +339,45 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GithubComGoCourierStatuserrorStatusErr"
+                }
+              }
+            },
+            "x-status-errors": [
+              "@StatusErr[RequestTransformFailed][400000000][RequestTransformFailed]"
+            ]
+          },
+          "499": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GithubComGoCourierStatuserrorStatusErr"
+                }
+              }
+            },
+            "x-status-errors": [
+              "@StatusErr[ClientClosedRequest][499000000][ClientClosedRequest]"
+            ]
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GithubComGoCourierStatuserrorStatusErr"
+                }
+              }
+            },
+            "x-status-errors": [
+              "@StatusErr[RequestFailed][500000000][RequestFailed]"
+            ]
           }
         }
       }
@@ -419,6 +510,19 @@
               "@StatusErr[Unauthorized][401999001][Unauthorized]!"
             ]
           },
+          "499": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GithubComGoCourierStatuserrorStatusErr"
+                }
+              }
+            },
+            "x-status-errors": [
+              "@StatusErr[ContextCanceled][499000000][ContextCanceled]"
+            ]
+          },
           "500": {
             "description": "",
             "content": {
@@ -430,7 +534,8 @@
             },
             "x-status-errors": [
               "@StatusErr[InternalServerError][500100001][InternalServerError]",
-              "@StatusErr[InternalServerError][500999001][InternalServerError]"
+              "@StatusErr[InternalServerError][500999001][InternalServerError]",
+              "@StatusErr[UnknownError][500000000][UnknownError]"
             ]
           }
         }
@@ -564,6 +669,47 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GithubComGoCourierStatuserrorStatusErr"
+                }
+              }
+            },
+            "x-status-errors": [
+              "@StatusErr[RequestTransformFailed][400000000][RequestTransformFailed]"
+            ]
+          },
+          "499": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GithubComGoCourierStatuserrorStatusErr"
+                }
+              }
+            },
+            "x-status-errors": [
+              "@StatusErr[ClientClosedRequest][499000000][ClientClosedRequest]",
+              "@StatusErr[ContextCanceled][499000000][ContextCanceled]"
+            ]
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GithubComGoCourierStatuserrorStatusErr"
+                }
+              }
+            },
+            "x-status-errors": [
+              "@StatusErr[RequestFailed][500000000][RequestFailed]",
+              "@StatusErr[UnknownError][500000000][UnknownError]"
+            ]
           }
         }
       }

@@ -32,6 +32,32 @@ func TestOperatorScanner(t *testing.T) {
           }
         }
       }
+    },
+    "499": {
+      "description": "",
+      "content": {
+        "application/json": {
+          "schema": {
+            "$ref": "#/components/schemas/GithubComGoCourierStatuserrorStatusErr"
+          }
+        }
+      },
+      "x-status-errors": [
+        "@StatusErr[ContextCanceled][499000000][ContextCanceled]"
+      ]
+    },
+    "500": {
+      "description": "",
+      "content": {
+        "application/json": {
+          "schema": {
+            "$ref": "#/components/schemas/GithubComGoCourierStatuserrorStatusErr"
+          }
+        }
+      },
+      "x-status-errors": [
+        "@StatusErr[UnknownError][500000000][UnknownError]"
+      ]
     }
   }
 }`,

@@ -4,8 +4,12 @@ import (
 	"fmt"
 	"go/ast"
 	"go/types"
+	"reflect"
 	"sort"
+	"strconv"
 	"strings"
+
+	"github.com/pkg/errors"
 
 	"github.com/go-courier/packagesx"
 	"github.com/go-courier/statuserror"
@@ -31,6 +35,8 @@ type StatusErrScanner struct {
 	errorsUsed       map[*types.Func][]*statuserror.StatusErr
 }
 
+var statusErrPkgPath = reflect.TypeOf(statuserror.StatusErr{}).PkgPath()
+
 func (scanner *StatusErrScanner) StatusErrorsInFunc(typeFunc *types.Func) []*statuserror.StatusErr {
 	if typeFunc == nil {
 		return nil
@@ -55,12 +61,53 @@ func (scanner *StatusErrScanner) StatusErrorsInFunc(typeFunc *types.Func) []*sta
 					callIdent := identList[len(identList)-1]
 					obj := pkg.TypesInfo.ObjectOf(callIdent)
 
+					if obj != nil {
+						// pick status errors from github.com/go-courier/statuserror.Wrap
+						if callIdent.Name == "Wrap" && obj.Pkg().Path() == statusErrPkgPath {
+
+							code := 0
+							key := ""
+							msg := ""
+							desc := make([]string, 0)
+
+							for i, arg := range v.Args[1:] {
+								tv, err := pkg.Eval(arg)
+								if err != nil {
+									continue
+								}
+
+								switch i {
+								case 0: // code
+									code, _ = strconv.Atoi(tv.Value.String())
+								case 1: // key
+									key, _ = strconv.Unquote(tv.Value.String())
+								case 2: // msg
+									msg, _ = strconv.Unquote(tv.Value.String())
+								default:
+									d, _ := strconv.Unquote(tv.Value.String())
+									desc = append(desc, d)
+								}
+							}
+
+							if code > 0 {
+								if msg == "" {
+									msg = key
+								}
+
+								scanner.appendStateErrs(typeFunc, statuserror.Wrap(errors.New(""), code, key, append([]string{msg}, desc...)...))
+							}
+
+						}
+					}
+
+					// Deprecated old code defined
 					if obj != nil && obj.Pkg() != nil && obj.Pkg().Path() == scanner.StatusErrType.Obj().Pkg().Path() {
 						for i := range identList {
 							scanner.mayAddStateErrorByObject(typeFunc, pkg.TypesInfo.ObjectOf(identList[i]))
 						}
 						return false
 					}
+
 					if nextTypeFunc, ok := obj.(*types.Func); ok && nextTypeFunc != typeFunc && nextTypeFunc.Pkg() != nil {
 						scanner.appendStateErrs(typeFunc, scanner.StatusErrorsInFunc(nextTypeFunc)...)
 					}
