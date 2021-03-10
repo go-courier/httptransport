@@ -5,6 +5,14 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 
 
+# [1.20.1](https://github.com/go-courier/httptransport/compare/v1.20.0...v1.20.1)
+
+### Bug Fixes
+
+* **fix** stateerror with stack ([1137c04](https://github.com/go-courier/httptransport/commit/1137c043f81a0d5bb72f6502dccd9f69d19acc4f))
+
+
+
 # [1.20.0](https://github.com/go-courier/httptransport/compare/v1.19.0...v1.20.0)
 
 ### Features
