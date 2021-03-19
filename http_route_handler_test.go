@@ -39,7 +39,7 @@ func TestHttpRouteHandler(t *testing.T) {
 		require.Equal(t, `HTTP/0.0 302 Found
 Content-Type: text/html; charset=utf-8
 Location: /other
-X-Meta: operator=service-test%401.0.0%23Redirect
+X-Meta: service-test@1.0.0/Redirect
 
 <a href="/other">Found</a>.
 
@@ -61,7 +61,7 @@ X-Meta: operator=service-test%401.0.0%23Redirect
 
 		require.Equal(t, `HTTP/0.0 301 Moved Permanently
 Location: /other
-X-Meta: operator=service-test%401.0.0%23RedirectWhenError
+X-Meta: service-test@1.0.0/RedirectWhenError
 Content-Length: 0
 
 `, string(rw.MustDumpResponse()))
@@ -90,7 +90,7 @@ Content-Length: 0
 
 		require.Equal(t, `HTTP/0.0 204 No Content
 Set-Cookie: `+cookie.String()+`
-X-Meta: operator=service-test%401.0.0%23Cookie
+X-Meta: service-test@1.0.0/Cookie
 
 `, string(rw.MustDumpResponse()))
 	})
@@ -125,7 +125,7 @@ X-Meta: operator=service-test%401.0.0%23Cookie
 
 		require.Equal(t, `HTTP/0.0 200 OK
 Content-Type: application/json; charset=utf-8
-X-Meta: operator=service-test%401.0.0%23GetByID
+X-Meta: service-test@1.0.0/GetByID
 
 {"id":"123456","label":"label"}
 `, string(rw.MustDumpResponse()))
@@ -153,7 +153,7 @@ X-Meta: operator=service-test%401.0.0%23GetByID
 
 		require.Equal(t, `HTTP/0.0 201 Created
 Content-Type: application/json; charset=utf-8
-X-Meta: operator=service-test%401.0.0%23Create
+X-Meta: service-test@1.0.0/Create
 
 {"id":"123456","label":"123"}
 `, string(rw.MustDumpResponse()))
@@ -180,7 +180,7 @@ X-Meta: operator=service-test%401.0.0%23Create
 
 		require.Equal(t, `HTTP/0.0 400 Bad Request
 Content-Type: application/json; charset=utf-8
-X-Meta: operator=service-test%401.0.0%23Create
+X-Meta: service-test@1.0.0/Create
 
 {"key":"BadRequest","code":400000000,"msg":"invalid parameters","desc":"","canBeTalkError":false,"id":"","sources":["service-test@1.0.0"],"errorFields":[{"field":"label","msg":"missing required field","in":"body"}]}
 `, string(rw.MustDumpResponse()))
@@ -205,7 +205,7 @@ X-Meta: operator=service-test%401.0.0%23Create
 
 		require.Equal(t, `HTTP/0.0 500 Internal Server Error
 Content-Type: application/json; charset=utf-8
-X-Meta: operator=service-test%401.0.0%23RemoveByID
+X-Meta: service-test@1.0.0/RemoveByID
 X-Num: 1
 
 {"key":"InternalServerError","code":500999001,"msg":"InternalServerError","desc":"","canBeTalkError":false,"id":"","sources":["service-test@1.0.0"],"errorFields":null}
@@ -228,7 +228,7 @@ X-Num: 1
 		require.Equal(t, `HTTP/0.0 200 OK
 Content-Disposition: attachment; filename=text.txt
 Content-Type: text/plain
-X-Meta: operator=service-test%401.0.0%23DownloadFile
+X-Meta: service-test@1.0.0/DownloadFile
 
 123123123`, string(rw.MustDumpResponse()))
 	})
@@ -263,7 +263,7 @@ X-Meta: operator=service-test%401.0.0%23DownloadFile
 
 		require.Equal(t, `HTTP/0.0 500 Internal Server Error
 Content-Type: application/json; charset=utf-8
-X-Meta: operator=service-test%401.0.0%23UpdateByID
+X-Meta: service-test@1.0.0/UpdateByID
 
 {"key":"UnknownError","code":500000000,"msg":"UnknownError","desc":"something wrong","canBeTalkError":false,"id":"","sources":["service-test@1.0.0"],"errorFields":null}
 `, string(rw.MustDumpResponse()))
@@ -288,7 +288,7 @@ X-Meta: operator=service-test%401.0.0%23UpdateByID
 
 		require.Equal(t, `HTTP/0.0 400 Bad Request
 Content-Type: application/json; charset=utf-8
-X-Meta: operator=service-test%401.0.0%23GetByID
+X-Meta: service-test@1.0.0/GetByID
 
 {"key":"BadRequest","code":400000000,"msg":"invalid parameters","desc":"","canBeTalkError":false,"id":"","sources":["service-test@1.0.0"],"errorFields":[{"field":"id","msg":"string length should be larger than 6, but got invalid value 2","in":"path"}]}
 `, string(rw.MustDumpResponse()))

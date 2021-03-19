@@ -24,7 +24,7 @@ type GetByJSON struct {
 }
 
 func (GetByJSON) Path() string {
-	return "/json"
+	return "/me.json"
 }
 
 type GetByXML struct {
@@ -32,19 +32,19 @@ type GetByXML struct {
 }
 
 func (GetByXML) Path() string {
-	return "/xml"
+	return "/me.xml"
 }
 
 func TestClient(t *testing.T) {
 	ipInfoClient := &Client{
-		Host:    "ip-api.com",
-		Timeout: 100 * time.Second,
+		Protocol: "https",
+		Host:     "ip.nf",
+		Timeout:  100 * time.Second,
 	}
 	ipInfoClient.SetDefaults()
 
 	t.Run("direct request", func(t *testing.T) {
 		request, _ := http.NewRequest("GET", "https://api.github.com", nil)
-
 		_, err := ipInfoClient.Do(context.Background(), request).Into(nil)
 		require.NoError(t, err)
 	})
@@ -106,7 +106,7 @@ func TestClient(t *testing.T) {
 	})
 
 	t.Run("result pass", func(t *testing.T) {
-		request, _ := http.NewRequest("GET", "http://ip-api.com/json", nil)
+		request, _ := http.NewRequest("GET", "https://ip.nf/me.json", nil)
 		result := ipInfoClient.Do(context.Background(), request)
 
 		req, _ := http.NewRequest(http.MethodGet, "/", nil)
