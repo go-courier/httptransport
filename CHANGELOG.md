@@ -5,6 +5,14 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 
 
+# [1.20.3](https://github.com/go-courier/httptransport/compare/v1.20.2...v1.20.3)
+
+### Bug Fixes
+
+* **fix** X-Meta should return a human readable string ([95ccb86](https://github.com/go-courier/httptransport/commit/95ccb86d2f27a1b811f895fc2f0fce9a64dff1dd))
+
+
+
 # [1.20.2](https://github.com/go-courier/httptransport/compare/v1.20.1...v1.20.2)
 
 ### Bug Fixes
