@@ -234,6 +234,7 @@ func (t *RequestTransformer) NewRequestWithContext(ctx context.Context, method s
 
 		if param.Explode {
 			if fieldValue.IsValid() {
+				// slice should keep empty value
 				for i := 0; i < fieldValue.Len(); i++ {
 					buf := bytes.NewBuffer(nil)
 					if _, err := param.Transformer.EncodeToWriter(buf, fieldValue.Index(i)); err != nil {
@@ -244,12 +245,15 @@ func (t *RequestTransformer) NewRequestWithContext(ctx context.Context, method s
 				}
 			}
 		} else {
-			buf := bytes.NewBuffer(nil)
-			if _, err := param.Transformer.EncodeToWriter(buf, fieldValue); err != nil {
-				errSet.AddErr(err, param.Name)
-				return
+			// should skip empty value when omitempty
+			if !(param.Omitempty && reflectx.IsEmptyValue(fieldValue)) {
+				buf := bytes.NewBuffer(nil)
+				if _, err := param.Transformer.EncodeToWriter(buf, fieldValue); err != nil {
+					errSet.AddErr(err, param.Name)
+					return
+				}
+				addParam(param, buf.String())
 			}
-			addParam(param, buf.String())
 		}
 	}, "in")
 
