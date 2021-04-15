@@ -5,6 +5,14 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 
 
+# [1.20.4](https://github.com/go-courier/httptransport/compare/v1.20.3...v1.20.4)
+
+### Bug Fixes
+
+* **fix** should skip empty value when omitempty ([cd78fac](https://github.com/go-courier/httptransport/commit/cd78fac22aeb3beccf2ab894ea87d360ca69fef7))
+
+
+
 # [1.20.3](https://github.com/go-courier/httptransport/compare/v1.20.2...v1.20.3)
 
 ### Bug Fixes
