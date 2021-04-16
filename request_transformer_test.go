@@ -76,6 +76,7 @@ func TestRequestTransformer(t *testing.T) {
 
 	type Queries struct {
 		QInt            int       `name:"int" in:"query"`
+		QEmptyInt       int       `name:"emptyInt,omitempty" in:"query"`
 		QString         string    `name:"string" in:"query"`
 		QSlice          []string  `name:"slice" in:"query"`
 		QBytes          []byte    `name:"bytes,omitempty" in:"query"`
