@@ -233,7 +233,7 @@ func (r *Result) Into(body interface{}) (courier.Metadata, error) {
 		}
 
 		if e := transformer.DecodeFromReader(r.Response.Body, rv, textproto.MIMEHeader(r.Response.Header)); e != nil {
-			return statuserror.Wrap(err, http.StatusInternalServerError, "DecodeFailed")
+			return statuserror.Wrap(e, http.StatusInternalServerError, "DecodeFailed")
 		}
 
 		return nil
