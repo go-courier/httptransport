@@ -85,7 +85,15 @@ func (t *HttpTransport) SetDefaults() {
 }
 
 func (t *HttpTransport) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	requestOverride(req)
 	t.httpRouter.ServeHTTP(w, req)
+}
+
+func requestOverride(r *http.Request) {
+	if overrideMethod := r.Header.Get("X-HTTP-Method-Override"); overrideMethod != "" &&
+		isLegitimateHttpMethod(overrideMethod) {
+		r.Method = overrideMethod
+	}
 }
 
 func courierPrintln(format string, args ...interface{}) {
