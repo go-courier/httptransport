@@ -494,7 +494,7 @@ func valueOf(v constant.Value) interface{} {
 
 	switch v.Kind() {
 	case constant.Float:
-		v, _ := strconv.ParseFloat(v.String(), 10)
+		v, _ := strconv.ParseFloat(v.String(), 64)
 		return v
 	case constant.Bool:
 		v, _ := strconv.ParseBool(v.String())
