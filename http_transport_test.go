@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"os"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -79,6 +80,20 @@ func TestHttpTransport(t *testing.T) {
 		data, err := httputil.DumpResponse(resp, true)
 		require.NoError(t, err)
 		fmt.Println(string(data))
+	})
+
+	t.Run("httpOverride", func(t *testing.T) {
+		req, err := http.NewRequest("POST", "http://127.0.0.1:8080/demo/restful/123123123", strings.NewReader(`{"id":"123123123","label":"2"}`))
+		require.NoError(t, err)
+		req.Header.Set("X-HTTP-Method-Override", "PUT")
+
+		resp, err := http.DefaultClient.Do(req)
+		require.NoError(t, err)
+		defer resp.Body.Close()
+		respText, err := ioutil.ReadAll(resp.Body)
+		require.NoError(t, err)
+		require.Equal(t, `{"key":"UnknownError","code":500000000,"msg":"UnknownError","desc":"something wrong","canBeTalkError":false,"id":"","sources":[""],"errorFields":null}
+`, string(respText))
 	})
 
 	p, _ := os.FindProcess(os.Getpid())
