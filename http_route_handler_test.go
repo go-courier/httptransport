@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/go-courier/courier"
-	"github.com/go-courier/httptransport/__examples__/server/cmd/app/routes"
+	"github.com/go-courier/httptransport/testdata/server/cmd/app/routes"
 	"github.com/go-courier/httptransport/testify"
 	"github.com/stretchr/testify/require"
 

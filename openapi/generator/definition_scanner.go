@@ -9,15 +9,13 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/go-courier/logr"
-	"github.com/pkg/errors"
-
-	"github.com/go-courier/enumeration/scanner"
-
 	"github.com/go-courier/codegen"
+	"github.com/go-courier/enumeration/scanner"
+	"github.com/go-courier/logr"
 	"github.com/go-courier/oas"
 	"github.com/go-courier/packagesx"
-	"github.com/go-courier/reflectx/typesutil"
+	typesutil "github.com/go-courier/x/types"
+	"github.com/pkg/errors"
 )
 
 func NewDefinitionScanner(pkg *packagesx.Package) *DefinitionScanner {
@@ -146,7 +144,7 @@ func (scanner *DefinitionScanner) Def(ctx context.Context, typeName *types.TypeN
 				}
 			}
 
-			s.Enum = append(s.Enum, o.Value())
+			s.Enum = append(s.Enum, v)
 			optionsLabels = append(optionsLabels, o.Label)
 		}
 

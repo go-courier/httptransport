@@ -9,8 +9,8 @@ import (
 	"net/url"
 
 	"github.com/go-courier/courier"
-	"github.com/go-courier/reflectx/typesutil"
 	"github.com/go-courier/statuserror"
+	typesutil "github.com/go-courier/x/types"
 )
 
 type ResponseWrapper func(v interface{}) *Response
@@ -159,21 +159,21 @@ type Transformer interface {
 	NamedByTag() string
 
 	// encode to writer
-	EncodeToWriter(w io.Writer, v interface{}) (mediaType string, err error)
+	EncodeTo(w io.Writer, v interface{}) (mediaType string, err error)
 	// decode from reader
-	DecodeFromReader(r io.Reader, v interface{}, headers ...textproto.MIMEHeader) error
+	DecodeFrom(r io.Reader, v interface{}, headers ...textproto.MIMEHeader) error
 
 	// Content-Type
 	String() string
 }
 
-type Encode func(w io.Writer, v interface{}) error
+type Encode func(ctx context.Context, w io.Writer, v interface{}) error
 
 type ResponseWriterError interface {
 	WriteError(err error) (int, error)
 }
 
-func (response *Response) WriteTo(rw http.ResponseWriter, r *http.Request, resolveEncode func(response *Response) (string, Encode, error)) error {
+func (response *Response) WriteTo(rw http.ResponseWriter, r *http.Request, resolveEncodeTo func(response *Response) (Encode, error)) error {
 	defer func() {
 		response.Value = nil
 	}()
@@ -244,23 +244,42 @@ func (response *Response) WriteTo(rw http.ResponseWriter, r *http.Request, resol
 			return err
 		}
 	default:
-		contentType, encode, err := resolveEncode(response)
+		encodeTo, err := resolveEncodeTo(response)
 		if err != nil {
 			return err
 		}
 
-		if response.ContentType == "" {
-			rw.Header().Set(HeaderContentType, mime.FormatMediaType(contentType, map[string]string{
-				"charset": "utf-8",
-			}))
-		}
-
-		rw.WriteHeader(response.StatusCode)
-
-		if err := encode(rw, response.Value); err != nil {
+		if err := encodeTo(ContextWithStatusCode(r.Context(), response.StatusCode), rw, response.Value); err != nil {
 			return err
 		}
 	}
 
 	return nil
+}
+
+type contextKeyStatusCode struct{}
+
+func ContextWithStatusCode(ctx context.Context, statusCode int) context.Context {
+	return context.WithValue(ctx, contextKeyStatusCode{}, statusCode)
+}
+
+func StatusCodeFromContext(ctx context.Context) int {
+	if statusCode, ok := ctx.Value(contextKeyStatusCode{}).(int); ok {
+		return statusCode
+	}
+	return http.StatusOK
+}
+
+func MaybeWriteHeader(ctx context.Context, w io.Writer, contentType string, param map[string]string) {
+	if rw, ok := w.(WithHeader); ok {
+		if len(param) == 0 {
+			rw.Header().Set(HeaderContentType, contentType)
+		} else {
+			rw.Header().Set(HeaderContentType, mime.FormatMediaType(contentType, param))
+		}
+	}
+
+	if rw, ok := w.(http.ResponseWriter); ok {
+		rw.WriteHeader(StatusCodeFromContext(ctx))
+	}
 }

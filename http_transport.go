@@ -17,7 +17,7 @@ import (
 	"github.com/go-courier/courier"
 	"github.com/go-courier/httptransport/handlers"
 	"github.com/go-courier/httptransport/transformers"
-	"github.com/go-courier/validator"
+	"github.com/go-courier/httptransport/validator"
 	"github.com/julienschmidt/httprouter"
 )
 
@@ -173,7 +173,7 @@ func (t *HttpTransport) convertRouterToHttpRouter(router *courier.Router) *httpr
 		httpRoute := routeMetas[i]
 		httpRoute.Log()
 
-		if err := TryCatch(func() {
+		if err := tryCatch(func() {
 			httpRouter.HandlerFunc(
 				httpRoute.Method(),
 				httpRoute.Path(),
@@ -185,4 +185,15 @@ func (t *HttpTransport) convertRouterToHttpRouter(router *courier.Router) *httpr
 	}
 
 	return httpRouter
+}
+
+func tryCatch(fn func()) (err error) {
+	defer func() {
+		if e := recover(); e != nil {
+			err = errors.Errorf("%+v", e)
+		}
+	}()
+
+	fn()
+	return nil
 }

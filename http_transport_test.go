@@ -12,8 +12,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-courier/httptransport/__examples__/server/cmd/app/routes"
 	"github.com/go-courier/httptransport/client"
+	"github.com/go-courier/httptransport/testdata/server/cmd/app/routes"
 	"github.com/stretchr/testify/require"
 
 	"github.com/go-courier/httptransport"
@@ -93,8 +93,8 @@ func TestHttpTransportWithHTTP2(t *testing.T) {
 		},
 	)
 
-	ht.CertFile = "./testdata/rootCA.crt"
-	ht.KeyFile = "./testdata/rootCA.key"
+	ht.CertFile = "./testdata/certs/cert.pem"
+	ht.KeyFile = "./testdata/certs/key.pem"
 
 	rootCA, _ := ioutil.ReadFile(ht.CertFile)
 
@@ -112,6 +112,7 @@ func TestHttpTransportWithHTTP2(t *testing.T) {
 
 	for i := 0; i < 100; i++ {
 		wg.Add(1)
+
 		go func() {
 			defer wg.Done()
 			_, err := c.Get("http://localhost:8080/demo/restful/123123123")
@@ -138,8 +139,8 @@ func TestHttpTransportWithTLS(t *testing.T) {
 		return nil
 	})
 
-	ht.CertFile = "./testdata/rootCA.crt"
-	ht.KeyFile = "./testdata/rootCA.key"
+	ht.CertFile = "./testdata/certs/cert.pem"
+	ht.KeyFile = "./testdata/certs/key.pem"
 
 	rootCA, _ := ioutil.ReadFile(ht.CertFile)
 

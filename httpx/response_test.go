@@ -1,6 +1,7 @@
 package httpx
 
 import (
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -122,8 +123,11 @@ Set-Cookie: `+cookie.String()+`
 
 		_ = ResponseFrom(&Data{
 			ID: "123456",
-		}).WriteTo(rw, req, func(response *Response) (string, Encode, error) {
-			return "application/json", func(w io.Writer, v interface{}) error {
+		}).WriteTo(rw, req, func(response *Response) (Encode, error) {
+			return func(ctx context.Context, w io.Writer, v interface{}) error {
+				MaybeWriteHeader(ctx, w, "application/json", map[string]string{
+					"charset": "utf-8",
+				})
 				return json.NewEncoder(w).Encode(v)
 			}, nil
 		})
@@ -145,8 +149,11 @@ Content-Type: application/json; charset=utf-8
 
 		_ = ResponseFrom(&Data{
 			ID: "123456",
-		}).WriteTo(rw, req, func(response *Response) (string, Encode, error) {
-			return "application/json", func(w io.Writer, v interface{}) error {
+		}).WriteTo(rw, req, func(response *Response) (Encode, error) {
+			return func(ctx context.Context, w io.Writer, v interface{}) error {
+				MaybeWriteHeader(ctx, w, "application/json", map[string]string{
+					"charset": "utf-8",
+				})
 				return json.NewEncoder(w).Encode(v)
 			}, nil
 		})

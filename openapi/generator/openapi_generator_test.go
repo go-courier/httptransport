@@ -14,7 +14,7 @@ import (
 
 func TestOpenAPIGenerator(t *testing.T) {
 	cwd, _ := os.Getwd()
-	dir := filepath.Join(cwd, "../../__examples__/server/cmd/app")
+	dir := filepath.Join(cwd, "../../testdata/server/cmd/app")
 
 	ctx := logr.WithLogger(context.Background(), logr.StdLogger())
 

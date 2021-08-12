@@ -15,7 +15,7 @@ import (
 
 func TestOperatorScanner(t *testing.T) {
 	cwd, _ := os.Getwd()
-	pkg, _ := packagesx.Load(filepath.Join(cwd, "./__examples__/router_scanner/auth"))
+	pkg, _ := packagesx.Load(filepath.Join(cwd, "./testdata/router_scanner/auth"))
 
 	scanner := NewOperatorScanner(pkg)
 

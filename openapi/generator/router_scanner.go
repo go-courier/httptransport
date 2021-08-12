@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/go-courier/packagesx"
-	"github.com/go-courier/reflectx/typesutil"
+	typesutil "github.com/go-courier/x/types"
 	"github.com/julienschmidt/httprouter"
 )
 

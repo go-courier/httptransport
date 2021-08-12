@@ -18,7 +18,7 @@ import (
 func TestDefinitionScanner(t *testing.T) {
 	cwd, _ := os.Getwd()
 
-	pkg, err := packagesx.Load(filepath.Join(cwd, "./__examples__/definition_scanner"))
+	pkg, err := packagesx.Load(filepath.Join(cwd, "./testdata/definition_scanner"))
 	require.NoError(t, err)
 
 	scanner := NewDefinitionScanner(pkg)
