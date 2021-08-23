@@ -12,11 +12,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-courier/httptransport/__examples__/server/cmd/app/routes"
-	"github.com/go-courier/httptransport/client"
-	"github.com/stretchr/testify/require"
-
 	"github.com/go-courier/httptransport"
+	"github.com/go-courier/httptransport/client"
+	"github.com/go-courier/httptransport/testdata/server/cmd/app/routes"
+	. "github.com/onsi/gomega"
 )
 
 func BenchmarkHttpTransport(b *testing.B) {
@@ -55,29 +54,29 @@ func TestHttpTransport(t *testing.T) {
 
 	t.Run("request", func(t *testing.T) {
 		resp, err := http.Get("http://127.0.0.1:8080/demo/restful/123456")
-		require.NoError(t, err)
+		NewWithT(t).Expect(err).To(BeNil())
 
 		data, err := httputil.DumpResponse(resp, true)
-		require.NoError(t, err)
+		NewWithT(t).Expect(err).To(BeNil())
 		fmt.Println(string(data))
 	})
 
 	t.Run("openapi", func(t *testing.T) {
 		resp, err := http.Get("http://127.0.0.1:8080/demo")
 
-		require.NoError(t, err)
+		NewWithT(t).Expect(err).To(BeNil())
 
 		data, err := httputil.DumpResponse(resp, true)
-		require.NoError(t, err)
+		NewWithT(t).Expect(err).To(BeNil())
 		fmt.Println(string(data))
 	})
 
 	t.Run("proxy", func(t *testing.T) {
 		resp, err := http.Get("http://127.0.0.1:8080/demo/proxy/v2")
-		require.NoError(t, err)
+		NewWithT(t).Expect(err).To(BeNil())
 
 		data, err := httputil.DumpResponse(resp, true)
-		require.NoError(t, err)
+		NewWithT(t).Expect(err).To(BeNil())
 		fmt.Println(string(data))
 	})
 
@@ -93,8 +92,8 @@ func TestHttpTransportWithHTTP2(t *testing.T) {
 		},
 	)
 
-	ht.CertFile = "./testdata/rootCA.crt"
-	ht.KeyFile = "./testdata/rootCA.key"
+	ht.CertFile = "./testdata/certs/cert.pem"
+	ht.KeyFile = "./testdata/certs/key.pem"
 
 	rootCA, _ := ioutil.ReadFile(ht.CertFile)
 
@@ -112,20 +111,21 @@ func TestHttpTransportWithHTTP2(t *testing.T) {
 
 	for i := 0; i < 100; i++ {
 		wg.Add(1)
+
 		go func() {
 			defer wg.Done()
 			_, err := c.Get("http://localhost:8080/demo/restful/123123123")
-			require.NoError(t, err)
+			NewWithT(t).Expect(err).To(BeNil())
 		}()
 	}
 
 	wg.Wait()
 
 	resp, err := c.Get("https://localhost:8080/demo/restful/123123123")
-	require.NoError(t, err)
+	NewWithT(t).Expect(err).To(BeNil())
 
 	data, err := httputil.DumpResponse(resp, true)
-	require.NoError(t, err)
+	NewWithT(t).Expect(err).To(BeNil())
 	fmt.Println(string(data))
 
 	p, _ := os.FindProcess(os.Getpid())
@@ -138,8 +138,8 @@ func TestHttpTransportWithTLS(t *testing.T) {
 		return nil
 	})
 
-	ht.CertFile = "./testdata/rootCA.crt"
-	ht.KeyFile = "./testdata/rootCA.key"
+	ht.CertFile = "./testdata/certs/cert.pem"
+	ht.KeyFile = "./testdata/certs/key.pem"
 
 	rootCA, _ := ioutil.ReadFile(ht.CertFile)
 
@@ -153,13 +153,13 @@ func TestHttpTransportWithTLS(t *testing.T) {
 	time.Sleep(200 * time.Millisecond)
 
 	req, err := http.NewRequest("GET", "https://localhost:8081/demo/restful/1", nil)
-	require.NoError(t, err)
+	NewWithT(t).Expect(err).To(BeNil())
 
 	resp, err := client.GetShortConnClient(10*time.Second, NewInsecureTLSTransport(rootCA)).Do(req)
-	require.NoError(t, err)
+	NewWithT(t).Expect(err).To(BeNil())
 
 	data, err := httputil.DumpResponse(resp, true)
-	require.NoError(t, err)
+	NewWithT(t).Expect(err).To(BeNil())
 	fmt.Println(string(data))
 
 	time.Sleep(2 * time.Second)

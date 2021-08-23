@@ -7,19 +7,18 @@ import (
 	"testing"
 
 	"github.com/go-courier/logr"
-
 	"github.com/go-courier/packagesx"
-	"github.com/stretchr/testify/require"
+	. "github.com/onsi/gomega"
 )
 
 func TestOpenAPIGenerator(t *testing.T) {
 	cwd, _ := os.Getwd()
-	dir := filepath.Join(cwd, "../../__examples__/server/cmd/app")
+	dir := filepath.Join(cwd, "../../testdata/server/cmd/app")
 
 	ctx := logr.WithLogger(context.Background(), logr.StdLogger())
 
 	pkg, err := packagesx.Load(dir)
-	require.NoError(t, err)
+	NewWithT(t).Expect(err).To(BeNil())
 
 	g := NewOpenAPIGenerator(pkg)
 

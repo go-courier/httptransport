@@ -8,14 +8,15 @@ import (
 	"path/filepath"
 	"testing"
 
+	. "github.com/onsi/gomega"
+
 	"github.com/go-courier/oas"
 	"github.com/go-courier/packagesx"
-	"github.com/stretchr/testify/require"
 )
 
 func TestOperatorScanner(t *testing.T) {
 	cwd, _ := os.Getwd()
-	pkg, _ := packagesx.Load(filepath.Join(cwd, "./__examples__/router_scanner/auth"))
+	pkg, _ := packagesx.Load(filepath.Join(cwd, "./testdata/router_scanner/auth"))
 
 	scanner := NewOperatorScanner(pkg)
 
@@ -226,7 +227,7 @@ func TestOperatorScanner(t *testing.T) {
 			op.BindOperation("", operation, true)
 			data, _ := json.MarshalIndent(operation, "", "  ")
 			fmt.Println(string(data))
-			require.Equal(t, result, string(data))
+			NewWithT(t).Expect(string(data)).To(Equal(result))
 		})
 	}
 }

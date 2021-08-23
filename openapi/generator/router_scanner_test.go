@@ -10,7 +10,7 @@ import (
 
 func ExampleNewRouterScanner() {
 	cwd, _ := os.Getwd()
-	pkg, _ := packagesx.Load(filepath.Join(cwd, "./__examples__/router_scanner"))
+	pkg, _ := packagesx.Load(filepath.Join(cwd, "./testdata/router_scanner"))
 
 	router := pkg.Var("Router")
 

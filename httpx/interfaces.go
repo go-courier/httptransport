@@ -21,3 +21,7 @@ type RedirectDescriber interface {
 	StatusCodeDescriber
 	Location() *url.URL
 }
+
+type WithHeader interface {
+	Header() http.Header
+}

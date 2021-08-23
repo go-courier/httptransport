@@ -4,17 +4,17 @@ import (
 	"context"
 	"go/types"
 
+	"github.com/go-courier/httptransport/validator"
 	"github.com/go-courier/oas"
-	"github.com/go-courier/ptr"
-	"github.com/go-courier/reflectx/typesutil"
-	"github.com/go-courier/validator"
+	"github.com/go-courier/x/ptr"
+	typesutil "github.com/go-courier/x/types"
 )
 
 func BindSchemaValidationByValidateBytes(s *oas.Schema, typ types.Type, validateBytes []byte) error {
 	ttype := typesutil.FromTType(typ)
 
-	fieldValidator, err := validator.ValidatorMgrDefault.Compile(context.Background(), validateBytes, ttype, func(rule *validator.Rule) {
-		rule.DefaultValue = nil
+	fieldValidator, err := validator.ValidatorMgrDefault.Compile(context.Background(), validateBytes, ttype, func(rule validator.RuleModifier) {
+		rule.SetDefaultValue(nil)
 	})
 	if err != nil {
 		return err
@@ -34,10 +34,11 @@ func BindSchemaValidationByValidator(s *oas.Schema, v validator.Validator) {
 	if s == nil {
 		*s = oas.Schema{}
 	}
+
 	switch vt := v.(type) {
 	case *validator.UintValidator:
 		if len(vt.Enums) > 0 {
-			for v := range vt.Enums {
+			for _, v := range vt.Enums {
 				s.Enum = append(s.Enum, v)
 			}
 			return
@@ -52,7 +53,7 @@ func BindSchemaValidationByValidator(s *oas.Schema, v validator.Validator) {
 		}
 	case *validator.IntValidator:
 		if len(vt.Enums) > 0 {
-			for v := range vt.Enums {
+			for _, v := range vt.Enums {
 				s.Enum = append(s.Enum, v)
 			}
 			return
@@ -72,7 +73,7 @@ func BindSchemaValidationByValidator(s *oas.Schema, v validator.Validator) {
 		}
 	case *validator.FloatValidator:
 		if len(vt.Enums) > 0 {
-			for v := range vt.Enums {
+			for _, v := range vt.Enums {
 				s.Enum = append(s.Enum, v)
 			}
 			return
@@ -97,7 +98,7 @@ func BindSchemaValidationByValidator(s *oas.Schema, v validator.Validator) {
 		s.Type = oas.TypeString // force to type string for TextMarshaler
 
 		if len(vt.Enums) > 0 {
-			for v := range vt.Enums {
+			for _, v := range vt.Enums {
 				s.Enum = append(s.Enum, v)
 			}
 			return
@@ -107,8 +108,8 @@ func BindSchemaValidationByValidator(s *oas.Schema, v validator.Validator) {
 		if vt.MaxLength != nil {
 			s.MaxLength = ptr.Uint64(*vt.MaxLength)
 		}
-		if vt.Pattern != nil {
-			s.Pattern = vt.Pattern.String()
+		if vt.Pattern != "" {
+			s.Pattern = vt.Pattern
 		}
 	case *validator.SliceValidator:
 		s.MinItems = ptr.Uint64(vt.MinItems)

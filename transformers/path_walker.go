@@ -2,6 +2,7 @@ package transformers
 
 import (
 	"fmt"
+	"strings"
 )
 
 type PathWalker struct {
@@ -21,17 +22,17 @@ func (pw *PathWalker) Paths() []interface{} {
 }
 
 func (pw *PathWalker) String() string {
-	pathString := ""
+	b := &strings.Builder{}
 	for i := 0; i < len(pw.path); i++ {
-		switch pw.path[i].(type) {
+		switch x := pw.path[i].(type) {
 		case string:
-			if pathString != "" {
-				pathString += "."
+			if b.Len() != 0 {
+				b.WriteByte('.')
 			}
-			pathString += pw.path[i].(string)
+			b.WriteString(x)
 		case int:
-			pathString += fmt.Sprintf("[%d]", pw.path[i].(int))
+			b.WriteString(fmt.Sprintf("[%d]", x))
 		}
 	}
-	return pathString
+	return b.String()
 }
