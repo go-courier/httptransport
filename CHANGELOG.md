@@ -5,6 +5,19 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 
 
+# [1.21.0](https://github.com/go-courier/httptransport/compare/v1.20.5...v1.21.0)
+
+### Bug Fixes
+
+* **fix** bitSize should be 32 or 64 when parsing float ([85c239b](https://github.com/go-courier/httptransport/commit/85c239b10de187779cc854ff58307ed9fbfeb2e8))
+
+
+### Features
+
+* **feat** enhancement and cleanup ([e8c2547](https://github.com/go-courier/httptransport/commit/e8c25473568f40296a25c725414ba966a8ebb466))
+
+
+
 # [1.20.4](https://github.com/go-courier/httptransport/compare/v1.20.3...v1.20.4)
 
 ### Bug Fixes
