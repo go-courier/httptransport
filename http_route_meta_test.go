@@ -7,7 +7,7 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/go-courier/httptransport"
-	"github.com/go-courier/httptransport/__examples__/server/cmd/app/routes"
+	"github.com/go-courier/httptransport/testdata/server/cmd/app/routes"
 )
 
 func ExampleGroup() {
@@ -20,6 +20,7 @@ func ExampleGroup() {
 func ExampleHttpRouteMeta() {
 	os.Setenv("PROJECT_NAME", "service-example")
 	os.Setenv("PROJECT_VERSION", "1.0.0")
+
 	color.NoColor = true
 
 	routeList := routes.RootRouter.Routes()

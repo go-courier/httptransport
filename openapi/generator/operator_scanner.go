@@ -13,16 +13,15 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/go-courier/logr"
-	"github.com/pkg/errors"
-
 	"github.com/go-courier/httptransport"
 	"github.com/go-courier/httptransport/httpx"
 	"github.com/go-courier/httptransport/transformers"
+	"github.com/go-courier/logr"
 	"github.com/go-courier/oas"
 	"github.com/go-courier/packagesx"
-	"github.com/go-courier/reflectx/typesutil"
 	"github.com/go-courier/statuserror"
+	typesutil "github.com/go-courier/x/types"
+	"github.com/pkg/errors"
 )
 
 func NewOperatorScanner(pkg *packagesx.Package) *OperatorScanner {

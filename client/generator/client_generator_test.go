@@ -6,21 +6,21 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/stretchr/testify/require"
+	. "github.com/onsi/gomega"
 )
 
 func TestOpenAPIGenerator(t *testing.T) {
 	cwd, _ := os.Getwd()
 
-	openAPISchema := &url.URL{Scheme: "file", Path: filepath.Join(cwd, "../../__examples__/server/cmd/app/openapi.json")}
+	openAPISchema := &url.URL{Scheme: "file", Path: filepath.Join(cwd, "../../testdata/server/cmd/app/openapi.json")}
 
 	g := NewClientGenerator("demo", openAPISchema, OptionVendorImportByGoMod())
 
 	g.Load()
-	g.Output(filepath.Join(cwd, "../../__examples__/downstream"))
+	g.Output(filepath.Join(cwd, "../../testdata/downstream"))
 }
 
 func TestToColonPath(t *testing.T) {
-	require.Equal(t, "/user/:userID/tags/:tagID", toColonPath("/user/{userID}/tags/{tagID}"))
-	require.Equal(t, "/user/:userID", toColonPath("/user/{userID}"))
+	NewWithT(t).Expect(toColonPath("/user/{userID}/tags/{tagID}")).To(Equal("/user/:userID/tags/:tagID"))
+	NewWithT(t).Expect(toColonPath("/user/{userID}")).To(Equal("/user/:userID"))
 }

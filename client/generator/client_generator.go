@@ -14,6 +14,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/go-courier/codegen"
 	"github.com/go-courier/oas"
+	contextx "github.com/go-courier/x/context"
 	"github.com/pkg/errors"
 	"golang.org/x/mod/modfile"
 	"golang.org/x/tools/go/packages"
@@ -134,14 +135,14 @@ func (g *ClientGenerator) vendorImportsByGoMod(cwd string) map[string]bool {
 	return vendorImports
 }
 
-type contextVendorImports int
+type contextVendorImports struct{}
 
 func WithVendorImports(ctx context.Context, vendorImports map[string]bool) context.Context {
-	return context.WithValue(ctx, contextVendorImports(1), vendorImports)
+	return contextx.WithValue(ctx, contextVendorImports{}, vendorImports)
 }
 
 func VendorImportsFromContext(ctx context.Context) map[string]bool {
-	if v, ok := ctx.Value(contextVendorImports(1)).(map[string]bool); ok {
+	if v, ok := ctx.Value(contextVendorImports{}).(map[string]bool); ok {
 		return v
 	}
 	return map[string]bool{}

@@ -12,7 +12,7 @@ import (
 
 func TestStatusErrScanner(t *testing.T) {
 	cwd, _ := os.Getwd()
-	pkg, _ := packagesx.Load(filepath.Join(cwd, "./__examples__/status_err_scanner"))
+	pkg, _ := packagesx.Load(filepath.Join(cwd, "./testdata/status_err_scanner"))
 
 	scanner := NewStatusErrScanner(pkg)
 

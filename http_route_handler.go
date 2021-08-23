@@ -2,18 +2,16 @@ package httptransport
 
 import (
 	"context"
-	"io"
 	"net/http"
 	"reflect"
 
-	"github.com/pkg/errors"
-
-	"github.com/go-courier/courier"
 	"github.com/go-courier/httptransport/httpx"
 	"github.com/go-courier/httptransport/transformers"
 	"github.com/go-courier/metax"
-	"github.com/go-courier/reflectx/typesutil"
 	"github.com/go-courier/statuserror"
+	contextx "github.com/go-courier/x/context"
+	typesutil "github.com/go-courier/x/types"
+	"github.com/pkg/errors"
 )
 
 func NewHttpRouteHandler(serviceMeta *ServiceMeta, httpRoute *HttpRouteMeta, requestTransformerMgr *RequestTransformerMgr) *HttpRouteHandler {
@@ -50,31 +48,11 @@ type HttpRouteHandler struct {
 	requestTransformers []*RequestTransformer
 }
 
-type contextKeyOperationID int
-
-func ContextWithOperationID(ctx context.Context, operationID string) context.Context {
-	return context.WithValue(ctx, contextKeyOperationID(1), operationID)
-}
-
-func OperationIDFromContext(ctx context.Context) string {
-	return ctx.Value(contextKeyOperationID(1)).(string)
-}
-
-type contextKeyOperatorFactory int
-
-func ContextWithOperatorFactory(ctx context.Context, om *courier.OperatorFactory) context.Context {
-	return context.WithValue(ctx, contextKeyOperatorFactory(1), om)
-}
-
-func OperatorFactoryFromContext(ctx context.Context) *courier.OperatorFactory {
-	v, _ := ctx.Value(contextKeyOperatorFactory(1)).(*courier.OperatorFactory)
-	return v
-}
-
 func (handler *HttpRouteHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	operationID := handler.OperatorFactoryWithRouteMetas[len(handler.OperatorFactoryWithRouteMetas)-1].ID
 
 	ctx := r.Context()
+
 	ctx = ContextWithHttpRequest(ctx, r)
 	ctx = ContextWithServiceMeta(ctx, *handler.serviceMeta)
 	ctx = ContextWithOperationID(ctx, operationID)
@@ -87,7 +65,7 @@ func (handler *HttpRouteHandler) ServeHTTP(rw http.ResponseWriter, r *http.Reque
 
 	rw.Header().Set("X-Meta", spanName)
 
-	requestInfo := NewRequestInfo(r)
+	requestInfo := httpx.NewRequestInfo(r)
 
 	for i := range handler.OperatorFactoryWithRouteMetas {
 		opFactory := handler.OperatorFactoryWithRouteMetas[i]
@@ -102,7 +80,7 @@ func (handler *HttpRouteHandler) ServeHTTP(rw http.ResponseWriter, r *http.Reque
 
 		rt := handler.requestTransformers[i]
 		if rt != nil {
-			err := rt.DecodeFrom(requestInfo, opFactory.OperatorFactory, op)
+			err := rt.DecodeFrom(ctx, requestInfo, opFactory.OperatorFactory, op)
 			if err != nil {
 				handler.writeErr(rw, r, err)
 				return
@@ -121,7 +99,7 @@ func (handler *HttpRouteHandler) ServeHTTP(rw http.ResponseWriter, r *http.Reque
 				ctx = c
 			} else {
 				// set result in context with key of operator name
-				ctx = context.WithValue(ctx, opFactory.ContextKey, result)
+				ctx = contextx.WithValue(ctx, opFactory.ContextKey, result)
 			}
 			continue
 		}
@@ -130,18 +108,14 @@ func (handler *HttpRouteHandler) ServeHTTP(rw http.ResponseWriter, r *http.Reque
 	}
 }
 
-func (handler *HttpRouteHandler) resolveTransformer(response *httpx.Response) (string, httpx.Encode, error) {
+func (handler *HttpRouteHandler) resolveTransformer(response *httpx.Response) (httpx.Encode, error) {
 	transformer, err := handler.TransformerMgr.NewTransformer(context.Background(), typesutil.FromRType(reflect.TypeOf(response.Value)), transformers.TransformerOption{
 		MIME: response.ContentType,
 	})
 	if err != nil {
-		return "", nil, err
+		return nil, err
 	}
-
-	return transformer.String(), func(w io.Writer, v interface{}) error {
-		_, err := transformer.EncodeToWriter(w, v)
-		return err
-	}, nil
+	return transformer.EncodeTo, nil
 }
 
 func (handler *HttpRouteHandler) writeResp(rw http.ResponseWriter, r *http.Request, resp interface{}) {
@@ -161,7 +135,7 @@ func (handler *HttpRouteHandler) writeErr(rw http.ResponseWriter, r *http.Reques
 		err := statusErr.AppendSource(handler.serviceMeta.String())
 
 		if rwe, ok := rw.(ResponseWithError); ok {
-			rwe.WriteErrer(err)
+			rwe.WriteError(err)
 		}
 
 		resp.Value = err
@@ -175,5 +149,5 @@ func (handler *HttpRouteHandler) writeErr(rw http.ResponseWriter, r *http.Reques
 }
 
 type ResponseWithError interface {
-	WriteErrer(err error)
+	WriteError(err error)
 }

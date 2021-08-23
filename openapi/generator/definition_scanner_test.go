@@ -11,15 +11,15 @@ import (
 
 	"github.com/go-courier/oas"
 	"github.com/go-courier/packagesx"
+	. "github.com/onsi/gomega"
 	"github.com/pkg/errors"
-	"github.com/stretchr/testify/require"
 )
 
 func TestDefinitionScanner(t *testing.T) {
 	cwd, _ := os.Getwd()
 
-	pkg, err := packagesx.Load(filepath.Join(cwd, "./__examples__/definition_scanner"))
-	require.NoError(t, err)
+	pkg, err := packagesx.Load(filepath.Join(cwd, "./testdata/definition_scanner"))
+	NewWithT(t).Expect(err).To(BeNil())
 
 	scanner := NewDefinitionScanner(pkg)
 
@@ -318,7 +318,7 @@ func TestDefinitionScanner(t *testing.T) {
 		t.Run(c[0], func(t *testing.T) {
 			s := scanner.Def(context.Background(), pkg.TypeName(c[0]))
 			data, _ := json.MarshalIndent(s, "", "  ")
-			require.Equal(t, strings.TrimSpace(c[1]), string(data))
+			NewWithT(t).Expect(string(data)).To(Equal(strings.TrimSpace(c[1])))
 		})
 	}
 
@@ -335,7 +335,7 @@ func TestDefinitionScanner(t *testing.T) {
 		err := tryCatch(func() {
 			scanner.Def(context.Background(), pkg.TypeName("InvalidComposed"))
 		})
-		require.Error(t, err)
+		NewWithT(t).Expect(err).NotTo(BeNil())
 	})
 }
 

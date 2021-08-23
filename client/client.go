@@ -11,16 +11,15 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/go-courier/statuserror"
-
-	"github.com/pkg/errors"
-
 	"github.com/go-courier/courier"
 	"github.com/go-courier/httptransport"
 	"github.com/go-courier/httptransport/client/roundtrippers"
 	"github.com/go-courier/httptransport/httpx"
 	"github.com/go-courier/httptransport/transformers"
-	"github.com/go-courier/reflectx/typesutil"
+	"github.com/go-courier/statuserror"
+	contextx "github.com/go-courier/x/context"
+	typesutil "github.com/go-courier/x/types"
+	"github.com/pkg/errors"
 	"golang.org/x/net/http2"
 )
 
@@ -55,33 +54,33 @@ func (c *Client) SetDefaults() {
 	}
 }
 
-type contextKeyClient int
+type contextKeyClient struct{}
 
 func ContextWithClient(ctx context.Context, c *http.Client) context.Context {
-	return context.WithValue(ctx, contextKeyClient(1), c)
+	return contextx.WithValue(ctx, contextKeyClient{}, c)
 }
 
 func ClientFromContext(ctx context.Context) *http.Client {
 	if ctx == nil {
 		return nil
 	}
-	if c, ok := ctx.Value(contextKeyClient(1)).(*http.Client); ok {
+	if c, ok := ctx.Value(contextKeyClient{}).(*http.Client); ok {
 		return c
 	}
 	return nil
 }
 
-type contextKeyDefaultHttpTransport int
+type contextKeyDefaultHttpTransport struct{}
 
 func ContextWithDefaultHttpTransport(ctx context.Context, t *http.Transport) context.Context {
-	return context.WithValue(ctx, contextKeyDefaultHttpTransport(1), t)
+	return contextx.WithValue(ctx, contextKeyDefaultHttpTransport{}, t)
 }
 
 func DefaultHttpTransportFromContext(ctx context.Context) *http.Transport {
 	if ctx == nil {
 		return nil
 	}
-	if t, ok := ctx.Value(contextKeyDefaultHttpTransport(1)).(*http.Transport); ok {
+	if t, ok := ctx.Value(contextKeyDefaultHttpTransport{}).(*http.Transport); ok {
 		return t
 	}
 	return nil
@@ -232,8 +231,8 @@ func (r *Result) Into(body interface{}) (courier.Metadata, error) {
 			return statuserror.Wrap(err, http.StatusInternalServerError, "ReadFailed")
 		}
 
-		if e := transformer.DecodeFromReader(r.Response.Body, rv, textproto.MIMEHeader(r.Response.Header)); e != nil {
-			return statuserror.Wrap(e, http.StatusInternalServerError, "DecodeFailed")
+		if e := transformer.DecodeFrom(context.Background(), r.Response.Body, rv, textproto.MIMEHeader(r.Response.Header)); e != nil {
+			return statuserror.Wrap(err, http.StatusInternalServerError, "DecodeFailed")
 		}
 
 		return nil

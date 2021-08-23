@@ -8,11 +8,10 @@ import (
 	"time"
 
 	"github.com/go-courier/courier"
-	"github.com/go-courier/httptransport/__examples__/server/cmd/app/routes"
-	"github.com/go-courier/httptransport/testify"
-	"github.com/stretchr/testify/require"
-
 	"github.com/go-courier/httptransport"
+	"github.com/go-courier/httptransport/testdata/server/cmd/app/routes"
+	"github.com/go-courier/httptransport/testify"
+	. "github.com/onsi/gomega"
 )
 
 var rtMgr = httptransport.NewRequestTransformerMgr(nil, nil)
@@ -31,19 +30,19 @@ func TestHttpRouteHandler(t *testing.T) {
 		httpRouterHandler := httptransport.NewHttpRouteHandler(serviceMeta, httpRoute, rtMgr)
 
 		req, err := rtMgr.NewRequest((routes.Redirect{}).Method(), "/", routes.Redirect{})
-		require.NoError(t, err)
+		NewWithT(t).Expect(err).To(BeNil())
 
 		rw := testify.NewMockResponseWriter()
 		httpRouterHandler.ServeHTTP(rw, req)
 
-		require.Equal(t, `HTTP/0.0 302 Found
+		NewWithT(t).Expect(string(rw.MustDumpResponse())).To(Equal(`HTTP/0.0 302 Found
 Content-Type: text/html; charset=utf-8
 Location: /other
 X-Meta: service-test@1.0.0/Redirect
 
 <a href="/other">Found</a>.
 
-`, string(rw.MustDumpResponse()))
+`))
 	})
 
 	t.Run("redirect when error", func(t *testing.T) {
@@ -54,17 +53,17 @@ X-Meta: service-test@1.0.0/Redirect
 		httpRouterHandler := httptransport.NewHttpRouteHandler(serviceMeta, httpRoute, rtMgr)
 
 		req, err := rtMgr.NewRequest((routes.RedirectWhenError{}).Method(), "/", routes.RedirectWhenError{})
-		require.NoError(t, err)
+		NewWithT(t).Expect(err).To(BeNil())
 
 		rw := testify.NewMockResponseWriter()
 		httpRouterHandler.ServeHTTP(rw, req)
 
-		require.Equal(t, `HTTP/0.0 301 Moved Permanently
+		NewWithT(t).Expect(string(rw.MustDumpResponse())).To(Equal(`HTTP/0.0 301 Moved Permanently
 Location: /other
 X-Meta: service-test@1.0.0/RedirectWhenError
 Content-Length: 0
 
-`, string(rw.MustDumpResponse()))
+`))
 	})
 
 	t.Run("cookies", func(t *testing.T) {
@@ -75,7 +74,7 @@ Content-Length: 0
 		httpRouterHandler := httptransport.NewHttpRouteHandler(serviceMeta, httpRoute, rtMgr)
 
 		req, err := rtMgr.NewRequest((routes.Cookie{}).Method(), "/", routes.Cookie{})
-		require.NoError(t, err)
+		NewWithT(t).Expect(err).To(BeNil())
 
 		cookie := &http.Cookie{
 			Name:    "token",
@@ -88,11 +87,11 @@ Content-Length: 0
 		rw := testify.NewMockResponseWriter()
 		httpRouterHandler.ServeHTTP(rw, req)
 
-		require.Equal(t, `HTTP/0.0 204 No Content
-Set-Cookie: `+cookie.String()+`
+		NewWithT(t).Expect(string(rw.MustDumpResponse())).To(Equal(`HTTP/0.0 204 No Content
+Set-Cookie: ` + cookie.String() + `
 X-Meta: service-test@1.0.0/Cookie
 
-`, string(rw.MustDumpResponse()))
+`))
 	})
 
 	t.Run("return ok", func(t *testing.T) {
@@ -115,20 +114,20 @@ X-Meta: service-test@1.0.0/Cookie
 		}
 
 		req, err := rtMgr.NewRequestWithContext(httptransport.EnableQueryInBodyForHttpGet(context.Background()), (routes.GetByID{}).Method(), reqData.Path(), reqData)
-		require.NoError(t, err)
+		NewWithT(t).Expect(err).To(BeNil())
 
 		httpReq, _ := httputil.DumpRequest(req, true)
-		require.Equal(t, "GET /123456 HTTP/1.1\r\nContent-Type: application/x-www-form-urlencoded; param=value\r\n\r\nlabel=label", string(httpReq))
+		NewWithT(t).Expect(string(httpReq)).To(Equal("GET /123456 HTTP/1.1\r\nContent-Type: application/x-www-form-urlencoded; param=value\r\n\r\nlabel=label"))
 
 		rw := testify.NewMockResponseWriter()
 		httpRouterHandler.ServeHTTP(rw, req)
 
-		require.Equal(t, `HTTP/0.0 200 OK
+		NewWithT(t).Expect(string(rw.MustDumpResponse())).To(Equal(`HTTP/0.0 200 OK
 Content-Type: application/json; charset=utf-8
 X-Meta: service-test@1.0.0/GetByID
 
 {"id":"123456","label":"label"}
-`, string(rw.MustDumpResponse()))
+`))
 	})
 
 	t.Run("POST return ok", func(t *testing.T) {
@@ -146,17 +145,17 @@ X-Meta: service-test@1.0.0/GetByID
 		}
 
 		req, err := rtMgr.NewRequest((routes.Create{}).Method(), "/", reqData)
-		require.NoError(t, err)
+		NewWithT(t).Expect(err).To(BeNil())
 
 		rw := testify.NewMockResponseWriter()
 		httpRouterHandler.ServeHTTP(rw, req)
 
-		require.Equal(t, `HTTP/0.0 201 Created
+		NewWithT(t).Expect(string(rw.MustDumpResponse())).To(Equal(`HTTP/0.0 201 Created
 Content-Type: application/json; charset=utf-8
 X-Meta: service-test@1.0.0/Create
 
 {"id":"123456","label":"123"}
-`, string(rw.MustDumpResponse()))
+`))
 	})
 
 	t.Run("POST return bad request", func(t *testing.T) {
@@ -173,17 +172,17 @@ X-Meta: service-test@1.0.0/Create
 		}
 
 		req, err := rtMgr.NewRequest((routes.Create{}).Method(), "/", reqData)
-		require.NoError(t, err)
+		NewWithT(t).Expect(err).To(BeNil())
 
 		rw := testify.NewMockResponseWriter()
 		httpRouterHandler.ServeHTTP(rw, req)
 
-		require.Equal(t, `HTTP/0.0 400 Bad Request
+		NewWithT(t).Expect(string(rw.MustDumpResponse())).To(Equal(`HTTP/0.0 400 Bad Request
 Content-Type: application/json; charset=utf-8
 X-Meta: service-test@1.0.0/Create
 
 {"key":"BadRequest","code":400000000,"msg":"invalid parameters","desc":"","canBeTalkError":false,"id":"","sources":["service-test@1.0.0"],"errorFields":[{"field":"label","msg":"missing required field","in":"body"}]}
-`, string(rw.MustDumpResponse()))
+`))
 	})
 
 	t.Run("return nil", func(t *testing.T) {
@@ -198,18 +197,18 @@ X-Meta: service-test@1.0.0/Create
 		}
 
 		req, err := rtMgr.NewRequest((routes.RemoveByID{}).Method(), reqData.Path(), reqData)
-		require.NoError(t, err)
+		NewWithT(t).Expect(err).To(BeNil())
 
 		rw := testify.NewMockResponseWriter()
 		httpRouterHandler.ServeHTTP(rw, req)
 
-		require.Equal(t, `HTTP/0.0 500 Internal Server Error
+		NewWithT(t).Expect(string(rw.MustDumpResponse())).To(Equal(`HTTP/0.0 500 Internal Server Error
 Content-Type: application/json; charset=utf-8
 X-Meta: service-test@1.0.0/RemoveByID
 X-Num: 1
 
 {"key":"InternalServerError","code":500999001,"msg":"InternalServerError","desc":"","canBeTalkError":false,"id":"","sources":["service-test@1.0.0"],"errorFields":null}
-`, string(rw.MustDumpResponse()))
+`))
 	})
 
 	t.Run("return attachment", func(t *testing.T) {
@@ -220,17 +219,17 @@ X-Num: 1
 		httpRouterHandler := httptransport.NewHttpRouteHandler(serviceMeta, httpRoute, rtMgr)
 
 		req, err := rtMgr.NewRequest((routes.DownloadFile{}).Method(), (routes.DownloadFile{}).Path(), routes.DownloadFile{})
-		require.NoError(t, err)
+		NewWithT(t).Expect(err).To(BeNil())
 
 		rw := testify.NewMockResponseWriter()
 		httpRouterHandler.ServeHTTP(rw, req)
 
-		require.Equal(t, `HTTP/0.0 200 OK
+		NewWithT(t).Expect(string(rw.MustDumpResponse())).To(Equal(`HTTP/0.0 200 OK
 Content-Disposition: attachment; filename=text.txt
 Content-Type: text/plain
 X-Meta: service-test@1.0.0/DownloadFile
 
-123123123`, string(rw.MustDumpResponse()))
+123123123`))
 	})
 
 	t.Run("return with process error", func(t *testing.T) {
@@ -256,17 +255,17 @@ X-Meta: service-test@1.0.0/DownloadFile
 				},
 			},
 		})
-		require.NoError(t, err)
+		NewWithT(t).Expect(err).To(BeNil())
 
 		rw := testify.NewMockResponseWriter()
 		httpRouterHandler.ServeHTTP(rw, req)
 
-		require.Equal(t, `HTTP/0.0 500 Internal Server Error
+		NewWithT(t).Expect(string(rw.MustDumpResponse())).To(Equal(`HTTP/0.0 500 Internal Server Error
 Content-Type: application/json; charset=utf-8
 X-Meta: service-test@1.0.0/UpdateByID
 
 {"key":"UnknownError","code":500000000,"msg":"UnknownError","desc":"something wrong","canBeTalkError":false,"id":"","sources":["service-test@1.0.0"],"errorFields":null}
-`, string(rw.MustDumpResponse()))
+`))
 	})
 
 	t.Run("return with validate err", func(t *testing.T) {
@@ -281,16 +280,16 @@ X-Meta: service-test@1.0.0/UpdateByID
 		}
 
 		req, err := rtMgr.NewRequest((routes.GetByID{}).Method(), reqData.Path(), reqData)
-		require.NoError(t, err)
+		NewWithT(t).Expect(err).To(BeNil())
 
 		rw := testify.NewMockResponseWriter()
 		httpRouterHandler.ServeHTTP(rw, req)
 
-		require.Equal(t, `HTTP/0.0 400 Bad Request
+		NewWithT(t).Expect(string(rw.MustDumpResponse())).To(Equal(`HTTP/0.0 400 Bad Request
 Content-Type: application/json; charset=utf-8
 X-Meta: service-test@1.0.0/GetByID
 
 {"key":"BadRequest","code":400000000,"msg":"invalid parameters","desc":"","canBeTalkError":false,"id":"","sources":["service-test@1.0.0"],"errorFields":[{"field":"id","msg":"string length should be larger than 6, but got invalid value 2","in":"path"}]}
-`, string(rw.MustDumpResponse()))
+`))
 	})
 }
