@@ -14,11 +14,12 @@ import (
 )
 
 type Parameter struct {
-	In   string
-	Name string
-	Type typesx.Type
-	Tags map[string]Tag
-	Loc  []int
+	In    string
+	Name  string
+	Field typesx.StructField
+	Type  typesx.Type
+	Tags  map[string]Tag
+	Loc   []int
 }
 
 func (p *Parameter) FieldValue(structReflectValue reflect.Value) reflect.Value {
@@ -139,6 +140,7 @@ func EachParameter(ctx context.Context, tpe typesx.Type, each func(p *Parameter)
 			}
 
 			p := &Parameter{}
+			p.Field = f
 			p.Type = f.Type()
 			p.Tags = tags
 			p.In = tagIn.Name()
