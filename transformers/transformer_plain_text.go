@@ -4,7 +4,6 @@ import (
 	"context"
 	"io"
 	"net/textproto"
-	"reflect"
 
 	"github.com/go-courier/httptransport/httpx"
 	encodingx "github.com/go-courier/x/encoding"
@@ -47,14 +46,27 @@ func (t *TransformerPlainText) EncodeTo(ctx context.Context, w io.Writer, v inte
 	return nil
 }
 
-func (TransformerPlainText) DecodeFrom(ctx context.Context, r io.Reader, v interface{}, headers ...textproto.MIMEHeader) error {
-	rv, ok := v.(reflect.Value)
-	if !ok {
-		rv = reflect.ValueOf(v)
+func (t *TransformerPlainText) DecodeFrom(ctx context.Context, r io.Reader, v interface{}, headers ...textproto.MIMEHeader) error {
+	switch x := r.(type) {
+	case CanString:
+		raw := x.String()
+		if x, ok := v.(*string); ok {
+			*x = raw
+			return nil
+		}
+		return encodingx.UnmarshalText(v, []byte(raw))
+	case CanInterface:
+		if raw, ok := x.Interface().(string); ok {
+			if x, ok := v.(*string); ok {
+				*x = raw
+				return nil
+			}
+			return encodingx.UnmarshalText(v, []byte(raw))
+		}
 	}
 	data, err := io.ReadAll(r)
 	if err != nil {
 		return err
 	}
-	return encodingx.UnmarshalText(rv, data)
+	return encodingx.UnmarshalText(v, data)
 }

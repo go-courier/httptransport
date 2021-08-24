@@ -66,7 +66,7 @@ func TestTransformerURLEncoded(t *testing.T) {
 		NewWithT(t).Expect(b.String()).To(Equal(queryStr))
 	})
 
-	t.Run("DecodeFrom", func(t *testing.T) {
+	t.Run("DecodeAndValidate", func(t *testing.T) {
 		b := bytes.NewBufferString(queryStr)
 		testData := TestData{}
 

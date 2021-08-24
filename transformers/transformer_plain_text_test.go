@@ -33,7 +33,7 @@ func TestTextTransformer(t *testing.T) {
 		})
 	})
 
-	t.Run("DecodeFrom", func(t *testing.T) {
+	t.Run("DecodeAndValidate", func(t *testing.T) {
 		t.Run("failed", func(t *testing.T) {
 			b := bytes.NewBufferString("a")
 			i := 0

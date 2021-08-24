@@ -80,7 +80,7 @@ func (handler *HttpRouteHandler) ServeHTTP(rw http.ResponseWriter, r *http.Reque
 
 		rt := handler.requestTransformers[i]
 		if rt != nil {
-			err := rt.DecodeFrom(ctx, requestInfo, opFactory.OperatorFactory, op)
+			err := rt.DecodeAndValidate(ctx, requestInfo, op)
 			if err != nil {
 				handler.writeErr(rw, r, err)
 				return

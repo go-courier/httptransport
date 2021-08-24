@@ -1,6 +1,7 @@
 package httpx
 
 import (
+	"context"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -12,22 +13,45 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-func NewRequestInfo(r *http.Request) *RequestInfo {
-	return &RequestInfo{
+func NewRequestInfo(r *http.Request) RequestInfo {
+	return &requestInfo{
 		receivedAt: time.Now(),
-		Request:    r,
+		request:    r,
 	}
 }
 
-type RequestInfo struct {
-	Request    *http.Request
+type WithFromRequestInfo interface {
+	FromRequestInfo(ri RequestInfo) error
+}
+
+type RequestInfo interface {
+	Context() context.Context
+	Values(in string, name string) []string
+	Header() http.Header
+	Body() io.ReadCloser
+}
+
+type requestInfo struct {
+	request    *http.Request
 	receivedAt time.Time
 	query      url.Values
 	cookies    []*http.Cookie
 	params     httprouter.Params
 }
 
-func (info *RequestInfo) Value(in string, name string) string {
+func (info *requestInfo) Header() http.Header {
+	return info.request.Header
+}
+
+func (info *requestInfo) Context() context.Context {
+	return info.request.Context()
+}
+
+func (info *requestInfo) Body() io.ReadCloser {
+	return info.request.Body
+}
+
+func (info *requestInfo) Value(in string, name string) string {
 	values := info.Values(in, name)
 	if len(values) == 0 {
 		return ""
@@ -35,7 +59,7 @@ func (info *RequestInfo) Value(in string, name string) string {
 	return values[0]
 }
 
-func (info *RequestInfo) Values(in string, name string) []string {
+func (info *requestInfo) Values(in string, name string) []string {
 	switch in {
 	case "path":
 		v := info.Param(name)
@@ -53,9 +77,9 @@ func (info *RequestInfo) Values(in string, name string) []string {
 	return []string{}
 }
 
-func (info *RequestInfo) Param(name string) string {
+func (info *requestInfo) Param(name string) string {
 	if info.params == nil {
-		params, ok := info.Request.Context().Value(httprouter.ParamsKey).(httprouter.Params)
+		params, ok := info.request.Context().Value(httprouter.ParamsKey).(httprouter.Params)
 		if !ok {
 			params = httprouter.Params{}
 		}
@@ -64,15 +88,15 @@ func (info *RequestInfo) Param(name string) string {
 	return info.params.ByName(name)
 }
 
-func (info *RequestInfo) QueryValues(name string) []string {
+func (info *requestInfo) QueryValues(name string) []string {
 	if info.query == nil {
-		info.query = info.Request.URL.Query()
+		info.query = info.request.URL.Query()
 
-		if info.Request.Method == http.MethodGet && len(info.query) == 0 && info.Request.ContentLength > 0 {
-			if strings.HasPrefix(info.Request.Header.Get("Content-Type"), MIME_FORM_URLENCODED) {
-				data, err := ioutil.ReadAll(info.Request.Body)
+		if info.request.Method == http.MethodGet && len(info.query) == 0 && info.request.ContentLength > 0 {
+			if strings.HasPrefix(info.request.Header.Get("Content-Type"), MIME_FORM_URLENCODED) {
+				data, err := ioutil.ReadAll(info.request.Body)
 				if err == nil {
-					info.Request.Body.Close()
+					info.request.Body.Close()
 
 					query, e := url.ParseQuery(string(data))
 					if e == nil {
@@ -85,13 +109,13 @@ func (info *RequestInfo) QueryValues(name string) []string {
 	return info.query[name]
 }
 
-func (info *RequestInfo) HeaderValues(name string) []string {
-	return info.Request.Header[textproto.CanonicalMIMEHeaderKey(name)]
+func (info *requestInfo) HeaderValues(name string) []string {
+	return info.request.Header[textproto.CanonicalMIMEHeaderKey(name)]
 }
 
-func (info *RequestInfo) CookieValues(name string) []string {
+func (info *requestInfo) CookieValues(name string) []string {
 	if info.cookies == nil {
-		info.cookies = info.Request.Cookies()
+		info.cookies = info.request.Cookies()
 	}
 
 	values := make([]string, 0)
@@ -105,8 +129,4 @@ func (info *RequestInfo) CookieValues(name string) []string {
 		}
 	}
 	return values
-}
-
-func (info *RequestInfo) Body() io.Reader {
-	return info.Request.Body
 }

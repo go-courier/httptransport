@@ -36,8 +36,9 @@ func (p *Parameter) FieldValue(structReflectValue reflect.Value) reflect.Value {
 		// last loc should keep ptr value
 		if i < n-1 {
 			for fieldValue.Kind() == reflect.Ptr {
+				// notice the ptr struct ensure only for Ptr Anonymous Field
 				if fieldValue.IsNil() {
-					break
+					fieldValue.Set(reflectx.New(fieldValue.Type()))
 				}
 				fieldValue = fieldValue.Elem()
 			}

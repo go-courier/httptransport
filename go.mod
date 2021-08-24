@@ -3,7 +3,6 @@ module github.com/go-courier/httptransport
 go 1.17
 
 require (
-	github.com/davecgh/go-spew v1.1.1
 	github.com/fatih/color v1.12.0
 	github.com/go-courier/codegen v1.1.2
 	github.com/go-courier/courier v1.5.0

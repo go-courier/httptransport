@@ -81,7 +81,7 @@ func (transformer *TransformerURLEncoded) EncodeTo(ctx context.Context, w io.Wri
 		if p.Transformer != nil {
 			fieldValue := p.FieldValue(rv)
 			stringBuilders := NewStringBuilders()
-			if err := NewSupperTransformer(p.Transformer, &p.TransformerOption).EncodeTo(ctx, stringBuilders, fieldValue); err != nil {
+			if err := NewTransformerSuper(p.Transformer, &p.TransformerOption.CommonTransformOption).EncodeTo(ctx, stringBuilders, fieldValue); err != nil {
 				errSet.AddErr(err, p.Name)
 				continue
 			}
@@ -106,6 +106,10 @@ func (transformer *TransformerURLEncoded) DecodeFrom(ctx context.Context, r io.R
 		rv = reflect.ValueOf(v)
 	}
 
+	if rv.Kind() != reflect.Ptr {
+		return errors.New("decode target must be ptr value")
+	}
+
 	data, err := io.ReadAll(r)
 	if err != nil {
 		return err
@@ -128,10 +132,7 @@ func (transformer *TransformerURLEncoded) DecodeFrom(ctx context.Context, r io.R
 		}
 
 		if p.Transformer != nil {
-			stringReaders := NewStringReaders(fieldValues)
-			fieldValue := p.FieldValue(rv)
-
-			if err := NewSupperTransformer(p.Transformer, &p.TransformerOption).DecodeFrom(ctx, stringReaders, fieldValue); err != nil {
+			if err := NewTransformerSuper(p.Transformer, &p.TransformerOption.CommonTransformOption).DecodeFrom(ctx, NewStringReaders(fieldValues), p.FieldValue(rv).Addr()); err != nil {
 				es.AddErr(err, p.Name)
 				continue
 			}

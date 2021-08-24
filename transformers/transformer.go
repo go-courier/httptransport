@@ -54,8 +54,8 @@ type Transformer interface {
 }
 
 type TransformerOption struct {
-	FieldName string
-	MIME      string
+	Name string
+	MIME string
 	CommonTransformOption
 }
 
@@ -69,8 +69,8 @@ type CommonTransformOption struct {
 func (op TransformerOption) String() string {
 	values := url.Values{}
 
-	if op.FieldName != "" {
-		values.Add("FieldName", op.FieldName)
+	if op.Name != "" {
+		values.Add("Name", op.Name)
 	}
 
 	if op.MIME != "" {

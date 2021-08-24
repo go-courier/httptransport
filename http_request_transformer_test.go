@@ -19,7 +19,6 @@ import (
 
 	"github.com/go-courier/httptransport/httpx"
 
-	"github.com/go-courier/courier"
 	"github.com/go-courier/httptransport/testdata/server/pkg/types"
 	"github.com/go-courier/httptransport/transformers"
 	errors "github.com/go-courier/httptransport/validator"
@@ -264,8 +263,8 @@ test2
 				data, _ := httputil.DumpRequest(req, true)
 				NewWithT(t).Expect(string(UnifyRequestData(data))).To(Equal(string(UnifyRequestData([]byte(c.expect)))))
 
-				rv := reflectx.New(reflectx.Deref(reflect.TypeOf(c.req)))
-				e := rtForSomeRequest.DecodeFrom(context.Background(), httpx.NewRequestInfo(req), &courier.OperatorFactory{}, rv)
+				rv := reflectx.New(reflect.PtrTo(reflectx.Deref(reflect.TypeOf(c.req))))
+				e := rtForSomeRequest.DecodeAndValidate(context.Background(), httpx.NewRequestInfo(req), rv)
 				NewWithT(t).Expect(e).To(BeNil())
 				NewWithT(t).Expect(reflectx.Indirect(rv).Interface()).To(Equal(reflectx.Indirect(reflect.ValueOf(c.req)).Interface()))
 			}
@@ -337,7 +336,7 @@ func TestRequestTransformer_DecodeFromRequestInfo_WithDefaults(t *testing.T) {
 
 	r := &Req{}
 
-	err = rtForSomeRequest.DecodeFrom(context.Background(), httpx.NewRequestInfo(req), &courier.OperatorFactory{}, r)
+	err = rtForSomeRequest.DecodeAndValidate(context.Background(), httpx.NewRequestInfo(req), r)
 	NewWithT(t).Expect(err).To(BeNil())
 
 	NewWithT(t).Expect(r).To(Equal(&Req{
@@ -377,7 +376,7 @@ func TestRequestTransformer_DecodeFromRequestInfo_WithEnumValidate(t *testing.T)
 
 	r := &Req{}
 
-	err = rtForSomeRequest.DecodeFrom(context.Background(), httpx.NewRequestInfo(req), &courier.OperatorFactory{}, r)
+	err = rtForSomeRequest.DecodeAndValidate(context.Background(), httpx.NewRequestInfo(req), r)
 	NewWithT(t).Expect(err).To(BeNil())
 
 	NewWithT(t).Expect(r).To(Equal(&Req{
@@ -425,7 +424,7 @@ func TestRequestTransformer_DecodeFromRequestInfo_Failed(t *testing.T) {
 		return
 	}
 
-	e := rtForSomeRequest.DecodeFrom(context.Background(), httpx.NewRequestInfo(req), &courier.OperatorFactory{}, &ReqForFailed{})
+	e := rtForSomeRequest.DecodeAndValidate(context.Background(), httpx.NewRequestInfo(req), &ReqForFailed{})
 	if e == nil {
 		return
 	}
@@ -490,7 +489,7 @@ func (ReqWithPostValidate) PostValidate(badRequest httptransport.BadRequestError
 	badRequest.AddErr(perrors.Errorf("ops"), "query", "StartedAt")
 }
 
-func ExampleRequestTransformer_DecodeFrom_requestInfo_failedOfPost() {
+func ExampleRequestTransformer_DecodeAndValidate_requestInfo_failedOfPost() {
 	mgr := httptransport.NewRequestTransformerMgr(nil, nil)
 
 	rtForSomeRequest, err := mgr.NewRequestTransformer(context.Background(), reflect.TypeOf(&ReqWithPostValidate{}))
@@ -503,7 +502,7 @@ func ExampleRequestTransformer_DecodeFrom_requestInfo_failedOfPost() {
 		return
 	}
 
-	e := rtForSomeRequest.DecodeFrom(context.Background(), httpx.NewRequestInfo(req), &courier.OperatorFactory{}, &ReqWithPostValidate{})
+	e := rtForSomeRequest.DecodeAndValidate(context.Background(), httpx.NewRequestInfo(req), &ReqWithPostValidate{})
 	if e == nil {
 		return
 	}

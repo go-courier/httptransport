@@ -54,19 +54,19 @@ func TestJSONTransformer(t *testing.T) {
 		NewWithT(t).Expect(h.Get("Content-Type")).To(Equal("application/json; charset=utf-8"))
 	})
 
-	t.Run("DecodeFrom failed", func(t *testing.T) {
+	t.Run("DecodeAndValidate failed", func(t *testing.T) {
 		b := bytes.NewBufferString(`{`)
 		err := ct.DecodeFrom(context.Background(), b, &data)
 		NewWithT(t).Expect(err).NotTo(BeNil())
 	})
 
-	t.Run("DecodeFrom success", func(t *testing.T) {
+	t.Run("DecodeAndValidate success", func(t *testing.T) {
 		b := bytes.NewBufferString(`{}`)
 		err := ct.DecodeFrom(context.Background(), b, reflect.ValueOf(&data))
 		NewWithT(t).Expect(err).To(BeNil())
 	})
 
-	t.Run("DecodeFrom failed with location", func(t *testing.T) {
+	t.Run("DecodeAndValidate failed with location", func(t *testing.T) {
 		cases := []struct {
 			json     string
 			location string

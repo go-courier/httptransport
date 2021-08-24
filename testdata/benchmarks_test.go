@@ -9,7 +9,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/go-courier/courier"
 	contextx "github.com/go-courier/x/context"
 	"github.com/julienschmidt/httprouter"
 
@@ -130,13 +129,26 @@ func newRequestWithTransformers() (*http.Request, error) {
 func fromRequest(req *http.Request, r *GetByID) error {
 	ri := httpx.NewRequestInfo(req)
 
-	r.ID = ri.Value("path", "id")
-	r.Authorization = ri.Value("header", "Authorization")
-	r.Name = ri.Value("query", "name")
-	r.Label = ri.Values("query", "label")
+	if values := ri.Values("path", "id"); len(values) > 0 {
+		r.ID = values[0]
+	}
 
-	if err := r.Protocol.UnmarshalText([]byte(ri.Value("query", "protocol"))); err != nil {
-		return err
+	if values := ri.Values("header", "Authorization"); len(values) > 0 {
+		r.Authorization = values[0]
+	}
+
+	if values := ri.Values("query", "name"); len(values) > 0 {
+		r.Name = values[0]
+	}
+
+	if values := ri.Values("query", "label"); len(values) > 0 {
+		r.Label = values
+	}
+
+	if values := ri.Values("query", "protocol"); len(values) > 0 {
+		if err := r.Protocol.UnmarshalText([]byte(values[0])); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -171,7 +183,7 @@ func BenchmarkFromRequest(b *testing.B) {
 		req := GetByID{}
 
 		for i := 0; i < b.N; i++ {
-			_ = rt.DecodeFrom(context.Background(), httpx.NewRequestInfo(r), &courier.OperatorFactory{}, &req)
+			_ = rt.DecodeAndValidate(context.Background(), httpx.NewRequestInfo(r), &req)
 		}
 
 		b.Log(req)

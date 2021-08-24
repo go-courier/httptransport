@@ -76,7 +76,7 @@ func (transformer *TransformerMultipart) EncodeTo(ctx context.Context, w io.Writ
 		fieldValue := p.FieldValue(rv)
 
 		if p.Transformer != nil {
-			st := NewSupperTransformer(p.Transformer, &p.TransformerOption)
+			st := NewTransformerSuper(p.Transformer, &p.TransformerOption.CommonTransformOption)
 
 			partWriter := NewFormPartWriter(func(header textproto.MIMEHeader) (io.Writer, error) {
 				if v := header.Get("Content-Disposition"); v == "" {
@@ -123,25 +123,20 @@ func (transformer *TransformerMultipart) DecodeFrom(ctx context.Context, r io.Re
 		p := transformer.Parameters[i]
 
 		if p.Transformer != nil {
-			st := NewSupperTransformer(p.Transformer, &p.TransformerOption)
+			st := NewTransformerSuper(p.Transformer, &p.TransformerOption.CommonTransformOption)
 
-			files, ok := form.File[p.Name]
-			if ok {
+			if files, ok := form.File[p.Name]; ok {
 				readers := NewFileHeaderReaders(files)
-
-				fieldValue := p.FieldValue(rv)
-				if err := st.DecodeFrom(ctx, readers, fieldValue); err != nil {
+				if err := st.DecodeFrom(ctx, readers, p.FieldValue(rv).Addr()); err != nil {
 					errSet.AddErr(err, p.Name)
 				}
 				continue
 			}
 
-			fieldValues, ok := form.Value[p.Name]
-			if ok {
+			if fieldValues, ok := form.Value[p.Name]; ok {
 				readers := NewStringReaders(fieldValues)
-				fieldValue := p.FieldValue(rv)
 
-				if err := st.DecodeFrom(ctx, readers, fieldValue); err != nil {
+				if err := st.DecodeFrom(ctx, readers, p.FieldValue(rv).Addr()); err != nil {
 					errSet.AddErr(err, p.Name)
 				}
 			}
@@ -228,7 +223,7 @@ type FileHeaderReader struct {
 	opened multipart.File
 }
 
-func (f *FileHeaderReader) Receiver() interface{} {
+func (f *FileHeaderReader) Interface() interface{} {
 	return f.v
 }
 

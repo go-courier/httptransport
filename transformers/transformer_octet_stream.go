@@ -75,11 +75,15 @@ func (TransformerOctetStream) DecodeFrom(ctx context.Context, r io.Reader, v int
 			return err
 		}
 	case *multipart.FileHeader:
-		if x != nil {
-			if canInterface, ok := r.(interface{ Receiver() interface{} }); ok {
-				if fh, ok := canInterface.Receiver().(*multipart.FileHeader); ok {
-					*x = *fh
-				}
+		if canInterface, ok := r.(CanInterface); ok {
+			if fh, ok := canInterface.Interface().(*multipart.FileHeader); ok {
+				*x = *fh
+			}
+		}
+	case **multipart.FileHeader:
+		if canInterface, ok := r.(CanInterface); ok {
+			if fh, ok := canInterface.Interface().(*multipart.FileHeader); ok {
+				*x = fh
 			}
 		}
 	}

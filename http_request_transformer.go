@@ -12,9 +12,6 @@ import (
 	"sort"
 	"sync"
 
-	typex "github.com/go-courier/x/types"
-
-	"github.com/go-courier/courier"
 	"github.com/go-courier/httptransport/httpx"
 	"github.com/go-courier/httptransport/transformers"
 	"github.com/go-courier/httptransport/validator"
@@ -22,6 +19,7 @@ import (
 	"github.com/go-courier/statuserror"
 	contextx "github.com/go-courier/x/context"
 	reflectx "github.com/go-courier/x/reflect"
+	typex "github.com/go-courier/x/types"
 	"github.com/julienschmidt/httprouter"
 	"github.com/pkg/errors"
 )
@@ -172,7 +170,7 @@ func (t *RequestTransformer) NewRequestWithContext(ctx context.Context, method s
 
 			writers := transformers.NewStringBuilders()
 
-			if err := transformers.NewSupperTransformer(p.Transformer, &p.TransformerOption).EncodeTo(ctx, writers, fieldValue); err != nil {
+			if err := transformers.NewTransformerSuper(p.Transformer, &p.TransformerOption.CommonTransformOption).EncodeTo(ctx, writers, fieldValue); err != nil {
 				errSet.AddErr(err, p.Name)
 				continue
 			}
@@ -250,25 +248,39 @@ func (t *RequestTransformer) NewRequestWithContext(ctx context.Context, method s
 	return req, nil
 }
 
-func (t *RequestTransformer) DecodeFrom(ctx context.Context, info *httpx.RequestInfo, meta *courier.OperatorFactory, v interface{}) error {
-	rv, ok := v.(reflect.Value)
-	if !ok {
-		rv = reflect.ValueOf(v)
-	}
-
-	rv = reflectx.Indirect(rv)
-
-	if err := t.decodeFrom(ctx, info, meta, rv); err != nil {
-		return err
-	}
-
-	return t.validateParameters(rv)
+type WithFromRequestInfo interface {
+	FromRequestInfo(req *httpx.RequestInfo) error
 }
 
-func (t *RequestTransformer) decodeFrom(ctx context.Context, info *httpx.RequestInfo, meta *courier.OperatorFactory, v interface{}) error {
+func (t *RequestTransformer) DecodeAndValidate(ctx context.Context, info httpx.RequestInfo, v interface{}) error {
+	if err := t.DecodeFromRequestInfo(ctx, info, v); err != nil {
+		return err
+	}
+	return t.validate(v)
+}
+
+func (t *RequestTransformer) DecodeFromRequestInfo(ctx context.Context, info httpx.RequestInfo, v interface{}) error {
+	if canValidate, ok := v.(httpx.WithFromRequestInfo); ok {
+		if err := canValidate.FromRequestInfo(info); err != nil {
+			if est := err.(interface {
+				ToFieldErrors() statuserror.ErrorFields
+			}); ok {
+				if errorFields := est.ToFieldErrors(); len(errorFields) > 0 {
+					return (&badRequest{errorFields: errorFields}).Err()
+				}
+			}
+			return err
+		}
+		return nil
+	}
+
 	rv, ok := v.(reflect.Value)
 	if !ok {
 		rv = reflect.ValueOf(v)
+	}
+
+	if rv.Kind() != reflect.Ptr {
+		return errors.Errorf("decode target must be an ptr value")
 	}
 
 	rv = reflectx.Indirect(rv)
@@ -285,30 +297,28 @@ func (t *RequestTransformer) decodeFrom(ctx context.Context, info *httpx.Request
 		for i := range parameters {
 			param := parameters[i]
 
-			fieldValue := param.FieldValue(rv)
-
 			if param.In == "body" {
-				if err := param.Transformer.DecodeFrom(ctx, info.Body(), fieldValue, textproto.MIMEHeader(info.Request.Header)); err != nil && err != io.EOF {
+				body := info.Body()
+				if err := param.Transformer.DecodeFrom(ctx, body, param.FieldValue(rv).Addr(), textproto.MIMEHeader(info.Header())); err != nil && err != io.EOF {
 					errSet.AddErr(err, validator.Location(param.In))
 				}
-				info.Request.Body.Close()
+				body.Close()
 				continue
 			}
 
 			var values []string
 
 			if param.In == "meta" {
-				if meta.Params != nil {
-					values = meta.Params[param.Name]
+				params := OperatorFactoryFromContext(ctx).Params
+				if params != nil {
+					values = params[param.Name]
 				}
 			} else {
 				values = info.Values(param.In, param.Name)
 			}
 
 			if len(values) > 0 {
-				readers := transformers.NewStringReaders(values)
-
-				if err := transformers.NewSupperTransformer(param.Transformer, &param.TransformerOption).DecodeFrom(ctx, readers, fieldValue); err != nil {
+				if err := transformers.NewTransformerSuper(param.Transformer, &param.TransformerOption.CommonTransformOption).DecodeFrom(ctx, transformers.NewStringReaders(values), param.FieldValue(rv).Addr()); err != nil {
 					errSet.AddErr(err, validator.Location(param.In), param.Name)
 				}
 			}
@@ -322,13 +332,8 @@ func (t *RequestTransformer) decodeFrom(ctx context.Context, info *httpx.Request
 	return (&badRequest{errorFields: errSet.ToErrorFields()}).Err()
 }
 
-func (t *RequestTransformer) validateParameters(v interface{}) error {
-	rv, ok := v.(reflect.Value)
-	if !ok {
-		rv = reflect.ValueOf(v)
-	}
-
-	if canValidate, ok := rv.Interface().(interface{ Validate() error }); ok {
+func (t *RequestTransformer) validate(v interface{}) error {
+	if canValidate, ok := v.(interface{ Validate() error }); ok {
 		if err := canValidate.Validate(); err != nil {
 			if est := err.(interface {
 				ToFieldErrors() statuserror.ErrorFields
@@ -340,40 +345,45 @@ func (t *RequestTransformer) validateParameters(v interface{}) error {
 			return err
 		}
 		return nil
-	} else {
-		errSet := validator.NewErrorSet()
+	}
 
-		for in := range t.InParameters {
-			parameters := t.InParameters[in]
+	rv, ok := v.(reflect.Value)
+	if !ok {
+		rv = reflect.ValueOf(v)
+	}
 
-			for i := range parameters {
-				param := parameters[i]
+	errSet := validator.NewErrorSet()
 
-				if param.Validator != nil {
-					if err := param.Validator.Validate(param.FieldValue(rv)); err != nil {
-						if param.In == "body" {
-							errSet.AddErr(err, validator.Location(param.In))
-						} else {
-							errSet.AddErr(err, validator.Location(param.In), param.Name)
-						}
+	for in := range t.InParameters {
+		parameters := t.InParameters[in]
+
+		for i := range parameters {
+			param := parameters[i]
+
+			if param.Validator != nil {
+				if err := param.Validator.Validate(param.FieldValue(rv)); err != nil {
+					if param.In == "body" {
+						errSet.AddErr(err, validator.Location(param.In))
+					} else {
+						errSet.AddErr(err, validator.Location(param.In), param.Name)
 					}
 				}
 			}
 		}
-
-		br := &badRequest{errorFields: errSet.ToErrorFields()}
-
-		// TODO deprecated
-		if postValidator, ok := rv.Interface().(PostValidator); ok {
-			postValidator.PostValidate(br)
-		}
-
-		if errSet.Err() == nil {
-			return nil
-		}
-
-		return br.Err()
 	}
+
+	br := &badRequest{errorFields: errSet.ToErrorFields()}
+
+	// TODO deprecated
+	if postValidator, ok := rv.Interface().(PostValidator); ok {
+		postValidator.PostValidate(br)
+	}
+
+	if errSet.Err() == nil {
+		return nil
+	}
+
+	return br.Err()
 }
 
 type PostValidator interface {

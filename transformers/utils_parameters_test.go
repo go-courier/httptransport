@@ -55,9 +55,10 @@ func BenchmarkParameter_FieldValue(b *testing.B) {
 	}
 	p.C = ptr.String("c")
 
-	rv := reflect.ValueOf(p)
+	rv := reflect.ValueOf(&p).Elem()
 
 	params := make([]*Parameter, 0)
+
 	EachParameter(context.Background(), typex.FromRType(reflect.TypeOf(p)), func(p *Parameter) bool {
 		params = append(params, p)
 		return true
@@ -66,8 +67,7 @@ func BenchmarkParameter_FieldValue(b *testing.B) {
 	b.Run("use cached idxes", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			for i := range params {
-				p := params[i]
-				_ = p.FieldValue(rv)
+				_ = params[i].FieldValue(rv).Addr()
 			}
 		}
 	})
@@ -79,8 +79,8 @@ func BenchmarkParameter_FieldValue(b *testing.B) {
 			tpe := rv.Type()
 
 			for i := 0; i < rv.NumField(); i++ {
-				f := rv.Field(i)
 				ft := tpe.Field(i)
+				f := rv.Field(i)
 
 				if ft.Anonymous && ft.Type.Kind() == reflect.Struct {
 					walk(f)

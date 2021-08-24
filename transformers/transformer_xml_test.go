@@ -54,7 +54,7 @@ func TestXMLTransformer(t *testing.T) {
 		})
 	})
 
-	t.Run("DecodeFrom", func(t *testing.T) {
+	t.Run("DecodeAndValidate", func(t *testing.T) {
 		t.Run("failed", func(t *testing.T) {
 			b := bytes.NewBufferString("<")
 			err := ct.DecodeFrom(context.Background(), b, &data)

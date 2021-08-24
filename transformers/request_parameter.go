@@ -24,7 +24,7 @@ func EachRequestParameter(ctx context.Context, tpe typesx.Type, each func(rp *Re
 		rp := &RequestParameter{}
 		rp.Parameter = *p
 
-		rp.TransformerOption.FieldName = rp.Name
+		rp.TransformerOption.Name = rp.Name
 
 		if flagTags, ok := rp.Tags["name"]; ok {
 			rp.TransformerOption.Omitempty = flagTags.HasFlag("omitempty")

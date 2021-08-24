@@ -164,7 +164,7 @@ text
 		}
 	})
 
-	t.Run("DecodeFrom", func(t *testing.T) {
+	t.Run("DecodeAndValidate", func(t *testing.T) {
 		b := bytes.NewBufferString(parts)
 		testData := TestData{}
 

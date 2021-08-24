@@ -7,24 +7,45 @@ import (
 	"github.com/pkg/errors"
 )
 
+type CanInterface interface {
+	Interface() interface{}
+}
+
+type CanString interface {
+	String() string
+}
+
 func NewStringReaders(values []string) *StringReaders {
 	bs := make([]io.Reader, len(values))
 	for i := range values {
-		bs[i] = strings.NewReader(values[i])
+		bs[i] = &StringReader{v: values[i]}
 	}
 
 	return &StringReaders{
 		readers: bs,
+		values:  values,
 	}
 }
 
 type StringReaders struct {
 	idx     int
 	readers []io.Reader
+	values  []string
+}
+
+func (v *StringReaders) Interface() interface{} {
+	return v.values
 }
 
 func (v *StringReaders) Len() int {
 	return len(v.readers)
+}
+
+func (v *StringReaders) Read(p []byte) (n int, err error) {
+	if v.idx < len(v.readers) {
+		return v.readers[v.idx].Read(p)
+	}
+	return -1, errors.Errorf("bounds out of range, %d", v.idx)
 }
 
 func (v *StringReaders) NextReader() io.Reader {
@@ -33,11 +54,28 @@ func (v *StringReaders) NextReader() io.Reader {
 	return r
 }
 
-func (v *StringReaders) Read(p []byte) (n int, err error) {
-	if v.idx < len(v.readers) {
-		return v.readers[v.idx].Read(p)
+func NewStringReader(v string) *StringReader {
+	return &StringReader{v: v}
+}
+
+type StringReader struct {
+	v string
+	r io.Reader
+}
+
+func (r *StringReader) Read(p []byte) (n int, err error) {
+	if r.r == nil {
+		r.r = strings.NewReader(r.v)
 	}
-	return -1, errors.Errorf("bounds out of range, %d", v.idx)
+	return r.r.Read(p)
+}
+
+func (r *StringReader) Interface() interface{} {
+	return r.v
+}
+
+func (r *StringReader) String() string {
+	return r.v
 }
 
 func NewStringBuilders() *StringBuilders {
