@@ -5,6 +5,14 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 
 
+# [1.21.1](https://github.com/go-courier/httptransport/compare/v1.21.0...v1.21.1)
+
+### Bug Fixes
+
+* **fix(transformers):** Parameter should includes Field ([1a7ef0b](https://github.com/go-courier/httptransport/commit/1a7ef0badfbafc570aa8682f009b28eaa531c83a))
+
+
+
 # [1.21.0](https://github.com/go-courier/httptransport/compare/v1.20.5...v1.21.0)
 
 ### Bug Fixes
