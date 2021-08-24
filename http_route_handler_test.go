@@ -181,7 +181,7 @@ X-Meta: service-test@1.0.0/Create
 Content-Type: application/json; charset=utf-8
 X-Meta: service-test@1.0.0/Create
 
-{"key":"BadRequest","code":400000000,"msg":"invalid parameters","desc":"","canBeTalkError":false,"id":"","sources":["service-test@1.0.0"],"errorFields":[{"field":"label","msg":"missing required field","in":"body"}]}
+{"key":"badRequest","code":400000000,"msg":"invalid parameters","desc":"","canBeTalkError":false,"id":"","sources":["service-test@1.0.0"],"errorFields":[{"field":"label","msg":"missing required field","in":"body"}]}
 `))
 	})
 
@@ -289,7 +289,7 @@ X-Meta: service-test@1.0.0/UpdateByID
 Content-Type: application/json; charset=utf-8
 X-Meta: service-test@1.0.0/GetByID
 
-{"key":"BadRequest","code":400000000,"msg":"invalid parameters","desc":"","canBeTalkError":false,"id":"","sources":["service-test@1.0.0"],"errorFields":[{"field":"id","msg":"string length should be larger than 6, but got invalid value 2","in":"path"}]}
+{"key":"badRequest","code":400000000,"msg":"invalid parameters","desc":"","canBeTalkError":false,"id":"","sources":["service-test@1.0.0"],"errorFields":[{"field":"id","msg":"string length should be larger than 6, but got invalid value 2","in":"path"}]}
 `))
 	})
 }

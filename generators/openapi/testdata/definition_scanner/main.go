@@ -4,7 +4,7 @@ import (
 	"mime/multipart"
 	"time"
 
-	time2 "github.com/go-courier/httptransport/openapi/generator/testdata/definition_scanner/time"
+	time2 "github.com/go-courier/httptransport/generators/openapi/testdata/definition_scanner/time"
 )
 
 type Interface interface{}

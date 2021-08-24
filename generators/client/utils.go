@@ -4,7 +4,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/go-courier/httptransport/openapi/generator"
+	"github.com/go-courier/httptransport/generators/openapi"
 	"github.com/go-courier/oas"
 )
 
@@ -87,7 +87,7 @@ func mediaTypeAndStatusErrors(responses *oas.Responses) (*oas.MediaType, []strin
 			extensions := responses.Responses[code].Extensions
 
 			if extensions != nil {
-				if errors, ok := extensions[generator.XStatusErrs]; ok {
+				if errors, ok := extensions[openapi.XStatusErrs]; ok {
 					if errs, ok := errors.([]interface{}); ok {
 						for _, err := range errs {
 							statusErrors = append(statusErrors, err.(string))

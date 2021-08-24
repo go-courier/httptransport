@@ -4,9 +4,9 @@ import (
 	"context"
 
 	"github.com/go-courier/courier"
+	"github.com/go-courier/httptransport/generators/openapi/testdata/router_scanner/auth"
+	"github.com/go-courier/httptransport/generators/openapi/testdata/router_scanner/group"
 	"github.com/go-courier/httptransport/httpx"
-	"github.com/go-courier/httptransport/openapi/generator/testdata/router_scanner/auth"
-	"github.com/go-courier/httptransport/openapi/generator/testdata/router_scanner/group"
 
 	"github.com/go-courier/httptransport"
 )

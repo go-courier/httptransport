@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"reflect"
 
+	"github.com/go-courier/statuserror"
+
 	reflectx "github.com/go-courier/x/reflect"
 )
 
@@ -20,6 +22,25 @@ func NewErrorSet(paths ...interface{}) *ErrorSet {
 type ErrorSet struct {
 	paths  []interface{}
 	errors []FieldError
+}
+
+func (es *ErrorSet) ToErrorFields() statuserror.ErrorFields {
+	errorFields := make([]*statuserror.ErrorField, 0)
+
+	es.Flatten().Each(func(fieldErr *FieldError) {
+		if len(fieldErr.Path) > 1 {
+			if l, ok := fieldErr.Path[0].(Location); ok {
+				fe := &statuserror.ErrorField{
+					In:    string(l),
+					Field: fieldErr.Path[1:].String(),
+					Msg:   fieldErr.Error.Error(),
+				}
+				errorFields = append(errorFields, fe)
+			}
+		}
+	})
+
+	return errorFields
 }
 
 func (es *ErrorSet) AddErr(err error, keyPathNodes ...interface{}) {

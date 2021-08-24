@@ -486,7 +486,7 @@ type ReqWithPostValidate struct {
 	StartedAt string `in:"query"`
 }
 
-func (ReqWithPostValidate) PostValidate(badRequest *httptransport.BadRequest) {
+func (ReqWithPostValidate) PostValidate(badRequest httptransport.BadRequestError) {
 	badRequest.AddErr(perrors.Errorf("ops"), "query", "StartedAt")
 }
 

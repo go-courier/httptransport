@@ -250,73 +250,51 @@ func (t *RequestTransformer) NewRequestWithContext(ctx context.Context, method s
 	return req, nil
 }
 
-type BadRequest struct {
-	errTalk     bool
-	msg         string
-	errorFields []*statuserror.ErrorField
-}
-
-func (e *BadRequest) EnableErrTalk() {
-	e.errTalk = true
-}
-
-func (e *BadRequest) SetMsg(msg string) {
-	e.msg = msg
-}
-
-func (e *BadRequest) AddErr(err error, in string, nameOrIdx ...interface{}) {
-	errSet := verrors.NewErrorSet("")
-
-	if es, ok := err.(*verrors.ErrorSet); ok && in == "body" {
-		errSet = es
-	} else {
-		errSet.AddErr(err, nameOrIdx...)
-	}
-
-	errSet.Flatten().Each(func(fieldErr *verrors.FieldError) {
-		e.errorFields = append(e.errorFields, statuserror.NewErrorField(in, fieldErr.Path.String(), fieldErr.Error.Error()))
-	})
-}
-
-func (e *BadRequest) Err() error {
-	if e.errorFields == nil {
-		return nil
-	}
-
-	msg := e.msg
-	if msg == "" {
-		msg = "invalid parameters"
-	}
-
-	err := statuserror.Wrap(errors.New(""), http.StatusBadRequest, "BadRequest").WithMsg(msg).AppendErrorFields(e.errorFields...)
-
-	if e.errTalk {
-		err = err.EnableErrTalk()
-	}
-
-	return err
-}
-
 func (t *RequestTransformer) DecodeFrom(ctx context.Context, info *httpx.RequestInfo, meta *courier.OperatorFactory, v interface{}) error {
 	rv, ok := v.(reflect.Value)
 	if !ok {
 		rv = reflect.ValueOf(v)
 	}
 
-	typ := reflectx.Deref(rv.Type())
-	if !typ.ConvertibleTo(t.Type) {
-		return errors.Errorf("unmatched request transformer, need %s but got %s", t.Type, typ)
+	rv = reflectx.Indirect(rv)
+
+	if err := t.decodeFrom(ctx, info, meta, rv); err != nil {
+		return err
 	}
 
-	badRequestError := &BadRequest{}
+	return t.validateParameters(rv)
+}
 
-	decodeFrom := func(param *transformers.RequestParameter, fieldValue reflect.Value) {
-		switch param.In {
-		case "body":
-			if err := param.Transformer.DecodeFrom(ctx, info.Body(), fieldValue, textproto.MIMEHeader(info.Request.Header)); err != nil && err != io.EOF {
-				badRequestError.AddErr(err, param.In, param.Name)
+func (t *RequestTransformer) decodeFrom(ctx context.Context, info *httpx.RequestInfo, meta *courier.OperatorFactory, v interface{}) error {
+	rv, ok := v.(reflect.Value)
+	if !ok {
+		rv = reflect.ValueOf(v)
+	}
+
+	rv = reflectx.Indirect(rv)
+
+	if tpe := rv.Type(); tpe != t.Type {
+		return errors.Errorf("unmatched request transformer, need %s but got %s", t.Type, tpe)
+	}
+
+	errSet := validator.NewErrorSet()
+
+	for in := range t.InParameters {
+		parameters := t.InParameters[in]
+
+		for i := range parameters {
+			param := parameters[i]
+
+			fieldValue := param.FieldValue(rv)
+
+			if param.In == "body" {
+				if err := param.Transformer.DecodeFrom(ctx, info.Body(), fieldValue, textproto.MIMEHeader(info.Request.Header)); err != nil && err != io.EOF {
+					errSet.AddErr(err, validator.Location(param.In))
+				}
+				info.Request.Body.Close()
+				continue
 			}
-		default:
+
 			var values []string
 
 			if param.In == "meta" {
@@ -330,39 +308,123 @@ func (t *RequestTransformer) DecodeFrom(ctx context.Context, info *httpx.Request
 			if len(values) > 0 {
 				readers := transformers.NewStringReaders(values)
 
-				if err := transformers.NewSupperTransformer(param.Transformer, &param.TransformerOption).DecodeFrom(context.Background(), readers, fieldValue); err != nil {
-					badRequestError.AddErr(err, param.In, param.Name)
+				if err := transformers.NewSupperTransformer(param.Transformer, &param.TransformerOption).DecodeFrom(ctx, readers, fieldValue); err != nil {
+					errSet.AddErr(err, validator.Location(param.In), param.Name)
 				}
 			}
 		}
 	}
 
-	for in := range t.InParameters {
-		parameters := t.InParameters[in]
+	if errSet.Err() == nil {
+		return nil
+	}
 
-		for i := range parameters {
-			param := parameters[i]
+	return (&badRequest{errorFields: errSet.ToErrorFields()}).Err()
+}
 
-			fieldValue := param.FieldValue(rv)
+func (t *RequestTransformer) validateParameters(v interface{}) error {
+	rv, ok := v.(reflect.Value)
+	if !ok {
+		rv = reflect.ValueOf(v)
+	}
 
-			decodeFrom(&param, fieldValue)
+	if canValidate, ok := rv.Interface().(interface{ Validate() error }); ok {
+		if err := canValidate.Validate(); err != nil {
+			if est := err.(interface {
+				ToFieldErrors() statuserror.ErrorFields
+			}); ok {
+				if errorFields := est.ToFieldErrors(); len(errorFields) > 0 {
+					return (&badRequest{errorFields: errorFields}).Err()
+				}
+			}
+			return err
+		}
+		return nil
+	} else {
+		errSet := validator.NewErrorSet()
 
-			if param.Validator != nil {
-				if err := param.Validator.Validate(fieldValue); err != nil {
-					badRequestError.AddErr(err, param.In, param.Name)
+		for in := range t.InParameters {
+			parameters := t.InParameters[in]
+
+			for i := range parameters {
+				param := parameters[i]
+
+				if param.Validator != nil {
+					if err := param.Validator.Validate(param.FieldValue(rv)); err != nil {
+						if param.In == "body" {
+							errSet.AddErr(err, validator.Location(param.In))
+						} else {
+							errSet.AddErr(err, validator.Location(param.In), param.Name)
+						}
+					}
 				}
 			}
 		}
-	}
 
-	// TODO deprecated
-	if postValidator, ok := rv.Interface().(PostValidator); ok {
-		postValidator.PostValidate(badRequestError)
-	}
+		br := &badRequest{errorFields: errSet.ToErrorFields()}
 
-	return badRequestError.Err()
+		// TODO deprecated
+		if postValidator, ok := rv.Interface().(PostValidator); ok {
+			postValidator.PostValidate(br)
+		}
+
+		if errSet.Err() == nil {
+			return nil
+		}
+
+		return br.Err()
+	}
 }
 
 type PostValidator interface {
-	PostValidate(badRequest *BadRequest)
+	PostValidate(badRequest BadRequestError)
+}
+
+type BadRequestError interface {
+	EnableErrTalk()
+	SetMsg(msg string)
+	AddErr(err error, nameOrIdx ...interface{})
+}
+
+type badRequest struct {
+	errorFields statuserror.ErrorFields
+	errTalk     bool
+	msg         string
+}
+
+func (e *badRequest) EnableErrTalk() {
+	e.errTalk = true
+}
+
+func (e *badRequest) SetMsg(msg string) {
+	e.msg = msg
+}
+
+func (e *badRequest) AddErr(err error, nameOrIdx ...interface{}) {
+	if len(nameOrIdx) > 1 {
+		e.errorFields = append(e.errorFields, &statuserror.ErrorField{
+			In:    nameOrIdx[0].(string),
+			Field: validator.KeyPath(nameOrIdx[1:]).String(),
+			Msg:   err.Error(),
+		})
+	}
+}
+
+func (e *badRequest) Err() error {
+	if len(e.errorFields) == 0 {
+		return nil
+	}
+
+	msg := e.msg
+	if msg == "" {
+		msg = "invalid parameters"
+	}
+
+	err := statuserror.Wrap(errors.New(""), http.StatusBadRequest, "badRequest").WithMsg(msg).AppendErrorFields(e.errorFields...)
+
+	if e.errTalk {
+		err = err.EnableErrTalk()
+	}
+
+	return err
 }

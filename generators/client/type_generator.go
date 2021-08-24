@@ -11,7 +11,7 @@ import (
 
 	"github.com/go-courier/codegen"
 	"github.com/go-courier/enumeration/scanner"
-	"github.com/go-courier/httptransport/openapi/generator"
+	"github.com/go-courier/httptransport/generators/openapi"
 	"github.com/go-courier/oas"
 	"github.com/go-courier/packagesx"
 )
@@ -73,8 +73,8 @@ func (g *TypeGenerator) Scan(ctx context.Context, openapi *oas.OpenAPI) {
 
 func (g *TypeGenerator) Type(ctx context.Context, schema *oas.Schema) (codegen.SnippetType, bool) {
 	tpe, alias := g.TypeIndirect(ctx, schema)
-	if schema != nil && schema.Extensions[generator.XGoStarLevel] != nil {
-		level := int(schema.Extensions[generator.XGoStarLevel].(float64))
+	if schema != nil && schema.Extensions[openapi.XGoStarLevel] != nil {
+		level := int(schema.Extensions[openapi.XGoStarLevel].(float64))
 		for level > 0 {
 			tpe = codegen.Star(tpe)
 			level--
@@ -110,8 +110,8 @@ func (g *TypeGenerator) TypeIndirect(ctx context.Context, schema *oas.Schema) (c
 		return codegen.Type(schema.Refer.(*oas.ComponentRefer).ID), true
 	}
 
-	if schema.Extensions[generator.XGoVendorType] != nil {
-		pkgImportPath, expose := packagesx.GetPkgImportPathAndExpose(schema.Extensions[generator.XGoVendorType].(string))
+	if schema.Extensions[openapi.XGoVendorType] != nil {
+		pkgImportPath, expose := packagesx.GetPkgImportPathAndExpose(schema.Extensions[openapi.XGoVendorType].(string))
 
 		vendorImports := VendorImportsFromContext(ctx)
 
@@ -129,14 +129,14 @@ func (g *TypeGenerator) TypeIndirect(ctx context.Context, schema *oas.Schema) (c
 	if schema.Enum != nil {
 		name := codegen.UpperCamelCase(g.ServiceName)
 
-		if id, ok := schema.Extensions[generator.XID].(string); ok {
+		if id, ok := schema.Extensions[openapi.XID].(string); ok {
 			name = name + id
 
 			enumOptions := scanner.Options{}
 
 			enumLabels := make([]string, len(schema.Enum))
 
-			if xEnumLabels, ok := schema.Extensions[generator.XEnumLabels]; ok {
+			if xEnumLabels, ok := schema.Extensions[openapi.XEnumLabels]; ok {
 				if labels, ok := xEnumLabels.([]interface{}); ok {
 					for i, l := range labels {
 						if v, ok := l.(string); ok {
@@ -146,7 +146,7 @@ func (g *TypeGenerator) TypeIndirect(ctx context.Context, schema *oas.Schema) (c
 				}
 			}
 
-			if options, ok := schema.Extensions[generator.XEnumOptions]; ok {
+			if options, ok := schema.Extensions[openapi.XEnumOptions]; ok {
 				if list, ok := options.([]interface{}); ok {
 					for i, l := range list {
 						if opt, ok := l.(map[string]interface{}); ok {
@@ -294,8 +294,8 @@ func (g *TypeGenerator) FieldOf(ctx context.Context, name string, propSchema *oa
 	}
 
 	fieldName := codegen.UpperCamelCase(name)
-	if propSchema.Extensions[generator.XGoFieldName] != nil {
-		fieldName = propSchema.Extensions[generator.XGoFieldName].(string)
+	if propSchema.Extensions[openapi.XGoFieldName] != nil {
+		fieldName = propSchema.Extensions[openapi.XGoFieldName].(string)
 	}
 
 	typ, _ := g.Type(ctx, propSchema)
@@ -315,24 +315,24 @@ func (g *TypeGenerator) FieldOf(ctx context.Context, name string, propSchema *oa
 		}
 	}
 
-	if propSchema.Extensions[generator.XTagJSON] != nil {
-		appendNamedTag("json", propSchema.Extensions[generator.XTagJSON].(string))
+	if propSchema.Extensions[openapi.XTagJSON] != nil {
+		appendNamedTag("json", propSchema.Extensions[openapi.XTagJSON].(string))
 	}
 
-	if propSchema.Extensions[generator.XTagName] != nil {
-		appendNamedTag("name", propSchema.Extensions[generator.XTagName].(string))
+	if propSchema.Extensions[openapi.XTagName] != nil {
+		appendNamedTag("name", propSchema.Extensions[openapi.XTagName].(string))
 	}
 
-	if propSchema.Extensions[generator.XTagXML] != nil {
-		appendNamedTag("xml", propSchema.Extensions[generator.XTagXML].(string))
+	if propSchema.Extensions[openapi.XTagXML] != nil {
+		appendNamedTag("xml", propSchema.Extensions[openapi.XTagXML].(string))
 	}
 
-	if propSchema.Extensions[generator.XTagMime] != nil {
-		appendTag("mime", propSchema.Extensions[generator.XTagMime].(string))
+	if propSchema.Extensions[openapi.XTagMime] != nil {
+		appendTag("mime", propSchema.Extensions[openapi.XTagMime].(string))
 	}
 
-	if propSchema.Extensions[generator.XTagValidate] != nil {
-		appendTag("validate", propSchema.Extensions[generator.XTagValidate].(string))
+	if propSchema.Extensions[openapi.XTagValidate] != nil {
+		appendTag("validate", propSchema.Extensions[openapi.XTagValidate].(string))
 	}
 
 	if propSchema.Default != nil {

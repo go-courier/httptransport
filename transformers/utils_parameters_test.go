@@ -45,5 +45,51 @@ func TestParameters(t *testing.T) {
 	NewWithT(t).Expect(params[0].FieldValue(rv).Interface()).To(Equal(p.A))
 	NewWithT(t).Expect(params[1].FieldValue(rv).Interface()).To(Equal(p.B))
 	NewWithT(t).Expect(params[2].FieldValue(rv).Interface()).To(Equal(p.C))
+}
 
+func BenchmarkParameter_FieldValue(b *testing.B) {
+	p := P{}
+	p.A = "a"
+	p.PtrSub = &PtrSub{
+		B: []string{"b"},
+	}
+	p.C = ptr.String("c")
+
+	rv := reflect.ValueOf(p)
+
+	params := make([]*Parameter, 0)
+	EachParameter(context.Background(), typex.FromRType(reflect.TypeOf(p)), func(p *Parameter) bool {
+		params = append(params, p)
+		return true
+	})
+
+	b.Run("use cached idxes", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			for i := range params {
+				p := params[i]
+				_ = p.FieldValue(rv)
+			}
+		}
+	})
+
+	b.Run("walk direct", func(b *testing.B) {
+		var walk func(rv reflect.Value)
+
+		walk = func(rv reflect.Value) {
+			tpe := rv.Type()
+
+			for i := 0; i < rv.NumField(); i++ {
+				f := rv.Field(i)
+				ft := tpe.Field(i)
+
+				if ft.Anonymous && ft.Type.Kind() == reflect.Struct {
+					walk(f)
+				}
+			}
+		}
+
+		for i := 0; i < b.N; i++ {
+			walk(rv)
+		}
+	})
 }
