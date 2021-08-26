@@ -14,8 +14,8 @@ github.com/go-courier/enumeration v1.3.1 h1:IPKGDtzrYf/G/eAgJ3lNLbtgLr4maqkGnz6a
 github.com/go-courier/enumeration v1.3.1/go.mod h1:2sYxthcOXwTby8lGAFn1Yk62ryvM/utulv38E9b9jJ4=
 github.com/go-courier/logr v0.0.2 h1:eC1LL/PJXpa1JPlfRuWKwkBwU/uM3fUawnnS/cNV4zY=
 github.com/go-courier/logr v0.0.2/go.mod h1:d3akcgCGEB5xLNn9FBvB9ren74iO20O5Z6b26I4weig=
-github.com/go-courier/metax v1.2.1 h1:MCU6yi26HNrdzkpxX3o9k0Oy6J+4q5JTN9XXv8UMQz4=
-github.com/go-courier/metax v1.2.1/go.mod h1:/adEY94iylk5Qv2Ie/JRExiO5nMdTDDN0l3rRgEpNwk=
+github.com/go-courier/metax v1.3.0 h1:BBNqnUX+HlZrWBoqfk7I8V0L4+RCTmqBoloQBi5Do3I=
+github.com/go-courier/metax v1.3.0/go.mod h1:MJ5563/dYJdQ6YGx4WdJacV018CPWkuAZcwmBZh8ru4=
 github.com/go-courier/oas v1.2.1 h1:11tXxs5X/tbGig2kmh8mqdq5GPRwHmV8za6DnJHABco=
 github.com/go-courier/oas v1.2.1/go.mod h1:SHFNPvWiMOp7id8Yd7TnMQ6SKDt0JdktE07Uji0aJ+o=
 github.com/go-courier/packagesx v1.0.2 h1:fbV6yWZKSDulBSN2twpBJawdM0nv2T+qty1lcgUuBSo=
@@ -44,7 +44,6 @@ github.com/google/go-cmp v0.3.0/go.mod h1:8QqcDgzrUqlUb/G2PQTWiueGozuR1884gddMyw
 github.com/google/go-cmp v0.3.1/go.mod h1:8QqcDgzrUqlUb/G2PQTWiueGozuR1884gddMywk6iLU=
 github.com/google/go-cmp v0.4.0/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/gNBxE=
 github.com/google/go-cmp v0.5.5/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/gNBxE=
-github.com/google/uuid v1.1.1/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/google/uuid v1.3.0 h1:t6JiXgmwXMjEs8VusXIJk2BXHsn+wx8BZdTaoZ5fu7I=
 github.com/google/uuid v1.3.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/hpcloud/tail v1.0.0/go.mod h1:ab1qPbhIpdTxEkNHXyeSf5vhxWSCs/tWer42PpOxQnU=
