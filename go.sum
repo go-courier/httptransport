@@ -27,8 +27,8 @@ github.com/go-courier/reflectx v1.3.5 h1:uCUfVn6dh790JXTsNO3jCYc2KgHN9mInoZHLyN4
 github.com/go-courier/reflectx v1.3.5/go.mod h1:XwckQyIOO/gA3cZMkmMLGh9i8wBpG1ALehFkmrEDRR4=
 github.com/go-courier/statuserror v1.2.1 h1:npXYoaiFExHMn+NwdKE30bJz9t/s8VGG00cjH4lwyjg=
 github.com/go-courier/statuserror v1.2.1/go.mod h1:fgIlj8z6A4KDDVlpF4kcsXCzYUs9K/vXLBl6iTGU5Y8=
-github.com/go-courier/x v0.0.4 h1:xih8BVvbz0sknoYPDaly5QftXYlvONu/OXqm7d8drzk=
-github.com/go-courier/x v0.0.4/go.mod h1:UggWZeG7AOVXphLfpltal0Kq8Bn1MHcr6uPiyjEaCBg=
+github.com/go-courier/x v0.0.6 h1:WaMJBhpDXA/BWPC38XaUS+tiqBSKEHCHtSaRx5g8ioM=
+github.com/go-courier/x v0.0.6/go.mod h1:UggWZeG7AOVXphLfpltal0Kq8Bn1MHcr6uPiyjEaCBg=
 github.com/go-task/slim-sprig v0.0.0-20210107165309-348f09dbbbc0/go.mod h1:fyg7847qk6SyHyPtNmDHnmrv/HOrqktSC+C9fM+CJOE=
 github.com/golang/protobuf v1.2.0/go.mod h1:6lQm79b+lXiMfvg/cZm0SGofjICqVBUtrP5yJMmIC1U=
 github.com/golang/protobuf v1.4.0-rc.1/go.mod h1:ceaxUfeHdC40wWswd/P6IGgMaK3YpKi5j83Wpe3EHw8=
