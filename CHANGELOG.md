@@ -5,6 +5,14 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 
 
+# [1.21.2](https://github.com/go-courier/httptransport/compare/v1.21.1...v1.21.2)
+
+### Bug Fixes
+
+* **fix** non-nil *StatusErr with nil value ([df7384c](https://github.com/go-courier/httptransport/commit/df7384c7ab32384541f280fddfc06de69a35bfdc))
+
+
+
 # [1.21.1](https://github.com/go-courier/httptransport/compare/v1.21.0...v1.21.1)
 
 ### Bug Fixes
