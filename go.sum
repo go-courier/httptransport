@@ -14,8 +14,8 @@ github.com/go-courier/enumeration v1.3.1 h1:IPKGDtzrYf/G/eAgJ3lNLbtgLr4maqkGnz6a
 github.com/go-courier/enumeration v1.3.1/go.mod h1:2sYxthcOXwTby8lGAFn1Yk62ryvM/utulv38E9b9jJ4=
 github.com/go-courier/logr v0.0.2 h1:eC1LL/PJXpa1JPlfRuWKwkBwU/uM3fUawnnS/cNV4zY=
 github.com/go-courier/logr v0.0.2/go.mod h1:d3akcgCGEB5xLNn9FBvB9ren74iO20O5Z6b26I4weig=
-github.com/go-courier/metax v1.2.1 h1:MCU6yi26HNrdzkpxX3o9k0Oy6J+4q5JTN9XXv8UMQz4=
-github.com/go-courier/metax v1.2.1/go.mod h1:/adEY94iylk5Qv2Ie/JRExiO5nMdTDDN0l3rRgEpNwk=
+github.com/go-courier/metax v1.3.0 h1:BBNqnUX+HlZrWBoqfk7I8V0L4+RCTmqBoloQBi5Do3I=
+github.com/go-courier/metax v1.3.0/go.mod h1:MJ5563/dYJdQ6YGx4WdJacV018CPWkuAZcwmBZh8ru4=
 github.com/go-courier/oas v1.2.1 h1:11tXxs5X/tbGig2kmh8mqdq5GPRwHmV8za6DnJHABco=
 github.com/go-courier/oas v1.2.1/go.mod h1:SHFNPvWiMOp7id8Yd7TnMQ6SKDt0JdktE07Uji0aJ+o=
 github.com/go-courier/packagesx v1.0.2 h1:fbV6yWZKSDulBSN2twpBJawdM0nv2T+qty1lcgUuBSo=
@@ -27,8 +27,9 @@ github.com/go-courier/reflectx v1.3.5 h1:uCUfVn6dh790JXTsNO3jCYc2KgHN9mInoZHLyN4
 github.com/go-courier/reflectx v1.3.5/go.mod h1:XwckQyIOO/gA3cZMkmMLGh9i8wBpG1ALehFkmrEDRR4=
 github.com/go-courier/statuserror v1.2.1 h1:npXYoaiFExHMn+NwdKE30bJz9t/s8VGG00cjH4lwyjg=
 github.com/go-courier/statuserror v1.2.1/go.mod h1:fgIlj8z6A4KDDVlpF4kcsXCzYUs9K/vXLBl6iTGU5Y8=
-github.com/go-courier/x v0.0.4 h1:xih8BVvbz0sknoYPDaly5QftXYlvONu/OXqm7d8drzk=
 github.com/go-courier/x v0.0.4/go.mod h1:UggWZeG7AOVXphLfpltal0Kq8Bn1MHcr6uPiyjEaCBg=
+github.com/go-courier/x v0.0.6 h1:WaMJBhpDXA/BWPC38XaUS+tiqBSKEHCHtSaRx5g8ioM=
+github.com/go-courier/x v0.0.6/go.mod h1:UggWZeG7AOVXphLfpltal0Kq8Bn1MHcr6uPiyjEaCBg=
 github.com/go-task/slim-sprig v0.0.0-20210107165309-348f09dbbbc0/go.mod h1:fyg7847qk6SyHyPtNmDHnmrv/HOrqktSC+C9fM+CJOE=
 github.com/golang/protobuf v1.2.0/go.mod h1:6lQm79b+lXiMfvg/cZm0SGofjICqVBUtrP5yJMmIC1U=
 github.com/golang/protobuf v1.4.0-rc.1/go.mod h1:ceaxUfeHdC40wWswd/P6IGgMaK3YpKi5j83Wpe3EHw8=
@@ -44,7 +45,6 @@ github.com/google/go-cmp v0.3.0/go.mod h1:8QqcDgzrUqlUb/G2PQTWiueGozuR1884gddMyw
 github.com/google/go-cmp v0.3.1/go.mod h1:8QqcDgzrUqlUb/G2PQTWiueGozuR1884gddMywk6iLU=
 github.com/google/go-cmp v0.4.0/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/gNBxE=
 github.com/google/go-cmp v0.5.5/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/gNBxE=
-github.com/google/uuid v1.1.1/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/google/uuid v1.3.0 h1:t6JiXgmwXMjEs8VusXIJk2BXHsn+wx8BZdTaoZ5fu7I=
 github.com/google/uuid v1.3.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/hpcloud/tail v1.0.0/go.mod h1:ab1qPbhIpdTxEkNHXyeSf5vhxWSCs/tWer42PpOxQnU=

@@ -8,11 +8,11 @@ require (
 	github.com/go-courier/courier v1.5.0
 	github.com/go-courier/enumeration v1.3.1
 	github.com/go-courier/logr v0.0.2
-	github.com/go-courier/metax v1.2.1
+	github.com/go-courier/metax v1.3.0
 	github.com/go-courier/oas v1.2.1
 	github.com/go-courier/packagesx v1.0.2
 	github.com/go-courier/statuserror v1.2.1
-	github.com/go-courier/x v0.0.4
+	github.com/go-courier/x v0.0.6
 	github.com/google/uuid v1.3.0
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/onsi/gomega v1.16.0
