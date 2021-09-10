@@ -5,6 +5,14 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 
 
+# [1.21.3](https://github.com/go-courier/httptransport/compare/v1.21.2...v1.21.3)
+
+### Bug Fixes
+
+* **fix(generators/client):** pkg name fix ([d1d5f8f](https://github.com/go-courier/httptransport/commit/d1d5f8f8dec0ccc59e88519271cbeb0486998ff6))
+
+
+
 # [1.21.2](https://github.com/go-courier/httptransport/compare/v1.21.1...v1.21.2)
 
 ### Bug Fixes
