@@ -1,4 +1,4 @@
-package generator
+package client
 
 import (
 	"context"
