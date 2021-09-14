@@ -40,7 +40,7 @@ func EachRequestParameter(ctx context.Context, tpe typesx.Type, each func(rp *Re
 
 		switch rp.Type.Kind() {
 		case reflect.Array, reflect.Slice:
-			if rp.Type.Elem().Kind() != reflect.Uint8 {
+			if !(rp.Type.Elem().PkgPath() == "" && rp.Type.Elem().Kind() == reflect.Uint8) {
 				rp.TransformerOption.Explode = true
 			}
 		}

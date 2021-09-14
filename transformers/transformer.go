@@ -123,7 +123,7 @@ func (c *TransformerFactory) NewTransformer(ctx context.Context, typ typesx.Type
 
 		switch indirectType.Kind() {
 		case reflect.Slice:
-			if indirectType.Elem().Kind() == reflect.Uint8 {
+			if indirectType.Elem().PkgPath() == "" && indirectType.Elem().Kind() == reflect.Uint8 {
 				// bytes
 				opt.MIME = "plain"
 			} else {
