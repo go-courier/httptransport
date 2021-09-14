@@ -5,7 +5,16 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 
 
+# [1.21.6](https://github.com/go-courier/httptransport/compare/v1.21.5...v1.21.6)
+
+### Bug Fixes
+
+* **fix(transformers):** fix bytes check ([52d4b6b](https://github.com/go-courier/httptransport/commit/52d4b6b2f6084fcbf1d56848ed14b4a73b065d84))
+
+
+
 # [1.21.5](https://github.com/go-courier/httptransport/compare/v1.21.4...v1.21.5)
+
 
 
 # [1.21.4](https://github.com/go-courier/httptransport/compare/v1.21.3...v1.21.4)
