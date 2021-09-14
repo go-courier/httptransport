@@ -14,7 +14,7 @@ import (
 
 func TestTransformerURLEncoded(t *testing.T) {
 	queryStr := `Bool=true` +
-		`&Bytes=bytes` +
+		`&Bytes=Ynl0ZXM%3D` +
 		`&PtrInt=1` +
 		`&StringArray=1&StringArray=&StringArray=3` +
 		`&StringSlice=1&StringSlice=2&StringSlice=3` +

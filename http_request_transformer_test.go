@@ -116,7 +116,7 @@ func TestRequestTransformer(t *testing.T) {
 		{
 			"full InParameters",
 			"/:id",
-			`GET /1?bytes=bytes&int=1&slice=1&slice=2&string=string HTTP/1.1
+			`GET /1?bytes=Ynl0ZXM%3D&int=1&slice=1&slice=2&string=string HTTP/1.1
 Content-Type: application/json; charset=utf-8
 Cookie: a=xxx; slice=1; slice=2
 Hbool: true
@@ -192,7 +192,7 @@ Content-Type: multipart/form-data; boundary=5eaf397248958ac38281d1c034e1ad0d4a5f
 Content-Disposition: form-data; name="bytes"
 Content-Type: text/plain; charset=utf-8
 
-bytes
+Ynl0ZXM=
 --5eaf397248958ac38281d1c034e1ad0d4a5f7d986d4c53ac32e8399cbcda
 Content-Disposition: form-data; name="a"
 Content-Type: text/plain; charset=utf-8

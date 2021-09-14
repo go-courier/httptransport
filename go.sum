@@ -28,10 +28,8 @@ github.com/go-courier/reflectx v1.3.5/go.mod h1:XwckQyIOO/gA3cZMkmMLGh9i8wBpG1AL
 github.com/go-courier/statuserror v1.2.1 h1:npXYoaiFExHMn+NwdKE30bJz9t/s8VGG00cjH4lwyjg=
 github.com/go-courier/statuserror v1.2.1/go.mod h1:fgIlj8z6A4KDDVlpF4kcsXCzYUs9K/vXLBl6iTGU5Y8=
 github.com/go-courier/x v0.0.4/go.mod h1:UggWZeG7AOVXphLfpltal0Kq8Bn1MHcr6uPiyjEaCBg=
-github.com/go-courier/x v0.0.9 h1:YcG++zdcFmg956RUYGVTCvr0FFXLkTEMGTDIYt0Uboo=
-github.com/go-courier/x v0.0.9/go.mod h1:g5jBzOxZz4QqG9NfU9VzhXdEWmOrwhnkZ+Nrln7/cpw=
-github.com/go-courier/x v0.0.10 h1:LeOrRqLENN0BxKCbyJ0dsKVmzfBIjvbWJKPGlbbP+90=
-github.com/go-courier/x v0.0.10/go.mod h1:isWbRBAJwGN/EN9HT+4ujIFF/quBVTyOnqxFx+Tx7MI=
+github.com/go-courier/x v0.0.11 h1:p82Et8BRtoO2brLWIY1a2PoATyURqZX9RxwMzzYNSjs=
+github.com/go-courier/x v0.0.11/go.mod h1:isWbRBAJwGN/EN9HT+4ujIFF/quBVTyOnqxFx+Tx7MI=
 github.com/go-task/slim-sprig v0.0.0-20210107165309-348f09dbbbc0/go.mod h1:fyg7847qk6SyHyPtNmDHnmrv/HOrqktSC+C9fM+CJOE=
 github.com/golang/protobuf v1.2.0/go.mod h1:6lQm79b+lXiMfvg/cZm0SGofjICqVBUtrP5yJMmIC1U=
 github.com/golang/protobuf v1.4.0-rc.1/go.mod h1:ceaxUfeHdC40wWswd/P6IGgMaK3YpKi5j83Wpe3EHw8=
@@ -127,7 +125,6 @@ golang.org/x/sys v0.0.0-20210403161142-5e06dd20ab57/go.mod h1:h1NjWce9XRLGQEsW7w
 golang.org/x/sys v0.0.0-20210423082822-04245dca01da/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20210510120138-977fb7262007/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.0.0-20210616094352-59db8d763f22/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
-golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c h1:F1jZWGFhYfh0Ci55sIpILtKKK8p3i2/krTr0H1rg74I=
 golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.0.0-20210910150752-751e447fb3d0 h1:xrCZDmdtoloIiooiA9q0OQb9r8HejIHYoHGhGCe1pGg=
 golang.org/x/sys v0.0.0-20210910150752-751e447fb3d0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
