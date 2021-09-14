@@ -146,7 +146,7 @@ func EachParameter(ctx context.Context, tpe typesx.Type, each func(p *Parameter)
 			p.Tags = tags
 			p.In = tagIn.Name()
 			p.Name = displayName
-			p.Loc = loc
+			p.Loc = append([]int{}, loc...)
 
 			if !each(p) {
 				break
