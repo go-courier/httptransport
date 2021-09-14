@@ -5,6 +5,14 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 
 
+# [1.21.7](https://github.com/go-courier/httptransport/compare/v1.21.6...v1.21.7)
+
+### Bug Fixes
+
+* **fix** tests updates for []byte base64 encoded ([bbba3d8](https://github.com/go-courier/httptransport/commit/bbba3d884527aeeb19ea1f2a04026e6443d5e2c6))
+
+
+
 # [1.21.6](https://github.com/go-courier/httptransport/compare/v1.21.5...v1.21.6)
 
 ### Bug Fixes
