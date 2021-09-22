@@ -3,7 +3,7 @@ module github.com/go-courier/httptransport
 go 1.17
 
 require (
-	github.com/fatih/color v1.12.0
+	github.com/fatih/color v1.13.0
 	github.com/go-courier/codegen v1.1.2
 	github.com/go-courier/courier v1.5.0
 	github.com/go-courier/enumeration v1.3.1
@@ -24,7 +24,7 @@ require (
 
 require (
 	github.com/go-courier/reflectx v1.3.5 // indirect
-	github.com/mattn/go-colorable v0.1.8 // indirect
+	github.com/mattn/go-colorable v0.1.9 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
 	golang.org/x/sys v0.0.0-20210910150752-751e447fb3d0 // indirect
 	golang.org/x/text v0.3.7 // indirect
