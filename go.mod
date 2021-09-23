@@ -17,7 +17,7 @@ require (
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/onsi/gomega v1.16.0
 	github.com/pkg/errors v0.9.1
-	golang.org/x/mod v0.5.0
+	golang.org/x/mod v0.5.1
 	golang.org/x/net v0.0.0-20210913180222-943fd674d43e
 	golang.org/x/tools v0.1.5
 )
