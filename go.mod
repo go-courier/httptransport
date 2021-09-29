@@ -19,7 +19,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	golang.org/x/mod v0.5.0
 	golang.org/x/net v0.0.0-20210913180222-943fd674d43e
-	golang.org/x/tools v0.1.5
+	golang.org/x/tools v0.1.7
 )
 
 require (
