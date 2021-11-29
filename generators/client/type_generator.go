@@ -3,6 +3,7 @@ package client
 import (
 	"context"
 	"fmt"
+	"math"
 	"path/filepath"
 	"strconv"
 
@@ -165,9 +166,12 @@ func (g *TypeGenerator) TypeIndirect(ctx context.Context, schema *oas.Schema) (c
 
 				switch v := e.(type) {
 				case float64:
-					o.Float = &v
-				case int64:
-					o.Int = &v
+					if math.Floor(v) == v {
+						vi := int64(v)
+						o.Int = &vi
+					} else {
+						o.Float = &v
+					}
 				case string:
 					o.Str = &v
 				}

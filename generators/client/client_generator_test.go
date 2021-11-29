@@ -1,6 +1,8 @@
 package client
 
 import (
+	"bytes"
+	"encoding/json"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -23,4 +25,36 @@ func TestOpenAPIGenerator(t *testing.T) {
 func TestToColonPath(t *testing.T) {
 	NewWithT(t).Expect(toColonPath("/user/{userID}/tags/{tagID}")).To(Equal("/user/:userID/tags/:tagID"))
 	NewWithT(t).Expect(toColonPath("/user/{userID}")).To(Equal("/user/:userID"))
+}
+
+func TestGenEnumIntClient(t *testing.T) {
+	cwd, _ := os.Getwd()
+	g := NewClientGenerator("demo", &url.URL{}, OptionVendorImportByGoMod())
+	snippet := []byte(`
+{
+  "openapi": "3.0.3",
+  "components": {
+    "schemas": {
+      "ExampleComCloudchainSrvDemoPkgConstantsErrorsStatusError": {
+        "type": "integer",
+        "format": "int32",
+        "enum": [
+          400000001,
+          400000002
+        ],
+        "x-enum-labels": [
+          "400000001",
+          "400000002"
+        ],
+        "x-go-vendor-type": "example.com/cloudchain/srv-demo/pkg/constants/errors.StatusError",
+        "x-id": "ExampleComCloudchainSrvDemoPkgConstantsErrorsStatusError"
+      }
+    }
+  }
+}
+`)
+	if err := json.NewDecoder(bytes.NewBuffer(snippet)).Decode(g.openAPI); err != nil {
+		panic(err)
+	}
+	g.Output(filepath.Join(cwd, "../../testdata/enum"))
 }
