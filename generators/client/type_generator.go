@@ -5,9 +5,8 @@ import (
 	"fmt"
 	"math"
 	"path/filepath"
-	"strconv"
-
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/go-courier/codegen"
@@ -402,6 +401,9 @@ const (
 		switch n := v.(type) {
 		case string:
 			value = strconv.Quote(n)
+		case float64:
+			vf := v.(float64)
+			v = strings.Replace(strconv.FormatFloat(vf, 'f', -1, 64), ".", "_", 1)
 		}
 
 		_, _ = fmt.Fprintf(file, `%s__%v %s = %v // %s
