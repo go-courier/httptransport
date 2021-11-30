@@ -27,7 +27,7 @@ func TestToColonPath(t *testing.T) {
 	NewWithT(t).Expect(toColonPath("/user/{userID}")).To(Equal("/user/:userID"))
 }
 
-func TestGenEnumIntClient(t *testing.T) {
+func TestGenEnumInt(t *testing.T) {
 	cwd, _ := os.Getwd()
 	g := NewClientGenerator("demo", &url.URL{}, OptionVendorImportByGoMod())
 	snippet := []byte(`
@@ -45,6 +45,38 @@ func TestGenEnumIntClient(t *testing.T) {
         "x-enum-labels": [
           "400000001",
           "400000002"
+        ],
+        "x-go-vendor-type": "example.com/cloudchain/srv-demo/pkg/constants/errors.StatusError",
+        "x-id": "ExampleComCloudchainSrvDemoPkgConstantsErrorsStatusError"
+      }
+    }
+  }
+}
+`)
+	if err := json.NewDecoder(bytes.NewBuffer(snippet)).Decode(g.openAPI); err != nil {
+		panic(err)
+	}
+	g.Output(filepath.Join(cwd, "../../testdata/enum"))
+}
+
+func TestGenEnumFloat(t *testing.T) {
+	cwd, _ := os.Getwd()
+	g := NewClientGenerator("demo", &url.URL{}, OptionVendorImportByGoMod())
+	snippet := []byte(`
+{
+  "openapi": "3.0.3",
+  "components": {
+    "schemas": {
+      "ExampleComCloudchainSrvDemoPkgConstantsErrorsStatusError": {
+        "type": "number",
+        "format": "double",
+        "enum": [
+          40000000.1,
+          40000000.2
+        ],
+        "x-enum-labels": [
+          "40000000.1",
+          "40000000.2"
         ],
         "x-go-vendor-type": "example.com/cloudchain/srv-demo/pkg/constants/errors.StatusError",
         "x-id": "ExampleComCloudchainSrvDemoPkgConstantsErrorsStatusError"
