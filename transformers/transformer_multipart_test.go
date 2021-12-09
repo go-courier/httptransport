@@ -19,83 +19,83 @@ import (
 
 func TestMultipartTransformer(t *testing.T) {
 	parts := `--99bb5d156e61cf661d01fc370479b62a3451759d25d14711fd7e9db170f6
-Content-Disposition: form-data; name="PtrBool"
+Content-Disposition: form-data; name=PtrBool
 Content-Type: text/plain; charset=utf-8
 
 true
 --99bb5d156e61cf661d01fc370479b62a3451759d25d14711fd7e9db170f6
-Content-Disposition: form-data; name="PtrInt"
+Content-Disposition: form-data; name=PtrInt
 Content-Type: text/plain; charset=utf-8
 
 1
 --99bb5d156e61cf661d01fc370479b62a3451759d25d14711fd7e9db170f6
-Content-Disposition: form-data; name="Bool"
+Content-Disposition: form-data; name=Bool
 Content-Type: text/plain; charset=utf-8
 
 true
 --99bb5d156e61cf661d01fc370479b62a3451759d25d14711fd7e9db170f6
-Content-Disposition: form-data; name="bytes"
+Content-Disposition: form-data; name=bytes
 Content-Type: text/plain; charset=utf-8
 
 Ynl0ZXM=
 --99bb5d156e61cf661d01fc370479b62a3451759d25d14711fd7e9db170f6
-Content-Disposition: form-data; name="first_name"
+Content-Disposition: form-data; name=first_name
 Content-Type: text/plain; charset=utf-8
 
 test
 --99bb5d156e61cf661d01fc370479b62a3451759d25d14711fd7e9db170f6
-Content-Disposition: form-data; name="StructSlice"
+Content-Disposition: form-data; name=StructSlice
 Content-Type: application/json; charset=utf-8
 
 {"Name":"name"}
 
 --99bb5d156e61cf661d01fc370479b62a3451759d25d14711fd7e9db170f6
-Content-Disposition: form-data; name="StringSlice"
+Content-Disposition: form-data; name=StringSlice
 Content-Type: text/plain; charset=utf-8
 
 1
 --99bb5d156e61cf661d01fc370479b62a3451759d25d14711fd7e9db170f6
-Content-Disposition: form-data; name="StringSlice"
+Content-Disposition: form-data; name=StringSlice
 Content-Type: text/plain; charset=utf-8
 
 2
 --99bb5d156e61cf661d01fc370479b62a3451759d25d14711fd7e9db170f6
-Content-Disposition: form-data; name="StringSlice"
+Content-Disposition: form-data; name=StringSlice
 Content-Type: text/plain; charset=utf-8
 
 3
 --99bb5d156e61cf661d01fc370479b62a3451759d25d14711fd7e9db170f6
-Content-Disposition: form-data; name="StringArray"
+Content-Disposition: form-data; name=StringArray
 Content-Type: text/plain; charset=utf-8
 
 1
 --99bb5d156e61cf661d01fc370479b62a3451759d25d14711fd7e9db170f6
-Content-Disposition: form-data; name="StringArray"
+Content-Disposition: form-data; name=StringArray
 Content-Type: text/plain; charset=utf-8
 
 
 --99bb5d156e61cf661d01fc370479b62a3451759d25d14711fd7e9db170f6
-Content-Disposition: form-data; name="StringArray"
+Content-Disposition: form-data; name=StringArray
 Content-Type: text/plain; charset=utf-8
 
 3
 --99bb5d156e61cf661d01fc370479b62a3451759d25d14711fd7e9db170f6
-Content-Disposition: form-data; name="Struct"
+Content-Disposition: form-data; name=Struct
 Content-Type: application/xml; charset=utf-8
 
 <Sub><Name></Name></Sub>
 --99bb5d156e61cf661d01fc370479b62a3451759d25d14711fd7e9db170f6
-Content-Disposition: form-data; name="Files"; filename="file0.txt"
+Content-Disposition: form-data; filename=file0.txt; name=Files
 Content-Type: application/octet-stream
 
 text0
 --99bb5d156e61cf661d01fc370479b62a3451759d25d14711fd7e9db170f6
-Content-Disposition: form-data; name="Files"; filename="file1.txt"
+Content-Disposition: form-data; filename=file1.txt; name=Files
 Content-Type: application/octet-stream
 
 text1
 --99bb5d156e61cf661d01fc370479b62a3451759d25d14711fd7e9db170f6
-Content-Disposition: form-data; name="File"; filename="file.txt"
+Content-Disposition: form-data; filename=file.txt; name=File
 Content-Type: application/octet-stream
 
 text

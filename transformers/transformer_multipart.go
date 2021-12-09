@@ -3,14 +3,12 @@ package transformers
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"io"
 	"mime"
 	"mime/multipart"
 	"net/http"
 	"net/textproto"
 	"reflect"
-	"strconv"
 
 	"github.com/go-courier/httptransport/httpx"
 	verrors "github.com/go-courier/httptransport/validator"
@@ -79,9 +77,16 @@ func (transformer *TransformerMultipart) EncodeTo(ctx context.Context, w io.Writ
 			st := NewTransformerSuper(p.Transformer, &p.TransformerOption.CommonTransformOption)
 
 			partWriter := NewFormPartWriter(func(header textproto.MIMEHeader) (io.Writer, error) {
-				if v := header.Get("Content-Disposition"); v == "" {
-					header.Set("Content-Disposition", fmt.Sprintf(`form-data; name=%s`, strconv.Quote(p.Name)))
+				params := map[string]string{}
+				if v := header.Get("Content-Disposition"); v != "" {
+					_, disposition, err := mime.ParseMediaType(v)
+					if err == nil {
+						params = disposition
+					}
 				}
+				// always overwrite name
+				params["name"] = p.Name
+				header.Set("Content-Disposition", mime.FormatMediaType("form-data", params))
 				return multipartWriter.CreatePart(header)
 			})
 
@@ -173,7 +178,13 @@ func NewFileHeader(fieldName string, filename string, r io.Reader) (*multipart.F
 		return nil, err
 	}
 
-	return form.File[fieldName][0], nil
+	fh := form.File[fieldName][0]
+
+	contentType, params, err := mime.ParseMediaType(fh.Header.Get("Content-Disposition"))
+	if err == nil {
+		fh.Header.Set("Content-Disposition", mime.FormatMediaType(contentType, params))
+	}
+	return fh, nil
 }
 
 func NewFormPartWriter(createPartWriter func(header textproto.MIMEHeader) (io.Writer, error)) *FormPartWriter {
