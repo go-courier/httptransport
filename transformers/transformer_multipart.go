@@ -79,9 +79,17 @@ func (transformer *TransformerMultipart) EncodeTo(ctx context.Context, w io.Writ
 			st := NewTransformerSuper(p.Transformer, &p.TransformerOption.CommonTransformOption)
 
 			partWriter := NewFormPartWriter(func(header textproto.MIMEHeader) (io.Writer, error) {
-				if v := header.Get("Content-Disposition"); v == "" {
-					header.Set("Content-Disposition", fmt.Sprintf(`form-data; name=%s`, strconv.Quote(p.Name)))
+				paramFilename := ""
+				if v := header.Get("Content-Disposition"); v != "" {
+					_, disposition, err := mime.ParseMediaType(v)
+					if err == nil {
+						if f, ok := disposition["filename"]; ok {
+							paramFilename = fmt.Sprintf("; filename=%s", strconv.Quote(f))
+						}
+					}
 				}
+				// always overwrite name
+				header.Set("Content-Disposition", fmt.Sprintf("form-data; name=%s%s", strconv.Quote(p.Name), paramFilename))
 				return multipartWriter.CreatePart(header)
 			})
 
