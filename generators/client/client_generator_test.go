@@ -90,3 +90,73 @@ func TestGenEnumFloat(t *testing.T) {
 	}
 	g.Output(filepath.Join(cwd, "../../testdata/enum"))
 }
+
+func TestDegradation(t *testing.T) {
+	cwd, _ := os.Getwd()
+	g := NewClientGenerator("degradationDemo", &url.URL{}, OptionVendorImportByGoMod())
+	snippet := []byte(`
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "",
+    "version": ""
+  },
+  "paths": {
+    "/peer/version": {
+      "get": {
+        "tags": [
+          "routes"
+        ],
+        "operationId": "DemoApi",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DemoApiResp"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "DemoApiResp": {
+        "type": "object",
+        "properties": {
+          "info": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/GitQuerycapComCloudchainCommonDefMiscsTL0"
+              },
+              {
+                "x-go-field-name": "Info",
+                "x-tag-json": "info"
+              }
+            ]
+          }
+        },
+        "required": [
+          "info"
+        ],
+        "x-id": "DemoApiResp"
+      },
+      "GitQuerycapComCloudchainCommonDefMiscsTL0": {
+        "type": "object",
+        "x-go-vendor-type": "git.querycap.com/cloudchain/common-def/miscs.TL0",
+        "x-id": "GitQuerycapComCloudchainCommonDefMiscsTL0"
+      }
+    }
+  }
+}
+`)
+
+	if err := json.NewDecoder(bytes.NewBuffer(snippet)).Decode(g.openAPI); err != nil {
+		panic(err)
+	}
+	g.Output(filepath.Join(cwd, "../../testdata/degradation"))
+}
