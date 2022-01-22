@@ -51,6 +51,21 @@ func (g *TypeGenerator) Scan(ctx context.Context, openapi *oas.OpenAPI) {
 			continue
 		}
 
+		if len(s.Properties) == 0 && s.Type == oas.TypeObject {
+			pkgImportPath, expose := getPkgImportPathAndExpose(s)
+			if pkgImportPath != "" {
+				if _, ok := typ.(*codegen.StructType); ok {
+					typeName := codegen.LowerSnakeCase(pkgImportPath) + "." + expose
+					g.File.Use(pkgImportPath, strings.TrimSuffix(id, expose))
+					g.File.WriteBlock(
+						codegen.DeclType(
+							codegen.Var(codegen.Type(typeName), id).AsAlias(),
+						))
+					continue
+				}
+			}
+		}
+
 		g.File.WriteBlock(
 			codegen.DeclType(
 				codegen.Var(typ, id),
@@ -69,6 +84,13 @@ func (g *TypeGenerator) Scan(ctx context.Context, openapi *oas.OpenAPI) {
 
 		writeEnumDefines(g.File, enumName, options)
 	}
+}
+
+func getPkgImportPathAndExpose(schema *oas.Schema) (string, string) {
+	if schema.Extensions[openapi.XGoVendorType] == nil {
+		return "", ""
+	}
+	return packagesx.GetPkgImportPathAndExpose(schema.Extensions[openapi.XGoVendorType].(string))
 }
 
 func (g *TypeGenerator) Type(ctx context.Context, schema *oas.Schema) (codegen.SnippetType, bool) {
