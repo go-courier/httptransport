@@ -5,6 +5,14 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 
 
+# [1.21.11](https://github.com/go-courier/httptransport/compare/v1.21.10...v1.21.11)
+
+### Bug Fixes
+
+* **fix** type degenerate into struct{} ([90ef2a6](https://github.com/go-courier/httptransport/commit/90ef2a66ac594536c34cd28215ae2a06d16f8dd7))
+
+
+
 # [1.21.10](https://github.com/go-courier/httptransport/compare/v1.21.9...v1.21.10)
 
 ### Bug Fixes
