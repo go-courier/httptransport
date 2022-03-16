@@ -12,21 +12,21 @@ require (
 	github.com/go-courier/oas v1.2.1
 	github.com/go-courier/packagesx v1.0.2
 	github.com/go-courier/statuserror v1.2.1
-	github.com/go-courier/x v0.0.11
+	github.com/go-courier/x v0.1.0
 	github.com/google/uuid v1.3.0
 	github.com/julienschmidt/httprouter v1.3.0
-	github.com/onsi/gomega v1.16.0
+	github.com/onsi/gomega v1.18.1
 	github.com/pkg/errors v0.9.1
-	golang.org/x/mod v0.5.0
-	golang.org/x/net v0.0.0-20210913180222-943fd674d43e
-	golang.org/x/tools v0.1.5
+	golang.org/x/mod v0.6.0-dev.0.20220106191415-9b9b3d81d5e3
+	golang.org/x/net v0.0.0-20220225172249-27dd8689420f
+	golang.org/x/tools v0.1.10
 )
 
 require (
 	github.com/go-courier/reflectx v1.3.5 // indirect
 	github.com/mattn/go-colorable v0.1.8 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
-	golang.org/x/sys v0.0.0-20210910150752-751e447fb3d0 // indirect
+	golang.org/x/sys v0.0.0-20220315194320-039c03cc5b86 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
