@@ -55,7 +55,6 @@ func (handler *HttpRouteHandler) ServeHTTP(rw http.ResponseWriter, r *http.Reque
 
 	ctx = ContextWithHttpRequest(ctx, r)
 	ctx = ContextWithServiceMeta(ctx, *handler.serviceMeta)
-	ctx = ContextWithOperationID(ctx, operationID)
 
 	spanName := handler.serviceMeta.String() + "/" + operationID
 

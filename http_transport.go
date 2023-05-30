@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/signal"
 	"sort"
+	"strings"
 	"syscall"
 	"time"
 
@@ -166,10 +167,20 @@ func (t *HttpTransport) convertRouterToHttpRouter(router *courier.Router) *httpr
 		httpRoute.Log()
 
 		if err := tryCatch(func() {
-			httpRouter.HandlerFunc(
+			hh := NewHttpRouteHandler(&t.ServiceMeta, httpRoute, NewRequestTransformerMgr(t.TransformerMgr, t.ValidatorMgr))
+
+			httpRouter.Handle(
 				httpRoute.Method(),
 				httpRoute.Path(),
-				NewHttpRouteHandler(&t.ServiceMeta, httpRoute, NewRequestTransformerMgr(t.TransformerMgr, t.ValidatorMgr)).ServeHTTP,
+				func(rw http.ResponseWriter, req *http.Request, params httprouter.Params) {
+					if methodOverwrite := req.Header.Get("X-HTTP-Method-Override"); methodOverwrite != "" {
+						req.Method = strings.ToUpper(methodOverwrite)
+					}
+					operationID := hh.OperatorFactoryWithRouteMetas[len(hh.OperatorFactoryWithRouteMetas)-1].ID
+					ctx := req.Context()
+					ctx = ContextWithOperationID(ctx, operationID)
+					hh.ServeHTTP(rw, req.WithContext(ctx))
+				},
 			)
 		}); err != nil {
 			panic(errors.Errorf("register http route `%s` failed: %s", httpRoute, err))
