@@ -47,9 +47,12 @@ type HttpTransport struct {
 	// for modifying http.Server
 	ServerModifiers []ServerModifier
 
-	// Middlewares
+	// Middlewares for all
 	// can use https://github.com/gorilla/handlers
 	Middlewares []HttpMiddleware
+
+	// RouterMiddlewares for each router
+	RouterMiddlewares []HttpMiddleware
 
 	// validator mgr for parameter validating
 	ValidatorMgr validator.ValidatorMgr
@@ -166,10 +169,18 @@ func (t *HttpTransport) convertRouterToHttpRouter(router *courier.Router) *httpr
 		httpRoute.Log()
 
 		if err := tryCatch(func() {
-			httpRouter.HandlerFunc(
+			h := NewHttpRouteHandler(&t.ServiceMeta, httpRoute, NewRequestTransformerMgr(t.TransformerMgr, t.ValidatorMgr))
+			operationID := h.OperatorFactoryWithRouteMetas[len(h.OperatorFactoryWithRouteMetas)-1].ID
+			hh := MiddlewareChain(t.RouterMiddlewares...)(h)
+
+			httpRouter.Handle(
 				httpRoute.Method(),
 				httpRoute.Path(),
-				NewHttpRouteHandler(&t.ServiceMeta, httpRoute, NewRequestTransformerMgr(t.TransformerMgr, t.ValidatorMgr)).ServeHTTP,
+				func(rw http.ResponseWriter, req *http.Request, params httprouter.Params) {
+					ctx := req.Context()
+					ctx = ContextWithOperationID(ctx, operationID)
+					hh.ServeHTTP(rw, req.WithContext(ctx))
+				},
 			)
 		}); err != nil {
 			panic(errors.Errorf("register http route `%s` failed: %s", httpRoute, err))
