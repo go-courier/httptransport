@@ -74,9 +74,6 @@ func (h *loggerHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	logger := logr.FromContext(req.Context())
 
 	level, _ := logr.ParseLevel(strings.ToLower(req.Header.Get("x-log-level")))
-	if level == logr.PanicLevel {
-		level = logr.TraceLevel
-	}
 
 	defer func() {
 		duration := time.Since(startAt)

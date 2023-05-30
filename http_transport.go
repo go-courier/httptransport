@@ -99,7 +99,7 @@ func (t *HttpTransport) Serve(router *courier.Router) error {
 func (t *HttpTransport) ServeContext(ctx context.Context, router *courier.Router) error {
 	t.SetDefaults()
 
-	logger := logr.FromContext(ctx)
+	l := logr.FromContext(ctx)
 
 	t.httpRouter = t.convertRouterToHttpRouter(router)
 
@@ -110,7 +110,7 @@ func (t *HttpTransport) ServeContext(ctx context.Context, router *courier.Router
 
 	for i := range t.ServerModifiers {
 		if err := t.ServerModifiers[i](srv); err != nil {
-			logger.Fatal(err)
+			l.Error(err)
 		}
 	}
 
@@ -119,21 +119,13 @@ func (t *HttpTransport) ServeContext(ctx context.Context, router *courier.Router
 
 		if t.CertFile != "" && t.KeyFile != "" {
 			if err := srv.ListenAndServeTLS(t.CertFile, t.KeyFile); err != nil {
-				if err == http.ErrServerClosed {
-					logger.Error(err)
-				} else {
-					logger.Fatal(err)
-				}
+				l.Error(err)
 			}
 			return
 		}
 
 		if err := srv.ListenAndServe(); err != nil {
-			if err == http.ErrServerClosed {
-				logger.Error(err)
-			} else {
-				logger.Fatal(err)
-			}
+			l.Error(err)
 		}
 	}()
 
@@ -146,7 +138,7 @@ func (t *HttpTransport) ServeContext(ctx context.Context, router *courier.Router
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
-	logger.Info("shutdowning in %s", timeout)
+	l.Info("shutdowning in %s", timeout)
 
 	return srv.Shutdown(ctx)
 }

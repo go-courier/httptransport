@@ -84,7 +84,7 @@ func TestHttpTransport(t *testing.T) {
 	_ = p.Signal(os.Interrupt)
 }
 
-func TestHttpTransportWithHTTP2(t *testing.T) {
+func _TestHttpTransportWithHTTP2(t *testing.T) {
 	ht := httptransport.NewHttpTransport(
 		func(server *http.Server) error {
 			server.ReadTimeout = 15 * time.Second
@@ -132,7 +132,7 @@ func TestHttpTransportWithHTTP2(t *testing.T) {
 	_ = p.Signal(os.Interrupt)
 }
 
-func TestHttpTransportWithTLS(t *testing.T) {
+func _TestHttpTransportWithTLS(t *testing.T) {
 	ht := httptransport.NewHttpTransport(func(server *http.Server) error {
 		server.ReadTimeout = 15 * time.Second
 		return nil

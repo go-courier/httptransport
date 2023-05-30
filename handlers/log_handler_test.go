@@ -7,10 +7,11 @@ import (
 
 	"github.com/go-courier/httptransport/testify"
 	"github.com/go-courier/logr"
+	"github.com/go-courier/logr/slog"
 )
 
 func ExampleLogHandler() {
-	ctx := logr.WithLogger(context.Background(), logr.StdLogger())
+	ctx := logr.WithLogger(context.Background(), slog.Logger(slog.Default()))
 
 	var handle http.HandlerFunc = func(rw http.ResponseWriter, req *http.Request) {
 		time.Sleep(20 * time.Millisecond)
