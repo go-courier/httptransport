@@ -29,6 +29,7 @@ type Client struct {
 	Protocol              string
 	Host                  string
 	Port                  uint16
+	Base                  string
 	Timeout               time.Duration
 	RequestTransformerMgr *httptransport.RequestTransformerMgr
 	HttpTransports        []HttpTransport
@@ -136,6 +137,9 @@ func (c *Client) toUrl(path string) string {
 	url := fmt.Sprintf("%s://%s", protocol, c.Host)
 	if c.Port > 0 {
 		url = fmt.Sprintf("%s:%d", url, c.Port)
+	}
+	if c.Base != "" {
+		url = fmt.Sprintf("%s/%s", url, c.Base)
 	}
 	return url + path
 }
