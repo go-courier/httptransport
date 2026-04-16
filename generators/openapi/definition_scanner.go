@@ -87,7 +87,7 @@ func (scanner *DefinitionScanner) Def(ctx context.Context, typeName *types.TypeN
 	logr.FromContext(ctx).Debug("scanning Type `%s.%s`", typeName.Pkg().Path(), typeName.Name())
 
 	if typeName.IsAlias() {
-		typeName = typeName.Type().(*types.Named).Obj()
+		typeName = types.Unalias(typeName.Type()).(*types.Named).Obj()
 	}
 
 	doc := scanner.pkg.CommentsOf(scanner.pkg.IdentOf(typeName.Type().(*types.Named).Obj()))
@@ -273,6 +273,8 @@ func (r SchemaRefer) RefString() string {
 
 func (scanner *DefinitionScanner) GetSchemaByType(ctx context.Context, typ types.Type) *oas.Schema {
 	switch t := typ.(type) {
+	case *types.Alias:
+		return scanner.GetSchemaByType(ctx, types.Unalias(t))
 	case *types.Named:
 		if t.String() == "mime/multipart.FileHeader" {
 			return oas.Binary()
@@ -387,6 +389,9 @@ func (scanner *DefinitionScanner) propSchemaByField(
 	desc string,
 ) *oas.Schema {
 	propSchema := scanner.GetSchemaByType(ctx, fieldType)
+	if propSchema == nil {
+		propSchema = &oas.Schema{}
+	}
 
 	refSchema := (*oas.Schema)(nil)
 
@@ -409,7 +414,20 @@ func (scanner *DefinitionScanner) propSchemaByField(
 
 	if hasValidate {
 		if err := BindSchemaValidationByValidateBytes(propSchema, fieldType, []byte(validate)); err != nil {
-			panic(err)
+			hasStrfmt := propSchema.Format != ""
+			if !hasStrfmt && refSchema != nil {
+				if refSchema.Format != "" {
+					hasStrfmt = true
+				}
+				if !hasStrfmt {
+					if schemaRefer, ok := refSchema.Refer.(*SchemaRefer); ok && schemaRefer.Format != "" {
+						hasStrfmt = true
+					}
+				}
+			}
+			if !hasStrfmt {
+				panic(err)
+			}
 		}
 	}
 

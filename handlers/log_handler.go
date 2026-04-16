@@ -10,6 +10,7 @@ import (
 	"github.com/go-courier/logr"
 	"github.com/go-courier/metax"
 	"github.com/google/uuid"
+	xlogr "github.com/octohelm/x/logr"
 	"github.com/pkg/errors"
 )
 
@@ -73,7 +74,7 @@ func (h *loggerHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 
 	logger := logr.FromContext(req.Context())
 
-	level, _ := logr.ParseLevel(strings.ToLower(req.Header.Get("x-log-level")))
+	level, _ := xlogr.ParseLevel(strings.ToLower(req.Header.Get("x-log-level")))
 
 	defer func() {
 		duration := time.Since(startAt)
